@@ -15,51 +15,72 @@
  * filename skeleton used as template for episode renaming with obtained 
  * episode information
  */
-$_runtime['skeletons']['filename'] = 
+$_runtime['skeleton']['filename'] = 
   '${seriesname} S{episodeseason}E${episodenumber} ${episodename}';
 
 /**
  * search skeleton used to search epguides for the series name derived from 
  * the current working directory name or input by the user
  */
-$_runtime['skeletons']['onlinesearch'] = 
+$_runtime['skeleton']['onlinesearch'] = 
   'http://epguides.com/${seriesname}/';
 
 /**
- * output text to console
+ * resource handle to standard output (stdout), commonly used in the wrapper
+ * comands echo and print. acted upon as if it is a file, for example, used 
+ * with fwrite
+ */
+$_runtime['handle']['stdout'] = fopen('php://stdout', 'w');
+
+
+/**
+ * output text to console, by default no trailing newline
+ *
  * @param $to_output string text to output to console
  * @param $trailing_nl boolean should text have trailing newline afterwards
  * @return boolean
  */
-function out($to_output = '', $trailing_nl = true)
+function out($to_output = '', $trailing_nl = false)
 {
-  $handle_stdout = fopen('php://stdout', 'w');
+  global $_runtime;
   
   if($trailing_nl === true)
   {
     $to_output .= "\n";
   }
   
-  $return = @fwrite($handle_stdout, $to_output);
+  $return = @fwrite($_runtime['handle']['stdout'], $to_output);
   
-  return ($return === false ? false : true);
+  return (boolean) ($return === false ? false : true);
+}
+
+/**
+ * output line of text to console, trailing newline always
+ *
+ * @param $to_output string text to output to console
+ * @return boolean
+ */
+function out_l($to_output = '')
+{
+  return (boolean) out($to_output, true);
 }
 
 /**
  * output program start information to console
+ *
  * @return boolean
  */
 function out_proginfo()
 {
-  out('Serfer (Version 0.1.0)');
-  out('<http://robfrawley.com/projects/serfer>');
-  out();
-  out('Written by Rob Frawley <projects@robfrawley.com>');
-  out('Copyright 2009 Inserrat LLC <http://inserrat.com>');
-  out('Licensed under the MIT License');
-  out();
+  out_l('Serfer (Version 0.1.0)');
+  out_l('<http://robfrawley.com/projects/serfer>');
+  out_l();
+  out_l('Written by Rob Frawley <projects@robfrawley.com>');
+  out_l('Copyright 2009 Inserrat LLC <http://inserrat.com>');
+  out_l('Licensed under the MIT License');
+  out_l();
   
-  return true;
+  return (boolean) true;
 }
 
 /**
