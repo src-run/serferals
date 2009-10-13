@@ -1,0 +1,82 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Serfer
+ * Episode/Series filename re-namer and information lookup script
+ *
+ * @author Rob Frawley
+ * @copyright 2009 Inserrat LLC.
+ * @license MIT License
+ * @version $Id$
+ */
+
+/*
+ * filename skeleton used as template for episode renaming with obtained 
+ * episode information
+ */
+$_runtime['skeletons']['filename'] = 
+  '${seriesname} S{episodeseason}E${episodenumber} ${episodename}';
+
+/**
+ * search skeleton used to search epguides for the series name derived from 
+ * the current working directory name or input by the user
+ */
+$_runtime['skeletons']['onlinesearch'] = 
+  'http://epguides.com/${seriesname}/';
+
+/**
+ * output text to console
+ * @param $to_output string text to output to console
+ * @param $trailing_nl boolean should text have trailing newline afterwards
+ * @return boolean
+ */
+function out($to_output = '', $trailing_nl = true)
+{
+  $handle_stdout = fopen('php://stdout', 'w');
+  
+  if($trailing_nl === true)
+  {
+    $to_output .= "\n";
+  }
+  
+  $return = @fwrite($handle_stdout, $to_output);
+  
+  return ($return === false ? false : true);
+}
+
+/**
+ * output program start information to console
+ * @return boolean
+ */
+function out_proginfo()
+{
+  out('Serfer (Version 0.1.0)');
+  out('<http://robfrawley.com/projects/serfer>');
+  out();
+  out('Written by Rob Frawley <projects@robfrawley.com>');
+  out('Copyright 2009 Inserrat LLC <http://inserrat.com>');
+  out('Licensed under the MIT License');
+  out();
+  
+  return true;
+}
+
+/**
+ * main function handles the script from beginning to end
+ */
+function main()
+{
+  /* bring config variable array, defined and available outside this
+     function's scope, into focus inside this function */
+  global $_runtime;
+
+  /* display program name/version/license information */
+  out_proginfo();
+
+}
+
+/* run main script function: go */
+main();
+
+?>
