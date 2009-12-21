@@ -12,6 +12,16 @@
  */
 
 /*
+ * script timezone setting
+ */
+$_runtime['script']['timezone'] = 'America/New_York';
+
+/*
+ * script verbose level, 0=essential, 1=more, 2=debug
+ */
+$_runtime['script']['verbose'] = 2;
+
+/*
  * filename skeleton used as template for episode renaming with obtained 
  * episode information
  */
@@ -60,9 +70,120 @@ function out($to_output = '', $trailing_nl = false)
  * @param $to_output string text to output to console
  * @return boolean
  */
-function out_l($to_output = '')
+function out_l($to_output = '', $pre='')
 {
-  return (boolean) out($to_output, true);
+  return (boolean) out($pre.$to_output, true);
+}
+
+/**
+ * instead of outputting line of text to console, save it to the static buffer
+ * var, this function must be called with $buffer set to true to output 
+ * and then purge the current buffer
+ *
+ * @param $line string text to add to buffer for later bulk output
+ * @param $level int importance level, 0=essential, 1=more, 2=debug
+ * @param $flush boolean true to output and purge buffer
+ * @return void
+ */
+function out_buffer($line='', $level=1, $flush=false)
+{
+  static $buffer = array();
+  global $_runtime;
+
+  if($level > $_runtime['script']['verbose'])
+  {
+    return;
+  }
+
+  $buffer[] = $line;
+  if($flush === true)
+  {    
+    out_bufferend($buffer, 'out_bufferalign');
+    $buffer = '';
+  }
+}
+
+function out_bufferflush($line='', $level=1)
+{
+  out_buffer($line, $level, true);
+}
+
+/**
+ * handle giving buffer to another function for formatting and then output 
+ * each line, one after the other
+ *
+ * @param $buffer array lines of output buffer
+ * @param $handler string function name to give buffer to before outputting
+ * @return void
+ */
+function out_bufferend($buffer=array(), $handler='')
+{
+  if($handler !== '' && function_exists($handler))
+  {
+    $buffer = $handler($buffer);
+  }
+  
+  for($i=0; $i<sizeof($buffer); $i++)
+  {
+    out_l($buffer[$i]);
+  }
+}
+
+/**
+ * handler function for function out_bufferflush, formats strings of 
+ * path.to.variable: value formatting by aligning the value to the right of
+ * the colon along the same vertical for all buffer lines
+ *
+ * @param $buffer array array lines of output buffer
+ * @return array
+ */
+function out_bufferalign($buffer)
+{
+  $buffer_size = sizeof($buffer);
+  
+  if(!is_array($buffer) || $buffer_size < 1)
+  {
+    return;
+  }
+  
+  $buffer_maxstrlen = 0;
+  $buffer_left = array();
+  $buffer_right = array();
+  for($i=0; $i<$buffer_size; $i++)
+  {    
+    $tmp = explode(':', $buffer[$i], 2);
+    if(sizeof($tmp) == 2)
+    {
+      $buffer_left[$i] = trim($tmp[0]) . ':';
+      $buffer_right[$i] = trim($tmp[1]);
+    }
+    else
+    {
+      $buffer_left[$i] = trim($buffer[$i]);
+      $buffer_right[$i] = '';
+    }
+    
+    $tmp = strlen($buffer_left[$i]);
+    if($tmp > $buffer_maxstrlen)
+    {
+      $buffer_maxstrlen = $tmp;
+    }
+  }
+  
+  $to_return = array();
+  for($i=0; $i<$buffer_size; $i++)
+  {
+    if(strlen($buffer_left[$i]) < 1)
+    {
+      $to_return[$i] = '';
+    }
+    else
+    {
+      $to_return[$i] = str_pad($buffer_left[$i], $buffer_maxstrlen+1, ' ', STR_PAD_RIGHT) . $buffer_right[$i];
+    }
+  }
+  
+  return $to_return;
 }
 
 /**
@@ -84,6 +205,33 @@ function out_proginfo()
 }
 
 /**
+ * get current working directory (cwd)
+ *
+ * @return string current working directory
+ */
+function get_currentworkingdirectory()
+{
+  return getcwd();
+}
+
+/**
+ * check for series name by looking at current directory name
+ *
+ * @return string
+ */
+function get_seriestitle()
+{
+  global $_runtime;
+  
+  $a = explode(DIRECTORY_SEPARATOR, $_runtime['directory']['working']);
+  if(sizeof($a) < 1) { return false; }
+  
+  $seriesname = $a[sizeof($a) - 1];
+  
+  return $seriesname;
+}
+
+/**
  * main function handles the script from beginning to end
  */
 function main()
@@ -92,8 +240,41 @@ function main()
      function's scope, into focus inside this function */
   global $_runtime;
 
+  /* set timezone */
+  date_default_timezone_set($_runtime['script']['timezone']);
+  out_buffer('SET script.timezone:'.$_runtime['script']['timezone'], 2);
+
   /* display program name/version/license information */
   out_proginfo();
+
+  /* process id */
+  $_runtime['script']['pid'] = getmypid();
+  out_buffer('SET script.pid: '.$_runtime['script']['pid'], 2);
+
+  /* get uid */
+  $_runtime['script']['uid'] = getmyuid();
+  out_buffer('SET script.uid: '.$_runtime['script']['uid'], 2);
+  
+  /* name of user */
+  $_runtime['script']['user'] = get_current_user();
+  out_buffer('SET script.user: '.$_runtime['script']['user'], 2);
+  
+  /* start time */
+  $_runtime['script']['start'] = time();
+  out_buffer('SET script.start: '.date('H:i:s', $_runtime['script']['start']), 2);
+  
+  /* blank line */
+  out_buffer('', 2);
+
+  /* get cwd */
+  $_runtime['directory']['working'] = get_currentworkingdirectory();
+  out_buffer('SET directory.working: '.$_runtime['directory']['working'], 2);
+  
+  /* get series name */
+  $_runtime['series']['title'] = get_seriestitle();
+  out_buffer('SET series.title: '.$_runtime['series']['title'], 1);
+
+  out_bufferflush();
 
 }
 
