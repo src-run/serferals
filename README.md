@@ -1,13 +1,11 @@
-Serfer (Version 0.1.0)
-<http://robfrawley.com/projects/serfer>
+# Serfer (Version 0.1.0)
 
-Written by Rob Frawley <projects@robfrawley.com>
-Copyright 2009 Inserrat LLC <http://inserrat.com>
-Licensed under the MIT License <See ./COPYING>
+* Website: http://robfrawley.com/projects/serfer
+* Written by: Rob Frawley, projects@robfrawley.com
+* Copyright: 2009 Inserrat LLC, http://inserrat.com
+* Licensed under: MIT License (See ./COPYING)
 
-
-OVERVIEW
-
+## Overview
 Series/Episode Filename Renamer and Lookup Script
 
 Uses epguides.com to look up the air date and title of every episode of the 
@@ -15,14 +13,10 @@ specified series, then looks through the local collection of files, searching fo
 
 CONFIGURATION
 
-By default, the program is NOT i debug mode, and therefore only displays semi-
-verbose output. The default file renaming skeleton is as follows:
-  ${seriesname} S{episodeseason}E${episodenumber} ${airdate} ${episodename}
-which is a simple and clean naming convention. For example, for Season 02, 
-Episode 02 of Fringe, the filename would look as follows:
-  Fringe S02E02 2009-24-09 Night of Desirable Objects.avi
+By default, the program is NOT i debug mode, and therefore only displays semi-verbose output. The default file renaming skeleton is as follows: `${seriesname} S{episodeseason}E${episodenumber} ${airdate} ${episodename}`
+which is a simple and clean naming convention. For example, for Season 02, Episode 02 of Fringe, the filename would look as follows: `Fringe S02E02 2009-24-09 Night of Desirable Objects.avi`
 More needs to be written here (See TODO)...
 
-TODO
+$$ Todo
 
-- Finish this README file...
+* Finish this README file...
