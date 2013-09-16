@@ -13,10 +13,15 @@ specified series, then looks through the local collection of files, searching fo
 
 CONFIGURATION
 
-By default, the program is NOT i debug mode, and therefore only displays semi-verbose output. The default file renaming skeleton is as follows: `${seriesname} S{episodeseason}E${episodenumber} ${airdate} ${episodename}`
-which is a simple and clean naming convention. For example, for Season 02, Episode 02 of Fringe, the filename would look as follows: `Fringe S02E02 2009-24-09 Night of Desirable Objects.avi`
-More needs to be written here (See TODO)...
+By default, the program is *not* in debug mode, and therefore only displays semi-verbose output. The default file renaming skeleton is as follows:
+```
+${seriesname} S{episodeseason}E${episodenumber} ${airdate} ${episodename}
+```
+This is a simple and clean naming convention. For example, for Season 02, Episode 02 of Fringe, the filename would look as follows: 
+```
+Fringe S02E02 2009-24-09 Night of Desirable Objects.avi
+```
 
-$$ Todo
+## Todo
 
 * Finish this README file...
