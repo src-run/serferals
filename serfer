@@ -3,232 +3,566 @@
 
 /**
  * Serfer
+ * 
  * Episode/Series filename re-namer and information lookup script
  *
- * @author Rob Frawley
- * @copyright 2009 Inserrat LLC.
- * @license MIT License
- * @version $Id$
+ * @author    Rob M Frawley 2nd
+ * @copyright 2009-2014 Inserrat Technologies, LLC
+ * @license   MIT License
  */
 
-/*
- * script timezone setting
- */
-$_runtime['script']['timezone'] = 'America/New_York';
+require_once 'Console/GetoptPlus.php';
 
-/*
- * script verbose level, 0=essential, 1=more, 2=debug
- */
-$_runtime['script']['verbose'] = 2;
-
-/*
- * filename skeleton used as template for episode renaming with obtained 
- * episode information
- */
-$_runtime['skeleton']['filename'] = 
-  '${seriesname} S{episodeseason}E${episodenumber} ${episodename}';
+Config::setRuntime('php.timezone', 'America/New_York');
+Config::setRuntime('script.verbosity', 2);
+Config::setRuntime('script.mode', 'tv');
+Config::setRuntime('script.stdout', fopen('php://stdout', 'w'));
+Config::setRuntime('script.stdin', fopen('php://stdin', 'r'));
+Config::set('tpl.filepath.tv', '${seriesname}/Season ${episodeseason}/${seriesname} S${episodeseason}E${episodenumber} ${episodename}');
+Config::set('tpl.filepath.movie', '${moviename}/${moviename} [${movieyear}] [${movieimdb}]');
+Config::set('dirpath.input', '/Users/rmf/Torrents/Done/');
+Config::set('dirpath.output', '/Users/rmf/Torrents/Organized/');
+Config::set('files.extensions', 'mp4,mkv,avi,mov');
 
 /**
- * search skeleton used to search epguides for the series name derived from 
- * the current working directory name or input by the user
+ * Config class
+ * Contains runtime and script config values
  */
-$_runtime['skeleton']['onlinesearch'] = 
-  'http://epguides.com/${seriesname}/';
-
-/**
- * resource handle to standard output (stdout), commonly used in the wrapper
- * comands echo and print. acted upon as if it is a file, for example, used 
- * with fwrite
- */
-$_runtime['handle']['stdout'] = fopen('php://stdout', 'w');
-
-
-/**
- * output text to console, by default no trailing newline
- *
- * @param $to_output string text to output to console
- * @param $trailing_nl boolean should text have trailing newline afterwards
- * @return boolean
- */
-function out($to_output = '', $trailing_nl = false)
+class Config
 {
-  global $_runtime;
-  
-  if($trailing_nl === true)
-  {
-    $to_output .= "\n";
-  }
-  
-  $return = @fwrite($_runtime['handle']['stdout'], $to_output);
-  
-  return (boolean) ($return === false ? false : true);
-}
+    /**
+     * @var array
+     */
+    static public $runtime = [];
 
-/**
- * output line of text to console, trailing newline always
- *
- * @param $to_output string text to output to console
- * @return boolean
- */
-function out_l($to_output = '', $pre='')
-{
-  return (boolean) out($pre.$to_output, true);
-}
+    /**
+     * @var array
+     */
+    static public $config = [];
 
-/**
- * instead of outputting line of text to console, save it to the static buffer
- * var, this function must be called with $buffer set to true to output 
- * and then purge the current buffer
- *
- * @param $line string text to add to buffer for later bulk output
- * @param $level int importance level, 0=essential, 1=more, 2=debug
- * @param $flush boolean true to output and purge buffer
- * @return void
- */
-function out_buffer($line='', $level=1, $flush=false)
-{
-  static $buffer = array();
-  global $_runtime;
-
-  if($level > $_runtime['script']['verbose'])
-  {
-    return;
-  }
-
-  $buffer[] = $line;
-  if($flush === true)
-  {    
-    out_bufferend($buffer, 'out_bufferalign');
-    $buffer = '';
-  }
-}
-
-function out_bufferflush($line='', $level=1)
-{
-  out_buffer($line, $level, true);
-}
-
-/**
- * handle giving buffer to another function for formatting and then output 
- * each line, one after the other
- *
- * @param $buffer array lines of output buffer
- * @param $handler string function name to give buffer to before outputting
- * @return void
- */
-function out_bufferend($buffer=array(), $handler='')
-{
-  if($handler !== '' && function_exists($handler))
-  {
-    $buffer = $handler($buffer);
-  }
-  
-  for($i=0; $i<sizeof($buffer); $i++)
-  {
-    out_l($buffer[$i]);
-  }
-}
-
-/**
- * handler function for function out_bufferflush, formats strings of 
- * path.to.variable: value formatting by aligning the value to the right of
- * the colon along the same vertical for all buffer lines
- *
- * @param $buffer array array lines of output buffer
- * @return array
- */
-function out_bufferalign($buffer)
-{
-  $buffer_size = sizeof($buffer);
-  
-  if(!is_array($buffer) || $buffer_size < 1)
-  {
-    return;
-  }
-  
-  $buffer_maxstrlen = 0;
-  $buffer_left = array();
-  $buffer_right = array();
-  for($i=0; $i<$buffer_size; $i++)
-  {    
-    $tmp = explode(':', $buffer[$i], 2);
-    if(sizeof($tmp) == 2)
+    /**
+     * @param  string $key
+     * @param  mixed  $value
+     * @return mixed
+     */
+    static public function setRuntime($key, $value)
     {
-      $buffer_left[$i] = trim($tmp[0]) . ':';
-      $buffer_right[$i] = trim($tmp[1]);
+        self::$runtime[(string)$key] = $value;
+
+        return $value;
     }
-    else
+
+    /**
+     * @param  string $key
+     * @return mixed
+     */
+    static public function getRuntime($key)
     {
-      $buffer_left[$i] = trim($buffer[$i]);
-      $buffer_right[$i] = '';
+        if (!array_key_exists($key, self::$runtime)) {
+            throw new Exception('Invalid runtime config key provided: ' . $key);
+        }
+
+        return self::$runtime[$key];
     }
-    
-    $tmp = strlen($buffer_left[$i]);
-    if($tmp > $buffer_maxstrlen)
+
+    /**
+     * @param  string $key
+     * @param  mixed  $value
+     * @return mixed
+     */
+    static public function set($key, $value)
     {
-      $buffer_maxstrlen = $tmp;
+        self::$config[(string)$key] = $value;
+
+        return $value;
     }
-  }
-  
-  $to_return = array();
-  for($i=0; $i<$buffer_size; $i++)
-  {
-    if(strlen($buffer_left[$i]) < 1)
+
+    /**
+     * @param  string $key
+     * @return mixed
+     */
+    static public function get($key)
     {
-      $to_return[$i] = '';
+        if (!array_key_exists($key, self::$config)) {
+            throw new Exception('Invalid runtime config key provided');
+        }
+
+        return self::$config[$key];
     }
-    else
-    {
-      $to_return[$i] = str_pad($buffer_left[$i], $buffer_maxstrlen+1, ' ', STR_PAD_RIGHT) . $buffer_right[$i];
-    }
-  }
-  
-  return $to_return;
 }
 
 /**
- * output program start information to console
- *
- * @return boolean
+ * Console class
  */
-function out_proginfo()
+class Console 
 {
-  out_l('Serfer (Version 0.1.0)');
-  out_l('<http://robfrawley.com/projects/serfer>');
-  out_l();
-  out_l('Written by Rob Frawley <projects@robfrawley.com>');
-  out_l('Copyright 2009 Inserrat LLC <http://inserrat.com>');
-  out_l('Licensed under the MIT License');
-  out_l();
-  
-  return (boolean) true;
+    /**
+     * @var array
+     */
+    static public $colors = [
+        'k' => '1;30',
+        'K' => '0;30',
+        'r' => '1;31',
+        'R' => '0;31',
+        'g' => '1;32',
+        'G' => '0;32',
+        'y' => '1;33',
+        'Y' => '0;33',
+        'b' => '1;34',
+        'B' => '0;34',
+        'p' => '1;35',
+        'P' => '0;35',
+        'c' => '1;36',
+        'C' => '0;36',
+        'w' => '1;37',
+        'W' => '0;37',
+    ];
+
+    /**
+     * @var array
+     */
+    static public $buffer = [];
+
+    /**
+     * @param  string $out
+     * @return string
+     */
+    static public function colorize($out = '')
+    {
+        foreach (self::$colors as $search => $replace) {
+            $out = str_replace('%'.$search, "\033[${replace}m", $out);
+        }
+
+        $out = $out . "\033[0m";
+
+        return $out;
+    }
+
+    /**
+     * @param string  $out
+     * @param integer $level
+     * @param boolean $nl
+     */
+    static public function out($out = '', $level = 1, $nl = false)
+    {
+        if ($level > Config::getRuntime('script.verbosity')) {
+            return;
+        }
+
+        $out = self::colorize($out);
+
+        if ($nl === true) {
+            $out = $out . "\n";
+        }
+        
+        @fwrite(Config::getRuntime('script.stdout'), $out);
+    }
+
+    /**
+     * @param string  $out
+     * @param integer $level
+     */
+    static public function outl($out = '', $level = 1)
+    {
+        self::out($out, $level, true);
+    }
+
+    static public function prompt($out = '', $default = null)
+    {
+        if ($default !== null) {
+            $out = '%w' . $out . ' %W['.$default.']: %w';
+        } else {
+            $out = '%w' . $out . ' %W: %w';
+        }
+        
+        self::out($out, 0);
+        
+        $input = trim(fgets(Config::getRuntime('script.stdin')));
+        if (empty($input)) {
+            $input = $default;
+        }
+
+        return $input;
+    }
+
+    /**
+     * @param string  $out
+     * @param integer $level
+     */
+    static public function buffer($out = '', $level = 1)
+    {
+        if ($level > Config::getRuntime('script.verbosity')) {
+            return;
+        }
+
+        self::$buffer[] = $out;
+    }
+
+    /**
+     * @param boolean $nl
+     */
+    static public function flush($nl = true, $align = true)
+    {
+        if ($align === true) {
+            self::bufferAlign();
+        }
+
+        while (null !== ($out = array_shift(self::$buffer))) {
+            self::out($out, Config::getRuntime('script.verbosity'), $nl);
+        }
+    }
+
+    static public function bufferAlign()
+    {
+        $leftLen = 0;
+        $indexes = [];
+
+        foreach (self::$buffer as $i => $b) {
+            $matches = [];
+            $result = preg_match('#\[([\.\s:]){3}\]#', $b, $matches, PREG_OFFSET_CAPTURE);
+
+            if ($result !== 1) {
+                continue;
+            }
+
+            $indexes[] = $i;
+
+            if ($leftLen < $matches[0][1]) {
+                $leftLen = $matches[0][1];
+            }
+
+        }
+
+        foreach ($indexes as $i) {
+            $b = self::$buffer[$i];
+
+            $matches = [];
+            $result = preg_match('#\[([\.\s:]){3}\](.*?)#', $b, $matches, PREG_OFFSET_CAPTURE);
+
+            $left  = substr($b, 0, $matches[0][1]);
+            $type  = substr($b, $matches[0][1], 5);
+            $right = substr($b, $matches[2][1]);
+
+            switch ($type) {
+                case '[   ]':
+                    $left = str_pad($left, $leftLen+3, ' ', STR_PAD_RIGHT);
+                    break;
+                case '[...]':
+                    $left = str_pad($left, $leftLen+3, '.', STR_PAD_RIGHT);
+                    break;
+                case '[:  ]':
+                    $left = $left . ' :';
+                    $left = str_pad($left, $leftLen+3, ' ', STR_PAD_RIGHT);
+                    break;
+                case '[  :]':
+                    $left = str_pad($left, $leftLen, ' ', STR_PAD_RIGHT);
+                    $left = $left . ' : ';
+                    break;
+            }
+
+            self::$buffer[$i] = $left . $right;
+
+        }
+    }
 }
 
-/**
- * get current working directory (cwd)
- *
- * @return string current working directory
- */
-function get_currentworkingdirectory()
+class SerfersQueue
 {
-  return getcwd();
+    static public $queue = [];
+
+    static public function add($item)
+    {
+        self::$queue[] = $item;
+    }
+
+    static public function shift()
+    {
+        return array_shift(self::$queue);
+    }
 }
 
-/**
- * check for series name by looking at current directory name
- *
- * @return string
- */
-function get_seriestitle()
+abstract class Serfers
 {
-  global $_runtime;
-  
-  $a = explode(DIRECTORY_SEPARATOR, $_runtime['directory']['working']);
-  if(sizeof($a) < 1) { return false; }
-  
-  $seriesname = $a[sizeof($a) - 1];
-  
-  return $seriesname;
+    abstract protected function handleItem($item);
+
+    public function go()
+    {
+        $items    = $this->scanDirectory(Config::get('dirpath.input'));
+        $count    = count($items);
+        $skipRest = false;
+
+        for ($i = 0; $i < $count; $i++) {
+            $item = $items[$i];
+            $this->showItemHeader($i, $count);
+
+            $skipRest = $this->handleItem($item);
+
+            if ($skipRest === true) {
+                break;
+            }
+        }
+    }
+
+    protected function scanDirectory($dir, $subDir = '.') 
+    {
+        $items = [];
+        $acceptedExts = explode(',', Config::get('files.extensions'));
+
+        foreach (scandir($dir) as $item) {
+
+            if ($item == '.' || $item == '..' || substr($item, 0, 1) == '.') {
+                continue;
+            }
+
+            if (is_dir($dir.$item)) {
+                $items = array_merge($items, (array)$this->scanDirectory($dir.$item.DIRECTORY_SEPARATOR, $subDir.DIRECTORY_SEPARATOR.$item));
+            } else {
+                if (!in_array(pathinfo($item, PATHINFO_EXTENSION), $acceptedExts)) {
+                    continue;
+                }
+                if ($subDir === null) {
+                    $items[] = $item;
+                } else {
+                    $items[] = $subDir.DIRECTORY_SEPARATOR.$item;
+                }
+            }
+        }
+
+        return $items;
+    }
+
+    protected function showItemHeader($i, $count)
+    {
+        Console::outl('%r[ %R'.str_pad($i+1, 3, '0', STR_PAD_LEFT).' of '.str_pad($count, 3, '0', STR_PAD_LEFT).'%r ]');
+    }
+}
+
+class SerfersTV extends Serfers
+{
+    protected function handleItem($item)
+    {
+        list($show, $season, $episode, $date) = 
+            $this->parseItem($item)
+        ;
+
+        $loop     = true;
+        $skip     = false;
+        $skipRest = false;
+
+        while($loop === true) {
+
+            list($show, $season, $episode, $title, $date, $lookupSuccess) = 
+                $this->doLookupTVEpisode($show, $season, $episode, $date)
+            ;
+            
+            Console::buffer();
+            Console::buffer('Show%k[...]%w'.$show);
+
+            if ($lookupSuccess === true) {
+                Console::buffer('Lookup%k[...]%gSuccess');
+            } else {
+                Console::buffer('Lookup%k[...]%rFailure');
+            }
+
+            if ($season === null) {
+                Console::buffer('Season%k[...]%w[null]');
+            } else {
+                Console::buffer('Season%k[...]%w'.$season);
+            }
+
+            if ($episode === null) {
+                Console::buffer('Episode%k[...]%w[null]');
+            } else {
+                Console::buffer('Episode%k[...]%w'.$episode);
+            }
+
+            if ($title === null) {
+                Console::buffer('Title%k[...]%w[null]');
+            } else {
+                Console::buffer('Title%k[...]%w'.$title);
+            }
+            Console::buffer('Filepath%k[...]%w'.$item);
+
+            Console::buffer();
+
+            Console::buffer('Actions:');
+            Console::buffer("\ts. Edit Season");
+            Console::buffer("\te. Edit Episode");
+            Console::buffer("\th. Edit Show");
+            Console::buffer("\tt. Edit Title");
+            Console::buffer("\tr. Re-parse Filename");
+            Console::buffer("\tk. Skip");
+            Console::buffer("\tK. Skip the Rest");
+            Console::buffer("\tD. Delete");
+            Console::buffer("\tc. Continue");
+
+            Console::buffer();
+            Console::flush();
+
+            $response = Console::prompt('What would you like to do?', 'c');
+
+            switch ($response) {
+                case 's':
+                    $response = Console::prompt('Enter the season number');
+                    $season = $response;
+                    break;
+                case 'e':
+                    $response = Console::prompt('Enter the episode number');
+                    $episode = $response;
+                    break;
+                case 'h':
+                    $response = Console::prompt('Enter the show name');
+                    $show = $response;
+                    break;
+                case 't':
+                    $response = Console::prompt('Enter the show title');
+                    $title = $response;
+                    break;
+                case 'r':
+                    list($show, $season, $episode, $date) = 
+                        $this->parseItem($item)
+                    ;
+                    break;
+                case 'k':
+                    $skip = true;
+                    break;
+                case 'K':
+                    $skipRest = true;
+                    break;
+                case 'c':
+                    $loop = false;
+                    break;
+            }
+
+            if ($skip === true || $skipRest === true) {
+                break;
+            }
+
+        }
+
+        if ($skip === true || $skipRest === true) {
+            return $skipRest;
+        }
+
+        SerfersQueue::add($item);
+
+        return false;
+    }
+
+    protected function parseItem($filepath)
+    {
+        $pattern  = '#\.?/?(.*?)/?season ?([0-9]{1,2})[ /]?episode ?([0-9]{1,2})#i';
+        $matches  = [];
+
+        $return = preg_match($pattern, $filepath, $matches, PREG_OFFSET_CAPTURE);
+
+        if ($return === 1) {
+            return [
+                isset($matches[1][0]) ? $matches[1][0] : $filepath,
+                isset($matches[2][0]) ? $matches[2][0] : null,
+                isset($matches[3][0]) ? $matches[3][0] : null,
+                null
+            ];
+        }
+
+        $pattern  = '#\.?/?(.*?)([0-9]{4}\.[0-9]{2}\.[0-9]{2})#i';
+        $matches  = [];
+
+        $return = preg_match($pattern, $filepath, $matches, PREG_OFFSET_CAPTURE);
+
+        if ($return === 1) {
+            return [
+                isset($matches[1][0]) ? $matches[1][0] : $filepath,
+                null,
+                null,
+                isset($matches[2][0]) ? $matches[2][0] : null
+            ];
+        }
+
+        $pattern  = '#(.*?) ?s?([0-9]{1,2}) ?[xe\.]([0-9]{1,2})#i';
+        $matches  = [];
+
+        $return = preg_match($pattern, $filepath, $matches, PREG_OFFSET_CAPTURE);
+
+        if ($return === 1) {
+            return [
+                isset($matches[1][0]) ? $matches[1][0] : $filepath,
+                isset($matches[2][0]) ? $matches[2][0] : null,
+                isset($matches[3][0]) ? $matches[3][0] : null,
+                null
+            ];
+        }
+
+        $pattern  = '#(.*?)\b([0-9]{1,2})([0-9]{2})\b#i';
+        $matches  = [];
+
+        $return = preg_match($pattern, $filepath, $matches, PREG_OFFSET_CAPTURE);
+
+        if ($return === 1) {
+            return [
+                isset($matches[1][0]) ? $matches[1][0] : $filepath,
+                isset($matches[2][0]) ? $matches[2][0] : null,
+                isset($matches[3][0]) ? $matches[3][0] : null,
+                null
+            ];
+        }
+
+        return [
+            $filepath,
+            null,
+            null,
+            null
+        ];
+    }
+
+    protected function doLookupTVEpisode($show, $season, $episode, $title)
+    {
+        $traktApiKey = Config::getRuntime('lookup.api.trakt');
+
+        $imdbID = $this->doLookupTVShow($show);
+
+        if ($show === null) {
+            return [null, null, null];
+        }
+
+        $api = "http://api.trakt.tv/show/episode/summary.json/$traktApiKey/$imdbID/$season/$episode";
+
+        $json = @file_get_contents($api);
+        $info = @json_decode($json);
+
+        return [
+            @$info->show->title     ? $info->show->title     : $show,
+            @$info->episode->season ? $info->episode->season : $season,
+            @$info->episode->number ? $info->episode->number : $episode,
+            @$info->episode->title  ? $info->episode->title  : $title,
+            null,
+            @$info->episode->title  ? true                   : false,
+        ];
+    }
+
+    protected function doLookupTVShow($show)
+    {
+        $traktApiKey = Config::getRuntime('lookup.api.trakt');
+
+        $api = "http://api.trakt.tv/search/shows.json/$traktApiKey?query=".urlencode($show);
+
+        $json = @file_get_contents($api);
+        $info = @json_decode($json);
+
+        if (!count($info) > 0) {
+            return null;
+        }
+
+        return @$info[0]->imdb_id;
+    }
+}
+
+class SerfersMovie extends Serfers
+{
+    protected function handleItem($item)
+    {
+
+    }
 }
 
 /**
@@ -236,45 +570,119 @@ function get_seriestitle()
  */
 function main()
 {
-  /* bring config variable array, defined and available outside this
-     function's scope, into focus inside this function */
-  global $_runtime;
+    date_default_timezone_set(Config::getRuntime('php.timezone'));
 
-  /* set timezone */
-  date_default_timezone_set($_runtime['script']['timezone']);
-  out_buffer('SET script.timezone:'.$_runtime['script']['timezone'], 2);
+    try {
+        $optConfig = [
+            'options' => [
+                [
+                    'long'  => 'tv',
+                    'short' => 't',
+                    'type'  => 'noarg',
+                    'desc'  => 'Mode: Parse TV shows',
+                ],
+                [
+                    'long'  => 'movie',
+                    'short' => 'm',
+                    'type'  => 'noarg',
+                    'desc'  => 'Mode: parse movies',
+                ],
+                [
+                    'long'  => 'verbosity',
+                    'short' => 'v',
+                    'type'  => 'mandatory',
+                    'desc'  => 'Verbosity 0, 1, or 2',
+                ],
+                [
+                    'long'  => 'in',
+                    'short' => 'i',
+                    'type'  => 'mandatory',
+                    'desc'  => 'Input directory',
+                ],
+                [
+                    'long'  => 'out',
+                    'short' => 'o',
+                    'type'  => 'mandatory',
+                    'desc'  => 'Output directory',
+                ],
+                [
+                    'long'  => 'extensions',
+                    'short' => 'e',
+                    'type'  => 'mandatory',
+                    'desc'  => 'Acceptable extensions',
+                ]
+            ]
+        ];
+        $options = Console_Getoptplus::getoptplus($optConfig);
+    }
+    catch (Console_GetoptPlus_Exception $e) {
+        echo $e->getCode() . ': ' . $e->getMessage();
+        die();
+    }
 
-  /* display program name/version/license information */
-  out_proginfo();
+    Console::buffer();
+    Console::buffer('%wSerfers[   ]Series/Episode/movie File Renamer and lookup Script');
+    Console::buffer('%WVersion[  :]0.6.0');
+    Console::buffer('%WWritten By[  :]Rob Frawley 2nd');
+    Console::buffer('%WCopyright[  :]2009-2014 Inserrat Technologies, LLC');
+    Console::buffer('%WLicense[  :]MIT License');
+    Console::buffer();
+    Console::flush();
 
-  /* process id */
-  $_runtime['script']['pid'] = getmypid();
-  out_buffer('SET script.pid: '.$_runtime['script']['pid'], 2);
+    foreach ($options[0] as $o) {
+        switch ($o[0]) {
+            case 'verbosity':
+            case 'v':
+                Config::setRuntime('script.verbosity', $o[1]);
+                break;
+            case 'extensions':
+            case 'e':
+                Config::set('files.extensions', $o[1]);
+                break;
+            case 'in':
+            case 'i':
+                Config::set('dirpath.input', $o[1]);
+                break;
+            case 'out':
+            case 'o':
+                Config::set('dirpath.output', $o[1]);
+                break;
+            case '--tv':
+            case 't':
+                Config::setRuntime('script.mode', 'tv');
+                break;
+            case '--movie':
+            case 'm':
+                Config::setRuntime('script.mode', 'movie');
+                break;
+        }
+    }
 
-  /* get uid */
-  $_runtime['script']['uid'] = getmyuid();
-  out_buffer('SET script.uid: '.$_runtime['script']['uid'], 2);
-  
-  /* name of user */
-  $_runtime['script']['user'] = get_current_user();
-  out_buffer('SET script.user: '.$_runtime['script']['user'], 2);
-  
-  /* start time */
-  $_runtime['script']['start'] = time();
-  out_buffer('SET script.start: '.date('H:i:s', $_runtime['script']['start']), 2);
-  
-  /* blank line */
-  out_buffer('', 2);
+    if (file_exists(__DIR__.DIRECTORY_SEPARATOR.'lookup.api.trakt')) {
+        Config::setRuntime('lookup.api.trakt', file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'lookup.api.trakt'));
+    } else {
+        Config::setRuntime('lookup.api.trakt', 'Undefined');
+    }
+    
+    Console::buffer('%bCONFIG %Bscript.timezone[  :]%W'.Config::getRuntime('php.timezone'), 2);
+    Console::buffer('%bCONFIG %Bscript.verbosity[  :]%W'.Config::getRuntime('script.verbosity'), 2);
+    Console::buffer('%bCONFIG %Bscript.mode[  :]%W'.Config::getRuntime('script.mode'), 1);
+    Console::buffer('%bCONFIG %Btpl.filepath.tv[  :]%W'.Config::get('tpl.filepath.tv'), 2);
+    Console::buffer('%bCONFIG %Btpl.filepath.movie[  :]%W'.Config::get('tpl.filepath.movie'), 2);
+    Console::buffer('%bCONFIG %Bdirpath.input[  :]%W'.Config::get('dirpath.input'), 1);
+    Console::buffer('%bCONFIG %Bdirpath.output[  :]%W'.Config::get('dirpath.output'), 1);
+    Console::buffer('%bCONFIG %Bfiles.extensions[  :]%W'.Config::get('files.extensions'), 2);
+    Console::buffer('%bCONFIG %Blookup.api.trakt[  :]%W'.Config::getRuntime('lookup.api.trakt'), 2);
+    Console::buffer();
+    Console::flush();
 
-  /* get cwd */
-  $_runtime['directory']['working'] = get_currentworkingdirectory();
-  out_buffer('SET directory.working: '.$_runtime['directory']['working'], 2);
-  
-  /* get series name */
-  $_runtime['series']['title'] = get_seriestitle();
-  out_buffer('SET series.title: '.$_runtime['series']['title'], 1);
+    if (Config::getRuntime('script.mode') == 'tv') {
+        $handler = new SerfersTV();
+    } else {
+        $handler = new ServersMovie();
+    }
 
-  out_bufferflush();
+    $handler->go();
 
 }
 
