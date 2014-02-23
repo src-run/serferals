@@ -13,10 +13,10 @@
 
 // general configuration
 Config::set('tpl.filepath.tv',      '${seriesname}/Season ${episodeseason}/${seriesname} S${episodeseason}E${episodenumber} ${episodename}.${ext}');
-Config::set('tpl.filepath.movie',   '${moviename}/${moviename} [${movieyear}] [${movieimdb}].${ext}');
-Config::set('dirpath.input',        '/Users/rmf/Torrents/Done/');
+Config::set('tpl.filepath.movie',   '${moviename} [${movieyear}]/${moviename} [${movieyear}] [${movieimdb}].${ext}');
+Config::set('dirpath.input',        '/Users/rmf/Torrents/Queue/');
 Config::set('dirpath.output',       '/Volumes/External-2/Videos/TV/');
-Config::set('files.extensions',     'mp4,mkv,avi,mov');
+Config::set('files.extensions',     'mp4,mkv,avi,mov,srt');
 
 // runtime configuration
 Config::setRuntime('php.timezone',      'America/New_York');
@@ -755,11 +755,13 @@ class SerferalsTV extends Serferals
         $loop     = true;
         $skip     = false;
         $skipRest = false;
+        $del      = false;
+        $title    = null;
 
         while($loop === true) {
 
             list($show, $season, $episode, $title, $date, $lookupSuccess) = 
-                $this->doLookupTVEpisode($show, $season, $episode, $date)
+                $this->doLookupTVEpisode($show, $season, $episode, $title, $date)
             ;
             
             Console::buffer();
@@ -832,6 +834,11 @@ class SerferalsTV extends Serferals
                         $this->parseItem($item)
                     ;
                     break;
+                case 'D':
+                    $skip = true;
+                    $del  = true;
+                    @unlink(Config::get('dirpath.input').$item);
+                    break;
                 case 'k':
                     $skip = true;
                     break;
@@ -855,6 +862,9 @@ class SerferalsTV extends Serferals
         if ($skip === true) {
             Console::outl();
             Console::outl('%cAction: %CSkipping this item...');
+            if ($del === true) {
+                Console::outl('%cAction: %CDeleting this item...');
+            }
             Console::outl();
 
             return $skipRest;
@@ -963,7 +973,7 @@ class SerferalsTV extends Serferals
      * @param  string $title
      * @return array
      */
-    protected function doLookupTVEpisode($show, $season, $episode, $title)
+    protected function doLookupTVEpisode($show, $season, $episode, $title, $date)
     {
         $traktApiKey = Config::getRuntime('lookup.api.trakt');
 
@@ -1014,12 +1024,299 @@ class SerferalsTV extends Serferals
  */
 class SerferalsMovie extends Serferals
 {
+    protected function handleQueue()
+    {
+        $i     = 0;
+        $count = count(Queue::getAll());
+
+        while (null !== ($queueItem = Queue::shift())) {
+            
+            $this->showQueueHeader($i, $count);
+
+            $newFilepath = $this->generateNewFilepath($queueItem);
+
+            Console::buffer();
+            Console::buffer('Movie%k[  :]%W'.           $queueItem->getName());
+            Console::buffer('Year%k[  :]%W'.            $queueItem->getYear());
+            Console::buffer('Imdb ID%k[  :]%W'.         $queueItem->getImdb());
+            Console::buffer('Original Path%k[  :]%W'.   $queueItem->getFilepath());
+            Console::buffer('New Path%k[  :]%W'.        $newFilepath);
+            Console::buffer();
+            Console::flush();
+
+            $newPath = pathinfo($newFilepath, PATHINFO_DIRNAME);
+            if (!is_dir($newPath)) {
+                mkdir($newPath, 0775, true);
+            }
+
+            Console::out('%cAction: %CMoving file...');
+            rename($queueItem->getFilepath(), $newFilepath);
+            Console::outl('%Cdone.');
+            Console::outl();
+
+            $i++;
+
+        }
+    }
+
+    protected function generateNewFilepath(QueueItem $queueItem)
+    {
+        $format = Config::get('tpl.filepath.movie');
+        $outdir = Config::get('dirpath.output');
+
+        $filename = str_replace('${moviename}', $queueItem->getName(), $format);
+        $filename = str_replace('${movieyear}', $queueItem->getYear(), $filename);
+        $filename = str_replace('${movieimdb}', $queueItem->getImdb(), $filename);
+        $filename = str_replace('${ext}',       pathinfo($queueItem->getFilepath(), PATHINFO_EXTENSION), $filename);
+
+        return $outdir.DIRECTORY_SEPARATOR.$filename;
+    }
+
     /**
      * @inheritdoc
      */
     protected function handleItem($item)
     {
+        list($name, $year) = 
+            $this->parseItem($item)
+        ;
 
+        $loop     = true;
+        $skip     = false;
+        $skipRest = false;
+        $del      = false;
+        $imdb     = null;
+
+        while($loop === true) {
+
+            list($name, $year, $imdb, $lookups)
+                = $this->doLookupMovie($name, $year, $imdb)
+            ;
+            
+            Console::buffer();
+            Console::buffer('Movie%k[  :]%w'.$name);
+
+            if (count($lookups) > 0) {
+                Console::buffer('Lookup%k[  :]%gSuccess');
+            } else {
+                Console::buffer('Lookup%k[  :]%rFailure');
+            }
+
+            if ($year === null) {
+                Console::buffer('Year%k[  :]%w[null]');
+            } else {
+                Console::buffer('Year%k[  :]%w'.$year);
+            }
+
+            if ($imdb === null) {
+                Console::buffer('ImdbID%k[  :]%w[null]');
+            } else {
+                Console::buffer('ImdbID%k[  :]%w'.$imdb);
+            }
+
+            Console::buffer('Filepath%k[  :]%w'.$item);
+            Console::buffer();
+            Console::flush();
+
+            Console::buffer('Actions:');
+            Console::buffer("\tn. Edit Name");
+            Console::buffer("\ty. Edit Year");
+            Console::buffer("\th. Edit ImdbID");
+            Console::buffer("\tr. Re-parse Filename");
+            Console::buffer("\tl. Show Found Listings");
+            Console::buffer("\tk. Skip");
+            Console::buffer("\tK. Skip Remaining");
+            Console::buffer("\tD. Delete");
+            Console::buffer("\tq. Quit");
+            Console::buffer("\tc. Continue");
+            Console::buffer();
+            Console::flush();
+
+            $response = Console::prompt('What would you like to do?', 'c');
+
+            switch ($response) {
+                case 'n':
+                    $response = Console::prompt('Enter the movie name');
+                    $name = $response;
+                    break;
+                case 'y':
+                    $response = Console::prompt('Enter the movie year');
+                    $episode = $response;
+                    break;
+                case 'h':
+                    $response = Console::prompt('Enter the movie IMDB ID');
+                    $imdb = $response;
+                    break;
+                case 'r':
+                    list($name, $year) = 
+                        $this->parseItem($item)
+                    ;
+                    break;
+                case 'D':
+                    $skip = true;
+                    $del  = true;
+                    @unlink(Config::get('dirpath.input').$item);
+                    break;
+                case 'k':
+                    $skip = true;
+                    break;
+                case 'K':
+                    $skipRest = true;
+                    break;
+                case 'c':
+                    $loop = false;
+                    break;
+                case 'q':
+                    exit(0);
+                    break;
+                case 'l':
+                    Console::buffer();
+                    Console::buffer('Listings:');
+                    foreach ($lookups as $i => $l) {
+                        Console::buffer("\t".($i+1).". ".$l->Title.' ('.$l->Year.')');
+                    }
+                    Console::buffer();
+                    Console::flush();
+                    $result = Console::prompt('Select the correct movie listing');
+                    list($name, $year, $imdb)
+                        = $this->doLookupMovieByImdb($lookups[$result-1]->imdbID)
+                    ;
+                    break;
+            }
+
+            if ($skip === true || $skipRest === true) {
+                break;
+            }
+
+        }
+
+        if ($skip === true) {
+            Console::outl();
+            Console::outl('%cAction: %CSkipping this item...');  
+            if ($del === true) {
+                Console::outl('%cAction: %CDeleting this item...');
+            }
+            Console::outl();
+
+            return $skipRest;
+        }
+
+        $queueItem = new QueueItemMovie();
+        $queueItem
+            ->setFilepath(Config::get('dirpath.input').DIRECTORY_SEPARATOR.$item)
+            ->setName($name)
+            ->setYear($year)
+            ->setImdb($imdb)
+        ;
+
+        Queue::add($queueItem);
+
+        if ($skipRest !== true) {
+            Console::outl();
+            Console::outl('%cAction: %CAdded item #'.count(Queue::getAll()).' to queue...');
+            Console::outl();
+        } else {
+            Console::outl();
+            Console::outl('%cAction: %CAdded item #'.count(Queue::getAll()).' to queue...');
+            Console::outl('%cAction: %CSkipping the remaining items...');
+            Console::outl();
+
+            return $skipRest;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function parseItem($filepath)
+    {
+        $pattern  = '#(.*?) ?\(?\[?([0-9]{4})\]?\)?#i';
+        $matches  = [];
+
+        $return = preg_match($pattern, basename($filepath), $matches, PREG_OFFSET_CAPTURE);
+
+        if ($return === 1) {
+            return [
+                isset($matches[1][0]) ? trim($matches[1][0]) : basename($filepath),
+                isset($matches[2][0]) ? trim($matches[2][0]) : null,
+            ];
+        }
+
+        return [
+            basename($filepath),
+            null,
+        ];
+    }
+
+    function doLookupMovie($title, $year = null)
+    {
+        $apiUrl = 'http://www.omdbapi.com/?s='.urlencode($title);
+
+        if ($year !== null) {
+            $apiUrl .= '&y='.urlencode($year);
+        }
+
+        $json = file_get_contents($apiUrl);
+        $info = json_decode($json);
+        
+        $items = @$info->Search;
+
+        if (!count($items) > 0) {
+            return [
+                $title,
+                $year,
+                null,
+                []
+            ];
+        }
+
+        $movies = [];
+        for ($i = 0; $i < count($items); $i++) {
+            if ($items[$i]->Type != 'movie') {
+                continue;
+            }
+            $movies[] = $items[$i];
+        }
+
+        if (!count($movies) > 0) {
+            return [
+                $title,
+                $year,
+                null,
+                []
+            ];
+        }
+
+        return [
+            $movies[0]->Title,
+            $movies[0]->Year,
+            $movies[0]->imdbID,
+            $movies,
+        ];
+    }
+
+    function doLookupMovieByImdb($imdb = null)
+    {
+        $apiUrl = 'http://www.omdbapi.com/?i='.urlencode($imdb);
+
+        $json  = file_get_contents($apiUrl);
+        $movie = json_decode($json);
+
+        if (!$movie) {
+            return [
+                null,
+                null,
+                null
+            ];
+        }
+
+        return [
+            $movie->Title,
+            $movie->Year,
+            $movie->imdbID,
+        ];
     }
 }
 
@@ -1138,7 +1435,7 @@ function main()
     if (Config::getRuntime('script.mode') === 'tv') {
         $handler = new SerferalsTV();
     } else {
-        $handler = new ServeralsMovie();
+        $handler = new SerferalsMovie();
     }
 
     $handler->go();
