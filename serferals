@@ -2,7 +2,7 @@
 <?php
 
 /**
- * Serfer
+ * Serferals
  * 
  * Episode/Series filename re-namer and information lookup script
  *
@@ -14,7 +14,7 @@
 require_once 'Console/GetoptPlus.php';
 
 Config::setRuntime('php.timezone', 'America/New_York');
-Config::setRuntime('script.verbosity', 2);
+Config::setRuntime('script.verbosity', 1);
 Config::setRuntime('script.mode', 'tv');
 Config::setRuntime('script.stdout', fopen('php://stdout', 'w'));
 Config::setRuntime('script.stdin', fopen('php://stdin', 'r'));
@@ -287,7 +287,11 @@ abstract class Serfers
 
     public function go()
     {
-        $items    = $this->scanDirectory(Config::get('dirpath.input'));
+        if (is_dir(Config::get('dirpath.input')) && is_readable(Config::get('dirpath.input'))) {
+            $items = $this->scanDirectory(Config::get('dirpath.input'));
+        } else {
+            $items = [];
+        }
         $count    = count($items);
         $skipRest = false;
 
@@ -300,6 +304,11 @@ abstract class Serfers
             if ($skipRest === true) {
                 break;
             }
+        }
+
+        if ($count === 0) {
+            Console::outl('%rError: %WNo input files found.');
+            Console::outl();
         }
     }
 
@@ -457,10 +466,11 @@ class SerfersTV extends Serfers
         $return = preg_match($pattern, $filepath, $matches, PREG_OFFSET_CAPTURE);
 
         if ($return === 1) {
+            echo 'method 1';
             return [
-                isset($matches[1][0]) ? $matches[1][0] : $filepath,
-                isset($matches[2][0]) ? $matches[2][0] : null,
-                isset($matches[3][0]) ? $matches[3][0] : null,
+                isset($matches[1][0]) ? trim($matches[1][0]) : $filepath,
+                isset($matches[2][0]) ? trim($matches[2][0]) : null,
+                isset($matches[3][0]) ? trim($matches[3][0]) : null,
                 null
             ];
         }
@@ -472,23 +482,24 @@ class SerfersTV extends Serfers
 
         if ($return === 1) {
             return [
-                isset($matches[1][0]) ? $matches[1][0] : $filepath,
+                isset($matches[1][0]) ? trim($matches[1][0]) : $filepath,
                 null,
                 null,
-                isset($matches[2][0]) ? $matches[2][0] : null
+                isset($matches[2][0]) ? trim($matches[2][0]) : null
             ];
         }
 
         $pattern  = '#(.*?) ?s?([0-9]{1,2}) ?[xe\.]([0-9]{1,2})#i';
         $matches  = [];
 
-        $return = preg_match($pattern, $filepath, $matches, PREG_OFFSET_CAPTURE);
+        $return = preg_match($pattern, basename($filepath), $matches, PREG_OFFSET_CAPTURE);
 
         if ($return === 1) {
+                        echo 'method 3';
             return [
-                isset($matches[1][0]) ? $matches[1][0] : $filepath,
-                isset($matches[2][0]) ? $matches[2][0] : null,
-                isset($matches[3][0]) ? $matches[3][0] : null,
+                isset($matches[1][0]) ? trim($matches[1][0]) : basename($filepath),
+                isset($matches[2][0]) ? trim($matches[2][0]) : null,
+                isset($matches[3][0]) ? trim($matches[3][0]) : null,
                 null
             ];
         }
@@ -621,11 +632,11 @@ function main()
     }
 
     Console::buffer();
-    Console::buffer('%wSerfers[   ]Series/Episode/movie File Renamer and lookup Script');
-    Console::buffer('%WVersion[  :]0.6.0');
-    Console::buffer('%WWritten By[  :]Rob Frawley 2nd');
-    Console::buffer('%WCopyright[  :]2009-2014 Inserrat Technologies, LLC');
-    Console::buffer('%WLicense[  :]MIT License');
+    Console::buffer('%wSerferals[   ]%WSeries/Episode/movie File Renamer And Lookup Script');
+    Console::buffer('%kVersion[  :]0.6.0');
+    Console::buffer('%kWritten By[  :]Rob Frawley 2nd');
+    Console::buffer('%kCopyright[  :]2009-2014 Inserrat Technologies, LLC');
+    Console::buffer('%kLicense[  :]MIT License');
     Console::buffer();
     Console::flush();
 
@@ -659,20 +670,20 @@ function main()
     }
 
     if (file_exists(__DIR__.DIRECTORY_SEPARATOR.'lookup.api.trakt')) {
-        Config::setRuntime('lookup.api.trakt', file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'lookup.api.trakt'));
+        Config::setRuntime('lookup.api.trakt', trim(file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'lookup.api.trakt')));
     } else {
         Config::setRuntime('lookup.api.trakt', 'Undefined');
     }
     
-    Console::buffer('%bCONFIG %Bscript.timezone[  :]%W'.Config::getRuntime('php.timezone'), 2);
-    Console::buffer('%bCONFIG %Bscript.verbosity[  :]%W'.Config::getRuntime('script.verbosity'), 2);
-    Console::buffer('%bCONFIG %Bscript.mode[  :]%W'.Config::getRuntime('script.mode'), 1);
-    Console::buffer('%bCONFIG %Btpl.filepath.tv[  :]%W'.Config::get('tpl.filepath.tv'), 2);
-    Console::buffer('%bCONFIG %Btpl.filepath.movie[  :]%W'.Config::get('tpl.filepath.movie'), 2);
-    Console::buffer('%bCONFIG %Bdirpath.input[  :]%W'.Config::get('dirpath.input'), 1);
-    Console::buffer('%bCONFIG %Bdirpath.output[  :]%W'.Config::get('dirpath.output'), 1);
-    Console::buffer('%bCONFIG %Bfiles.extensions[  :]%W'.Config::get('files.extensions'), 2);
-    Console::buffer('%bCONFIG %Blookup.api.trakt[  :]%W'.Config::getRuntime('lookup.api.trakt'), 2);
+    Console::buffer('%bSET %Bscript.timezone[  :]%W'.Config::getRuntime('php.timezone'), 2);
+    Console::buffer('%bSET %Bscript.verbosity[  :]%W'.Config::getRuntime('script.verbosity'), 2);
+    Console::buffer('%bSET %Bscript.mode[  :]%W'.Config::getRuntime('script.mode'), 1);
+    Console::buffer('%bSET %Btpl.filepath.tv[  :]%W'.Config::get('tpl.filepath.tv'), 2);
+    Console::buffer('%bSET %Btpl.filepath.movie[  :]%W'.Config::get('tpl.filepath.movie'), 2);
+    Console::buffer('%bSET %Bdirpath.input[  :]%W'.Config::get('dirpath.input'), 1);
+    Console::buffer('%bSET %Bdirpath.output[  :]%W'.Config::get('dirpath.output'), 1);
+    Console::buffer('%bSET %Bfiles.extensions[  :]%W'.Config::get('files.extensions'), 2);
+    Console::buffer('%bSET %Blookup.api.trakt[  :]%W'.Config::getRuntime('lookup.api.trakt'), 2);
     Console::buffer();
     Console::flush();
 
