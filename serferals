@@ -11,22 +11,26 @@
  * @license   MIT License
  */
 
-require_once 'Console/GetoptPlus.php';
+// general configuration
+Config::set('tpl.filepath.tv',      '${seriesname}/Season ${episodeseason}/${seriesname} S${episodeseason}E${episodenumber} ${episodename}.${ext}');
+Config::set('tpl.filepath.movie',   '${moviename}/${moviename} [${movieyear}] [${movieimdb}].${ext}');
+Config::set('dirpath.input',        '/Users/rmf/Torrents/Done/');
+Config::set('dirpath.output',       '/Volumes/External-2/Videos/TV/');
+Config::set('files.extensions',     'mp4,mkv,avi,mov');
 
-Config::setRuntime('php.timezone', 'America/New_York');
-Config::setRuntime('script.verbosity', 1);
-Config::setRuntime('script.mode', 'tv');
-Config::setRuntime('script.stdout', fopen('php://stdout', 'w'));
-Config::setRuntime('script.stdin', fopen('php://stdin', 'r'));
-Config::set('tpl.filepath.tv', '${seriesname}/Season ${episodeseason}/${seriesname} S${episodeseason}E${episodenumber} ${episodename}');
-Config::set('tpl.filepath.movie', '${moviename}/${moviename} [${movieyear}] [${movieimdb}]');
-Config::set('dirpath.input', '/Users/rmf/Torrents/Done/');
-Config::set('dirpath.output', '/Users/rmf/Torrents/Organized/');
-Config::set('files.extensions', 'mp4,mkv,avi,mov');
+// runtime configuration
+Config::setRuntime('php.timezone',      'America/New_York');
+Config::setRuntime('script.verbosity',  1);
+Config::setRuntime('script.colors',     true);
+Config::setRuntime('script.mode',       'tv');
+Config::setRuntime('script.stdout',     fopen('php://stdout', 'w'));
+Config::setRuntime('script.stdin',      fopen('php://stdin', 'r'));
+
+// include getopts pear class
+require_once 'Console/GetoptPlus.php';
 
 /**
  * Config class
- * Contains runtime and script config values
  */
 class Config
 {
@@ -130,6 +134,10 @@ class Console
     static public function colorize($out = '')
     {
         foreach (self::$colors as $search => $replace) {
+            if (Config::getRuntime('script.colors') === false) {
+                $replace = '';
+            }
+
             $out = str_replace('%'.$search, "\033[${replace}m", $out);
         }
 
@@ -167,12 +175,38 @@ class Console
         self::out($out, $level, true);
     }
 
+    /**
+     * @param null|string  $out
+     * @param null|integer $exit
+     */
+    static public function error($out = null, $exit = null)
+    {
+        if ($out === null) {
+            $out = 'Undefined';
+        }
+
+        Console::outl('%rError: %R'.$out.'...');
+        Console::outl();
+
+        if ($exit !== null) {
+            Console::outl('%WExiting...');
+            Console::outl();
+
+            exit($exit);
+        }
+    }
+
+    /**
+     * @param  string      $out
+     * @param  null|string $default
+     * @return string
+     */
     static public function prompt($out = '', $default = null)
     {
         if ($default !== null) {
             $out = '%w' . $out . ' %W['.$default.']: %w';
         } else {
-            $out = '%w' . $out . ' %W: %w';
+            $out = '%w' . $out . '%W: %w';
         }
         
         self::out($out, 0);
@@ -212,14 +246,18 @@ class Console
         }
     }
 
+    /**
+     * align buffered strings
+     */
     static public function bufferAlign()
     {
         $leftLen = 0;
         $indexes = [];
 
         foreach (self::$buffer as $i => $b) {
+
             $matches = [];
-            $result = preg_match('#\[([\.\s:]){3}\]#', $b, $matches, PREG_OFFSET_CAPTURE);
+            $result  = preg_match('#\[([\.\s:]){3}\]#', $b, $matches, PREG_OFFSET_CAPTURE);
 
             if ($result !== 1) {
                 continue;
@@ -230,18 +268,17 @@ class Console
             if ($leftLen < $matches[0][1]) {
                 $leftLen = $matches[0][1];
             }
-
         }
 
         foreach ($indexes as $i) {
+
             $b = self::$buffer[$i];
 
             $matches = [];
-            $result = preg_match('#\[([\.\s:]){3}\](.*?)#', $b, $matches, PREG_OFFSET_CAPTURE);
-
-            $left  = substr($b, 0, $matches[0][1]);
-            $type  = substr($b, $matches[0][1], 5);
-            $right = substr($b, $matches[2][1]);
+            $result  = preg_match('#\[([\.\s:]){3}\](.*?)#', $b, $matches, PREG_OFFSET_CAPTURE);
+            $left    = substr($b, 0, $matches[0][1]);
+            $type    = substr($b, $matches[0][1], 5);
+            $right   = substr($b, $matches[2][1]);
 
             switch ($type) {
                 case '[   ]':
@@ -261,41 +298,294 @@ class Console
             }
 
             self::$buffer[$i] = $left . $right;
-
         }
     }
 }
 
-class SerfersQueue
+/**
+ * Queue class
+ */
+class Queue
 {
+    /**
+     * @var array
+     */
     static public $queue = [];
 
-    static public function add($item)
+    /**
+     * @param QueueItem $item
+     */
+    static public function add(QueueItem $item)
     {
         self::$queue[] = $item;
     }
 
+    /**
+     * @return null|QueueItem
+     */
     static public function shift()
     {
+        if (count(self::$queue) === 0) {
+            return null;
+        }
+
         return array_shift(self::$queue);
+    }
+
+    /**
+     * @return array
+     */
+    static public function getAll()
+    {
+        return self::$queue;
     }
 }
 
-abstract class Serfers
+/**
+ * QueueItem class
+ */
+abstract class QueueItem
 {
+    /**
+     * @var string
+     */
+    private $filepath;
+
+    /**
+     * @param  string $filepath
+     * @return QueueItem
+     */
+    public function setFilepath($filepath)
+    {
+        $this->filepath = $filepath;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilepath()
+    {
+        return $this->filepath;
+    }
+}
+
+/**
+ * QueueItemTV class
+ */
+class QueueItemTV extends QueueItem
+{
+    /**
+     * @var string
+     */
+    private $show;
+
+    /**
+     * @var string
+     */
+    private $season;
+
+    /**
+     * @var string
+     */
+    private $episode;
+
+    /**
+     * @var string
+     */
+    private $title;
+
+    /**
+     * @param  string $show
+     * @return QueueItem
+     */
+    public function setShow($show)
+    {
+        $this->show = $show;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getShow()
+    {
+        return $this->show;
+    }
+
+    /**
+     * @param  string $season
+     * @return QueueItem
+     */
+    public function setSeason($season)
+    {
+        $this->season = $season;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSeason()
+    {
+        return $this->season;
+    }
+
+    /**
+     * @param  string $episode
+     * @return QueueItem
+     */
+    public function setEpisode($episode)
+    {
+        $this->episode = $episode;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEpisode()
+    {
+        return $this->episode;
+    }
+
+    /**
+     * @param  string $title
+     * @return QueueItem
+     */
+    public function setTitle($title)
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+}
+
+/**
+ * QueueItemMovie class
+ */
+class QueueItemMovie extends QueueItem
+{
+    /**
+     * @var string
+     */
+    private $name;
+
+    /**
+     * @var string
+     */
+    private $year;
+
+    /**
+     * @var string
+     */
+    private $imdb;
+
+    /**
+     * @param  string $name
+     * @return QueueItem
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param  string $year
+     * @return QueueItem
+     */
+    public function setYear($year)
+    {
+        $this->year = $year;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getYear()
+    {
+        return $this->year;
+    }
+
+    /**
+     * @param  string $imdb
+     * @return QueueItem
+     */
+    public function setImdb($imdb)
+    {
+        $this->imdb = $imdb;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getImdb()
+    {
+        return $this->imdb;
+    }
+}
+
+/**
+ * Serferals class
+ */
+abstract class Serferals
+{
+    /**
+     * @param string $item
+     */
     abstract protected function handleItem($item);
 
+    /**
+     * handle the go operation
+     */
     public function go()
     {
-        if (is_dir(Config::get('dirpath.input')) && is_readable(Config::get('dirpath.input'))) {
+        if (!is_dir(Config::get('dirpath.output')) || !is_writable(Config::get('dirpath.output'))) {
+            Console::error('Output directory does not exist or is not writable', 1);
+        }
+
+        if (is_dir(Config::get('dirpath.input')) && is_writable(Config::get('dirpath.input'))) {
             $items = $this->scanDirectory(Config::get('dirpath.input'));
         } else {
             $items = [];
         }
-        $count    = count($items);
+
+        $count = count($items);
+
+        if ($count === 0) {
+            Console::error('No input files found.', 0);
+        }
+
         $skipRest = false;
 
         for ($i = 0; $i < $count; $i++) {
+
             $item = $items[$i];
             $this->showItemHeader($i, $count);
 
@@ -306,12 +596,22 @@ abstract class Serfers
             }
         }
 
-        if ($count === 0) {
-            Console::outl('%rError: %WNo input files found.');
-            Console::outl();
-        }
+        $this->handleQueue();
+
+        Console::outl('%P[ CLEANUP %p'.Config::get('dirpath.input').' %P]');
+        $this->removeEmptyDirectories(Config::get('dirpath.input'), true);
+
+        Console::outl('%P[ CLEANUP %p'.Config::get('dirpath.output').' %P]');
+        $this->removeEmptyDirectories(Config::get('dirpath.output'), true);
+
+        Console::outl();
     }
 
+    /**
+     * @param  string $dir
+     * @param  string $subDir
+     * @return string
+     */
     protected function scanDirectory($dir, $subDir = '.') 
     {
         $items = [];
@@ -329,6 +629,7 @@ abstract class Serfers
                 if (!in_array(pathinfo($item, PATHINFO_EXTENSION), $acceptedExts)) {
                     continue;
                 }
+
                 if ($subDir === null) {
                     $items[] = $item;
                 } else {
@@ -340,14 +641,111 @@ abstract class Serfers
         return $items;
     }
 
+    protected function removeEmptyDirectories($root, $top = false)
+    {
+        $empty = true;
+
+        foreach (scandir($root.DIRECTORY_SEPARATOR) as $path) {
+
+            if ($path == '.' || $path == '..') {
+                continue;
+            }
+
+            if (is_dir($root.DIRECTORY_SEPARATOR.$path)) {
+                if ($this->removeEmptyDirectories($root.DIRECTORY_SEPARATOR.$path) === false) {
+                    $empty = false;
+                }
+            } elseif ($path != '.DS_Store') {
+                $empty = false;
+            } elseif ($path == '.DS_Store') {
+                unlink($root.DIRECTORY_SEPARATOR.$path);
+            }
+        }
+
+        if ($top === false && $empty === true && $root != '.' && $root != '..') {
+            @rmdir($root);
+        }
+
+        return $empty;
+    }
+
+    /**
+     * @param  integer $i
+     * @param  integer $count
+     */
     protected function showItemHeader($i, $count)
     {
-        Console::outl('%r[ %R'.str_pad($i+1, 3, '0', STR_PAD_LEFT).' of '.str_pad($count, 3, '0', STR_PAD_LEFT).'%r ]');
+        Console::outl('%P[ ITEM %p'.str_pad($i+1, 3, '0', STR_PAD_LEFT).' %Pof '.str_pad($count, 3, '0', STR_PAD_LEFT).' ]');
+    }
+
+    /**
+     * @param  integer $i
+     * @param  integer $count
+     */
+    protected function showQueueHeader($i, $count)
+    {
+        Console::outl('%P[ QUEUE %p'.str_pad($i+1, 3, '0', STR_PAD_LEFT).' %Pof '.str_pad($count, 3, '0', STR_PAD_LEFT).' ]');
     }
 }
 
-class SerfersTV extends Serfers
+/**
+ * SerferalsTV
+ */
+class SerferalsTV extends Serferals
 {
+    protected function handleQueue()
+    {
+        $i     = 0;
+        $count = count(Queue::getAll());
+
+        while (null !== ($queueItem = Queue::shift())) {
+            
+            $this->showQueueHeader($i, $count);
+
+            $newFilepath = $this->generateNewFilepath($queueItem);
+
+            Console::buffer();
+            Console::buffer('Show%k[  :]%W'.            $queueItem->getShow());
+            Console::buffer('Season%k[  :]%W'.          $queueItem->getSeason());
+            Console::buffer('Episode%k[  :]%W'.         $queueItem->getEpisode());
+            Console::buffer('Title%k[  :]%W'.           $queueItem->getTitle());
+            Console::buffer('Original Path%k[  :]%W'.   $queueItem->getFilepath());
+            Console::buffer('New Path%k[  :]%W'.        $newFilepath);
+            Console::buffer();
+            Console::flush();
+
+            $newPath = pathinfo($newFilepath, PATHINFO_DIRNAME);
+            if (!is_dir($newPath)) {
+                mkdir($newPath, 0775, true);
+            }
+
+            Console::out('%cAction: %CMoving file...');
+            rename($queueItem->getFilepath(), $newFilepath);
+            Console::outl('%Cdone.');
+            Console::outl();
+
+            $i++;
+
+        }
+    }
+
+    protected function generateNewFilepath(QueueItem $queueItem)
+    {
+        $format = Config::get('tpl.filepath.tv');
+        $outdir = Config::get('dirpath.output');
+
+        $filename = str_replace('${seriesname}',    $queueItem->getShow(),                                   $format);
+        $filename = str_replace('${episodeseason}', str_pad($queueItem->getSeason(), 2, '0', STR_PAD_LEFT),  $filename);
+        $filename = str_replace('${episodenumber}', str_pad($queueItem->getEpisode(), 2, '0', STR_PAD_LEFT), $filename);
+        $filename = str_replace('${episodename}',   $queueItem->getTitle(), $filename);
+        $filename = str_replace('${ext}',           pathinfo($queueItem->getFilepath(), PATHINFO_EXTENSION), $filename);
+
+        return $outdir.DIRECTORY_SEPARATOR.$filename;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function handleItem($item)
     {
         list($show, $season, $episode, $date) = 
@@ -365,34 +763,35 @@ class SerfersTV extends Serfers
             ;
             
             Console::buffer();
-            Console::buffer('Show%k[...]%w'.$show);
+            Console::buffer('Show%k[  :]%w'.$show);
 
             if ($lookupSuccess === true) {
-                Console::buffer('Lookup%k[...]%gSuccess');
+                Console::buffer('Lookup%k[  :]%gSuccess');
             } else {
-                Console::buffer('Lookup%k[...]%rFailure');
+                Console::buffer('Lookup%k[  :]%rFailure');
             }
 
             if ($season === null) {
-                Console::buffer('Season%k[...]%w[null]');
+                Console::buffer('Season%k[  :]%w[null]');
             } else {
-                Console::buffer('Season%k[...]%w'.$season);
+                Console::buffer('Season%k[  :]%w'.$season);
             }
 
             if ($episode === null) {
-                Console::buffer('Episode%k[...]%w[null]');
+                Console::buffer('Episode%k[  :]%w[null]');
             } else {
-                Console::buffer('Episode%k[...]%w'.$episode);
+                Console::buffer('Episode%k[  :]%w'.$episode);
             }
 
             if ($title === null) {
-                Console::buffer('Title%k[...]%w[null]');
+                Console::buffer('Title%k[  :]%w[null]');
             } else {
-                Console::buffer('Title%k[...]%w'.$title);
+                Console::buffer('Title%k[  :]%w'.$title);
             }
-            Console::buffer('Filepath%k[...]%w'.$item);
 
+            Console::buffer('Filepath%k[  :]%w'.$item);
             Console::buffer();
+            Console::flush();
 
             Console::buffer('Actions:');
             Console::buffer("\ts. Edit Season");
@@ -401,8 +800,9 @@ class SerfersTV extends Serfers
             Console::buffer("\tt. Edit Title");
             Console::buffer("\tr. Re-parse Filename");
             Console::buffer("\tk. Skip");
-            Console::buffer("\tK. Skip the Rest");
+            Console::buffer("\tK. Skip Remaining");
             Console::buffer("\tD. Delete");
+            Console::buffer("\tq. Quit");
             Console::buffer("\tc. Continue");
 
             Console::buffer();
@@ -441,6 +841,9 @@ class SerfersTV extends Serfers
                 case 'c':
                     $loop = false;
                     break;
+                case 'q':
+                    exit(0);
+                    break;
             }
 
             if ($skip === true || $skipRest === true) {
@@ -449,15 +852,44 @@ class SerfersTV extends Serfers
 
         }
 
-        if ($skip === true || $skipRest === true) {
+        if ($skip === true) {
+            Console::outl();
+            Console::outl('%cAction: %CSkipping this item...');
+            Console::outl();
+
             return $skipRest;
         }
 
-        SerfersQueue::add($item);
+        $queueItem = new QueueItemTV();
+        $queueItem
+            ->setFilepath(Config::get('dirpath.input').DIRECTORY_SEPARATOR.$item)
+            ->setShow($show)
+            ->setSeason($season)
+            ->setEpisode($episode)
+            ->setTitle($title)
+        ;
+
+        Queue::add($queueItem);
+
+        if ($skipRest !== true) {
+            Console::outl();
+            Console::outl('%cAction: %CAdded item #'.count(Queue::getAll()).' to queue...');
+            Console::outl();
+        } else {
+            Console::outl();
+            Console::outl('%cAction: %CAdded item #'.count(Queue::getAll()).' to queue...');
+            Console::outl('%cAction: %CSkipping the remaining items...');
+            Console::outl();
+
+            return $skipRest;
+        }
 
         return false;
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function parseItem($filepath)
     {
         $pattern  = '#\.?/?(.*?)/?season ?([0-9]{1,2})[ /]?episode ?([0-9]{1,2})#i';
@@ -466,7 +898,6 @@ class SerfersTV extends Serfers
         $return = preg_match($pattern, $filepath, $matches, PREG_OFFSET_CAPTURE);
 
         if ($return === 1) {
-            echo 'method 1';
             return [
                 isset($matches[1][0]) ? trim($matches[1][0]) : $filepath,
                 isset($matches[2][0]) ? trim($matches[2][0]) : null,
@@ -495,7 +926,6 @@ class SerfersTV extends Serfers
         $return = preg_match($pattern, basename($filepath), $matches, PREG_OFFSET_CAPTURE);
 
         if ($return === 1) {
-                        echo 'method 3';
             return [
                 isset($matches[1][0]) ? trim($matches[1][0]) : basename($filepath),
                 isset($matches[2][0]) ? trim($matches[2][0]) : null,
@@ -526,6 +956,13 @@ class SerfersTV extends Serfers
         ];
     }
 
+    /**
+     * @param  string $show
+     * @param  string $season
+     * @param  string $episode
+     * @param  string $title
+     * @return array
+     */
     protected function doLookupTVEpisode($show, $season, $episode, $title)
     {
         $traktApiKey = Config::getRuntime('lookup.api.trakt');
@@ -551,6 +988,10 @@ class SerfersTV extends Serfers
         ];
     }
 
+    /**
+     * @param  string $show
+     * @return StdObject
+     */
     protected function doLookupTVShow($show)
     {
         $traktApiKey = Config::getRuntime('lookup.api.trakt');
@@ -568,8 +1009,14 @@ class SerfersTV extends Serfers
     }
 }
 
-class SerfersMovie extends Serfers
+/**
+ * SerferalsMovie class
+ */
+class SerferalsMovie extends Serferals
 {
+    /**
+     * @inheritdoc
+     */
     protected function handleItem($item)
     {
 
@@ -675,29 +1122,32 @@ function main()
         Config::setRuntime('lookup.api.trakt', 'Undefined');
     }
     
-    Console::buffer('%bSET %Bscript.timezone[  :]%W'.Config::getRuntime('php.timezone'), 2);
-    Console::buffer('%bSET %Bscript.verbosity[  :]%W'.Config::getRuntime('script.verbosity'), 2);
-    Console::buffer('%bSET %Bscript.mode[  :]%W'.Config::getRuntime('script.mode'), 1);
-    Console::buffer('%bSET %Btpl.filepath.tv[  :]%W'.Config::get('tpl.filepath.tv'), 2);
-    Console::buffer('%bSET %Btpl.filepath.movie[  :]%W'.Config::get('tpl.filepath.movie'), 2);
-    Console::buffer('%bSET %Bdirpath.input[  :]%W'.Config::get('dirpath.input'), 1);
-    Console::buffer('%bSET %Bdirpath.output[  :]%W'.Config::get('dirpath.output'), 1);
-    Console::buffer('%bSET %Bfiles.extensions[  :]%W'.Config::get('files.extensions'), 2);
-    Console::buffer('%bSET %Blookup.api.trakt[  :]%W'.Config::getRuntime('lookup.api.trakt'), 2);
+    Console::buffer('%bSET %Bscript.timezone%k[  :]%W'.   Config::getRuntime('php.timezone'),     2);
+    Console::buffer('%bSET %Bscript.verbosity%k[  :]%W'.  Config::getRuntime('script.verbosity'), 2);
+    Console::buffer('%bSET %Bscript.colors%k[  :]%W'.     Config::getRuntime('script.colors'),    2);
+    Console::buffer('%bSET %Bscript.mode%k[  :]%W'.       Config::getRuntime('script.mode'),      1);
+    Console::buffer('%bSET %Btpl.filepath.tv%k[  :]%W'.   Config::get('tpl.filepath.tv'),         2);
+    Console::buffer('%bSET %Btpl.filepath.movie%k[  :]%W'.Config::get('tpl.filepath.movie'),      2);
+    Console::buffer('%bSET %Bdirpath.input%k[  :]%W'.     Config::get('dirpath.input'),           1);
+    Console::buffer('%bSET %Bdirpath.output%k[  :]%W'.    Config::get('dirpath.output'),          1);
+    Console::buffer('%bSET %Bfiles.extensions%k[  :]%W'.  Config::get('files.extensions'),        2);
+    Console::buffer('%bSET %Blookup.api.trakt%k[  :]%W'.  Config::getRuntime('lookup.api.trakt'), 2);
     Console::buffer();
     Console::flush();
 
-    if (Config::getRuntime('script.mode') == 'tv') {
-        $handler = new SerfersTV();
+    if (Config::getRuntime('script.mode') === 'tv') {
+        $handler = new SerferalsTV();
     } else {
-        $handler = new ServersMovie();
+        $handler = new ServeralsMovie();
     }
 
     $handler->go();
 
+    Console::outl('Exiting...');
+
 }
 
-/* run main script function: go */
+// lets do this
 main();
 
-?>
+/* EOF */
