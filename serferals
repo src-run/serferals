@@ -12,7 +12,7 @@
  */
 
 // general configuration
-Config::set('tpl.filepath.tv',      '${seriesname}/Season ${episodeseason}/${seriesname} S${episodeseason}E${episodenumber} ${episodename}.${ext}');
+Config::set('tpl.filepath.tv',      '${seriesname}/Season ${episodeseason}/${seriesname} - S${episodeseason}E${episodenumber} - ${episodename}.${ext}');
 Config::set('tpl.filepath.movie',   '${moviename} [${movieyear}]/${moviename} [${movieyear}] [${movieimdb}].${ext}');
 Config::set('dirpath.input',        '/Users/rmf/Torrents/Queue/');
 Config::set('dirpath.output',       '/Volumes/External-2/Videos/TV/');
@@ -758,11 +758,11 @@ class SerferalsTV extends Serferals
         $del      = false;
         $title    = null;
 
-        while($loop === true) {
+        list($show, $season, $episode, $title, $date, $lookupSuccess) = 
+            $this->doLookupTVEpisode($show, $season, $episode, $title, $date)
+        ;
 
-            list($show, $season, $episode, $title, $date, $lookupSuccess) = 
-                $this->doLookupTVEpisode($show, $season, $episode, $title, $date)
-            ;
+        while($loop === true) {
             
             Console::buffer();
             Console::buffer('Show%k[  :]%w'.$show);
@@ -771,6 +771,10 @@ class SerferalsTV extends Serferals
                 Console::buffer('Lookup%k[  :]%gSuccess');
             } else {
                 Console::buffer('Lookup%k[  :]%rFailure');
+            }
+
+            if ($date !== null) {
+                Console::buffer('Year%k[  :]%w'.$date);
             }
 
             if ($season === null) {
@@ -801,6 +805,7 @@ class SerferalsTV extends Serferals
             Console::buffer("\th. Edit Show");
             Console::buffer("\tt. Edit Title");
             Console::buffer("\tr. Re-parse Filename");
+            Console::buffer("\tl. Lookup Matches");
             Console::buffer("\tk. Skip");
             Console::buffer("\tK. Skip Remaining");
             Console::buffer("\tD. Delete");
@@ -828,6 +833,23 @@ class SerferalsTV extends Serferals
                 case 't':
                     $response = Console::prompt('Enter the show title');
                     $title = $response;
+                    break;
+                case 'l':
+                    Console::buffer();
+                    Console::buffer('Matches:');
+                    $matches = $this->doLookupTVShow($show, true);
+                    foreach ($matches as $mi => $mv) {
+                        Console::buffer("\t".($mi+1).'. '.$mv->title.' ('.$mv->year.')');
+                    }
+                    Console::buffer();
+                    Console::flush();
+                    $response = (int)Console::prompt('Enter the match number');
+                    $mimdb = $matches[($response - 1)]->imdb_id;
+                    list($show, $season, $episode, $title, $date, $lookupSuccess) = 
+                        $this->doLookupTVEpisode($show, $season, $episode, $title, $date, $mimdb)
+                    ;
+                    Console::outl();
+                    Console::outl('%cSelection: %C#'.$response.' '.$mv->title.' ('.$mv->year.')');
                     break;
                 case 'r':
                     list($show, $season, $episode, $date) = 
@@ -937,7 +959,7 @@ class SerferalsTV extends Serferals
 
         if ($return === 1) {
             return [
-                isset($matches[1][0]) ? trim($matches[1][0]) : basename($filepath),
+                isset($matches[1][0]) ? basename(trim($matches[1][0])) : basename($filepath),
                 isset($matches[2][0]) ? trim($matches[2][0]) : null,
                 isset($matches[3][0]) ? trim($matches[3][0]) : null,
                 null
@@ -951,7 +973,7 @@ class SerferalsTV extends Serferals
 
         if ($return === 1) {
             return [
-                isset($matches[1][0]) ? $matches[1][0] : $filepath,
+                isset($matches[1][0]) ? basename($matches[1][0]) : basename($filepath),
                 isset($matches[2][0]) ? $matches[2][0] : null,
                 isset($matches[3][0]) ? $matches[3][0] : null,
                 null
@@ -973,11 +995,14 @@ class SerferalsTV extends Serferals
      * @param  string $title
      * @return array
      */
-    protected function doLookupTVEpisode($show, $season, $episode, $title, $date)
+    protected function doLookupTVEpisode($show, $season, $episode, $title, $date, $imdbID = false)
     {
         $traktApiKey = Config::getRuntime('lookup.api.trakt');
+        $show = trim(str_replace('.', ' ', $show));
 
-        $imdbID = $this->doLookupTVShow($show);
+        if ($imdbID === false) {
+            $imdbID = $this->doLookupTVShow($show);
+        }
 
         if ($show === null) {
             return [null, null, null];
@@ -993,7 +1018,7 @@ class SerferalsTV extends Serferals
             @$info->episode->season ? $info->episode->season : $season,
             @$info->episode->number ? $info->episode->number : $episode,
             @$info->episode->title  ? $info->episode->title  : $title,
-            null,
+            @$info->show->year      ? $info->show->year      : null,
             @$info->episode->title  ? true                   : false,
         ];
     }
@@ -1002,7 +1027,7 @@ class SerferalsTV extends Serferals
      * @param  string $show
      * @return StdObject
      */
-    protected function doLookupTVShow($show)
+    protected function doLookupTVShow($show, $returnJson = false)
     {
         $traktApiKey = Config::getRuntime('lookup.api.trakt');
 
@@ -1010,6 +1035,10 @@ class SerferalsTV extends Serferals
 
         $json = @file_get_contents($api);
         $info = @json_decode($json);
+
+        if ($returnJson === true) {
+            return $info;
+        }
 
         if (!count($info) > 0) {
             return null;
