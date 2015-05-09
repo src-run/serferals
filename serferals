@@ -1009,7 +1009,6 @@ class SerferalsTV extends Serferals
         }
 
         $api = "http://api.trakt.tv/show/episode/summary.json/$traktApiKey/$imdbID/$season/$episode";
-
         $json = @file_get_contents($api);
         $info = @json_decode($json);
 
@@ -1034,6 +1033,7 @@ class SerferalsTV extends Serferals
         $api = "http://api.trakt.tv/search/shows.json/$traktApiKey?query=".urlencode($show);
 
         $json = @file_get_contents($api);
+
         $info = @json_decode($json);
 
         if ($returnJson === true) {
