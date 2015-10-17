@@ -1,2 +1,0 @@
-#!/bin/bash
-./serferals --tv -i /Users/rmf/Torrents/TV/ -o /Volumes/Storage/Videos/TV/ $@
