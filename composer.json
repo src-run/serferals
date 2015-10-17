@@ -1,0 +1,28 @@
+{
+    "name": "rmf/serferals",
+    "description": "CLI application to parse inconsistant media filenames, perform appropriate lookups for tv/movies, and write out the normalized name.",
+    "require": {
+        "ext-curl": "^0.0.0",
+        "php": ">=5.6.4,~5.6|~7.0",
+        "scribe/wonka-library": "~0.1@dev",
+        "scribe/wonka-bundle": "~0.1@dev"
+    },
+    "require-dev": {
+        "symfony/debug": "^3.0@dev",
+        "phpunit/phpunit": "^6.0@dev",
+        "sensiolabs/security-checker": "^3.0@dev",
+        "scrutinizer/ocular": "dev-master",
+        "satooshi/php-coveralls": "^0.7.0@dev",
+        "fzaninotto/faker": "^1.6@dev",
+        "nikic/php-parser": ">=1.0,<1.2",
+        "sami/sami": "^3.0@dev"
+    },
+    "license": "MIT License",
+    "authors": [
+        {
+            "name": "Rob Frawley 2nd",
+            "email": "rfrawley@scribenet.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}

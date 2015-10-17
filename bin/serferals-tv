@@ -1,0 +1,2 @@
+#!/bin/bash
+./serferals --tv -i /external/media/queue -o /external/media/tv $@
