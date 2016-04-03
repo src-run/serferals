@@ -40,8 +40,8 @@ services :
     rmf.serferals.console_output :
         class : Symfony\Component\Console\Output\ConsoleOutput
 
-    rmf.serferals.console_symfony_style :
-        class     : Symfony\Component\Console\Style\SymfonyStyle
+    rmf.serferals.console_style :
+        class     : RMF\Serferals\Component\Console\Style\SrcRunStyle
         arguments :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
@@ -52,7 +52,7 @@ services :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
 
     rmf.serferals.operation_scan_inputs :
         class     : RMF\Serferals\Component\Operation\ScanInputsOperation
@@ -60,7 +60,7 @@ services :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
 
     rmf.serferals.operation_parse_file_names :
         class     : RMF\Serferals\Component\Operation\ParseFileNamesOperation
@@ -68,7 +68,7 @@ services :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
 
     rmf.serferals.operation_lookup_resolver :
         class     : RMF\Serferals\Component\Operation\LookupResolverOperation
@@ -76,7 +76,7 @@ services :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
             - [ setApiOptions, [ "%api_key%", "%api_log%" ] ]
 
     rmf.serferals.operation_renamer :
@@ -85,7 +85,7 @@ services :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
             - [ setFileNameTemplate, [ '%rmf.serferals.tpl_path_episode%', '%rmf.serferals.tpl_file_episode%' ]]
 
 ...

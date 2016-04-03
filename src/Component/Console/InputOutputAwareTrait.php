@@ -11,6 +11,7 @@
 
 namespace RMF\Serferals\Component\Console;
 
+use RMF\Serferals\Component\Console\Style\StyleInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -21,7 +22,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 trait InputOutputAwareTrait
 {
     /**
-     * @var SymfonyStyle
+     * @var StyleInterface
      */
     protected $style;
 
@@ -36,9 +37,9 @@ trait InputOutputAwareTrait
     protected $output;
 
     /**
-     * @param SymfonyStyle $style
+     * @param StyleInterface $style
      */
-    public function setStyle(SymfonyStyle $style)
+    public function setStyle(StyleInterface $style)
     {
         $this->style = $style;
     }
@@ -72,7 +73,7 @@ trait InputOutputAwareTrait
     /**
      * @param \Closure|null $handler
      *
-     * @return mixed|SymfonyStyle
+     * @return mixed|StyleInterface
      */
     protected function io(\Closure $handler = null)
     {

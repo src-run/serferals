@@ -12,6 +12,7 @@
 namespace RMF\Serferals\Command;
 
 use RMF\Serferals\Component\Console\InputOutputAwareTrait;
+use RMF\Serferals\Component\Console\Style\StyleInterface;
 use RMF\Serferals\Component\Operation\DeleteExtensionsOperation;
 use RMF\Serferals\Component\Operation\LookupResolverOperation;
 use RMF\Serferals\Component\Operation\ParseFileNamesOperation;
@@ -20,6 +21,8 @@ use RMF\Serferals\Component\Operation\ScanInputsOperation;
 use RMF\Serferals\Component\Queue\QueueEpisodeItem;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Helper\TableCell;
+use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -34,7 +37,7 @@ class ScanCommand extends Command
     use InputOutputAwareTrait;
 
     /**
-     * @var SymfonyStyle
+     * @var StyleInterface
      */
     protected $style;
 
@@ -65,11 +68,10 @@ class ScanCommand extends Command
     {
         $this->ioSetup($input, $output);
 
-        $this->io()->text([
-            '<options=bold>'.$this->getApplication()->getName().' (v'.$this->getApplication()->getVersion().')</>',
-            'by Rob Frawley 2nd <rmf@src.run>',
-            ''
-        ]);
+        $this->io()->applicationTitle(
+            $this->getApplication()->getName(),
+            $this->getApplication()->getVersion(),
+            ['by', 'Rob Frawley 2nd <rmf@src.run>']);
 
         $inputExtensions = $input->getOption('ext');
         $cleanExtentions = $input->getOption('remove');
@@ -81,6 +83,11 @@ class ScanCommand extends Command
             return 255;
         }
 
+        if (!$outputPath) {
+            $this->io()->error('You must provide an output directory.');
+            return 255;
+        }
+
         if (count($inputInvalidPaths) !== 0) {
             $this->io()->error('Invalid input path(s): '.implode(', ', $inputInvalidPaths));
             return 255;
@@ -88,9 +95,6 @@ class ScanCommand extends Command
 
         $this->showRuntimeConfiguration($outputPath, $inputPaths, $cleanExtentions, $inputExtensions);
         $this->doPreScanTasks($inputPaths, $cleanExtentions);
-
-        $this->io()->section('Searching Input Directories');
-
         $scanner = $this->serviceScanInputPaths();
 
         $finder = $scanner
@@ -104,7 +108,7 @@ class ScanCommand extends Command
             ->getItems();
 
         $this->ioV(function() use ($itemCollection) {
-            $this->io()->text('Found <info>'.count($itemCollection).'</info> media files.');
+            $this->io()->comment('Found '.count($itemCollection).' media files in search path(s).');
         });
 
         $lookup = $this->serviceLookupResolver();
@@ -139,13 +143,9 @@ class ScanCommand extends Command
             $tableRows[] = ['Remove Extension List', implode(',', $cleanExtentions)];
         }
 
-        array_walk($tableRows, function (&$row) {
-            $row = [ $row[0], '<fg=green>'.$row[1].'</>' ];
-        });
-
-        $this->ioV(function (SymfonyStyle $io) use ($tableRows) {
-            $io->section('Runtime Configuration Values');
-            $io->text('The following configuration values are set:');
+        $this->ioV(function (StyleInterface $io) use ($tableRows) {
+            $io->section('Runtime Settings');
+            $io->text('<comment>Using the following configuration values:</comment>');
             $io->table([], $tableRows);
         });
 
@@ -155,7 +155,7 @@ class ScanCommand extends Command
             }
         });
         
-        $this->ioN(function (SymfonyStyle $io) use ($outputPath, $inputExtensions, $inputPaths) {
+        $this->ioN(function (StyleInterface $io) use ($outputPath, $inputExtensions, $inputPaths) {
             $io->text('Filtering filenames by <info>'.implode('|', $inputExtensions).'</info> within '.
                 '<info>'.implode('|', $inputPaths).'</info> with destination <info>'.$outputPath.'</info>.');
         });
@@ -163,10 +163,6 @@ class ScanCommand extends Command
 
     private function doPreScanTasks(array $inputPaths, $cleanExtentions)
     {
-        $this->ioV(function () {
-            $this->io()->section('Running Pre-Scan Taaks');
-        });
-
         $deleteExtensions = $this->serviceDeleteByExtensions();
         $deleteExtensions->run($inputPaths, ...$cleanExtentions);
     }
@@ -224,7 +220,7 @@ class ScanCommand extends Command
     {
         $this->setInput($input);
         $this->setOutput($output);
-        $this->setStyle($this->getService('rmf.serferals.console_symfony_style'));
+        $this->setStyle($this->getService('rmf.serferals.console_style'));
     }
 
     /**

@@ -12,6 +12,7 @@
 namespace RMF\Serferals\Component\Operation;
 
 use RMF\Serferals\Component\Console\InputOutputAwareTrait;
+use RMF\Serferals\Component\Console\Style\StyleInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -53,9 +54,9 @@ class DeleteExtensionsOperation
             $finder->name('*.'.$e);
         }
 
-        $this->ioV(function (SymfonyStyle $io) use ($finder, $extensions) {
-            $io->text(sprintf(
-                'Removing <info>%d</info> files with extensions <info>%s</info>.',
+        $this->ioV(function (StyleInterface $io) use ($finder, $extensions) {
+            $io->comment(sprintf(
+                'Removing %d files with extensions matching "%s".',
                 $finder->count(), implode('|', $extensions)));
         });
 
