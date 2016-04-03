@@ -1,0 +1,50 @@
+---
+
+##
+# This file is part of the `rmf/serferals-media-organizer` project.
+#
+# (c) Rob Frawley 2nd <rmf@src.run>
+#
+# For the full copyright and license information, view the LICENSE.md
+# file distributed with this source code.
+##
+
+# php enviornment
+language : php
+
+# advise travis we support new container-based env
+sudo : false
+
+# build against php 5.6.x and 7.0.x engines
+php :
+  - 5.6
+  - 7.0
+
+# set a sane clone depth for git
+git :
+  depth : 3
+
+# custom hostname
+addons :
+  hosts :
+    - mainline.src.run
+
+# enable the build-reqs script via required env var
+env :
+  global :
+    - build_package=true
+
+# install system environment and application requirements
+install :
+  - bash .run/builders/build-reqs/build-reqs.bash up-env
+  - bash .run/builders/build-reqs/build-reqs.bash up-app
+
+# go: run unit tests!
+script : bin/phpunit -vvv
+
+# run post-operations (coverage submission, etc)
+after_script :
+  - bash .run/builders/build-reqs/build-reqs.bash dn-app
+  - bash .run/builders/build-reqs/build-reqs.bash dn-env
+
+...

@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ * This file is part of the `rmf/serferals` project.
+ *
+ * (c) Rob Frawley 2nd <rmf@src.run>
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
+require __DIR__.'/../vendor/autoload.php';
+
+$container = new ContainerBuilder();
+$loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/config'));
+$loader->load('services.yml');
+
+$input = $container->get('rmf.serferals.console_input');
+$output = $container->get('rmf.serferals.console_output');
+
+$application = $container->get('rmf.serferals.application');
+$application->run($input, $output);
+
+# EOF

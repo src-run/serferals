@@ -1,20 +1,20 @@
-# [src-run] teavee-media-files-organizer-application
+# [rmf] serferals-media-organizer
 
 | Continuous Integration |   Code Quality Review   |    UnitTest Coverage    |
 |:----------------------:|:-----------------------:|:-----------------------:|
-| [![Travis](https://get.src.run/teavee-media-files-organizer-application/travis_shield)](https://get.src.run/teavee-media-files-organizer-application/travis) | [![Codacy](https://get.src.run/teavee-media-files-organizer-application/codacy_shield)](https://get.src.run/teavee-media-files-organizer-application/codacy) | [![Coveralls](https://get.src.run/teavee-media-files-organizer-application/coveralls_shield)](https://get.src.run/teavee-media-files-organizer-application/coveralls) |
+| [![Travis](https://get.src.run/serferals-media-organizer/travis_shield)](https://get.src.run/serferals-media-organizer/travis) | [![Codacy](https://get.src.run/serferals-media-organizer/codacy_shield)](https://get.src.run/serferals-media-organizer/codacy) | [![Coveralls](https://get.src.run/serferals-media-organizer/coveralls_shield)](https://get.src.run/serferals-media-organizer/coveralls) |
 
 ## Overview
 
 [Welcome](https://get.src.run/go/readme_welcome)!
-The `src-run/teavee-media-files-organizer-application` package provides
+The `rmf/serferals-media-organizer` package provides
 a CLI application for looking-up and organizing media files, with support
 for movies and tv shows.
 
 ### Grouping
 
-This package is part of the [teavee](https://get.src.run/teavee-media-files-organizer-application/group)
-group ([explanation](https://get.src.run/teavee-media-files-organizer-application/group_explanation)),
+This package is part of the [teavee](https://get.src.run/serferals-media-organizer/group)
+group ([explanation](https://get.src.run/serferals-media-organizer/group_explanation)),
 comprised of other releases with a concentration in 
 *core reflection base classes*,
 and related functionality.
@@ -26,7 +26,7 @@ This package represents a single project within a
 under the *SR* namespace, comprised of framework-agnostic libraries,
 and a number of Symfony bundles. These projects are authored and maintained
 by [Rob Frawley 2nd](https://get.src.run/rmf) and 
-[collaborators](https://get.src.run/teavee-media-files-organizer-application/github_collaborators).
+[collaborators](https://get.src.run/serferals-media-organizer/github_collaborators).
 
 ## Quick Start
 
@@ -38,14 +38,14 @@ your project requirements. For example, to explicitly require this project using
 the CLI, use the following command.
 
 ```bash
-$ composer require src-run/teavee-media-files-organizer-application
+$ composer require rmf/serferals-media-organizer
 ```
 
 ## Reference
 
 ### API Docs
 
-This package's API-documentation is available at [get.src.run/teavee-media-files-organizer-application/api](https://get.src.run/teavee-media-files-organizer-application/api),
+This package's API-documentation is available at [get.src.run/serferals-media-organizer/api](https://get.src.run/serferals-media-organizer/api),
 (as well as linked below via the *Reference* badge found under the *Additional Links*
 header). All API-reference is build against the *master* Git branch and updated
 automatically on each Git push---api-reference for *specific releases* will
@@ -82,8 +82,8 @@ be joined using the following link
 ### Issues
 
 To report issues or request a new feature use
-[GitHub](https://get.src.run/teavee-media-files-organizer-application/github_issues)
-or [GitLab](https://get.src.run/teavee-media-files-organizer-application/gitlab_issues)
+[GitHub](https://get.src.run/serferals-media-organizer/github_issues)
+or [GitLab](https://get.src.run/serferals-media-organizer/gitlab_issues)
 to start a discussion. Include as much information as possible to aid in
 a quick resolution. Feel free to "ping" the topic if you don't get a
 response within a few days.
@@ -93,7 +93,7 @@ response within a few days.
 You created additional functionality during the use of this package? Send
 it back upstream! *Don't hesitate to submit a pull request!* Beyond the
 brief requirements outlined in the
-[contibuting guide](https://get.src.run/teavee-media-files-organizer-application/contributing),
+[contibuting guide](https://get.src.run/serferals-media-organizer/contributing),
 your [imagination](https://get.src.run/go/readme_imagination)
 represents the only limitation.
 
@@ -104,15 +104,15 @@ This project is licensed under the
 [FSF](https://get.src.run/go/fsf)-/[OSI](https://get.src.run/go/osi)-approved
 and [GPL](https://get.src.run/go/gpl)-compatible, permissive free software
 license. Review the
-[LICENSE](https://get.src.run/teavee-media-files-organizer-application/license)
+[LICENSE](https://get.src.run/serferals-media-organizer/license)
 file distributed with this source code for additional information.
 
 ## Additional Links
 
 |       Purpose | Status        |
 |--------------:|:--------------|
-| *Stable Release*    | [![Packagist](https://get.src.run/teavee-media-files-organizer-application/packagist_shield)](https://get.src.run/teavee-media-files-organizer-application/packagist) |
-| *Dev Release*    | [![Packagist](https://get.src.run/teavee-media-files-organizer-application/packagist_pre_shield)](https://get.src.run/teavee-media-files-organizer-application/packagist) |
-| *License*    | [![License](https://get.src.run/teavee-media-files-organizer-application/license_shield)](https://get.src.run/teavee-media-files-organizer-application/license) |
-| *Reference*  | [![License](https://get.src.run/teavee-media-files-organizer-application/api_shield)](https://get.src.run/teavee-media-files-organizer-application/api) |
+| *Stable Release*    | [![Packagist](https://get.src.run/serferals-media-organizer/packagist_shield)](https://get.src.run/serferals-media-organizer/packagist) |
+| *Dev Release*    | [![Packagist](https://get.src.run/serferals-media-organizer/packagist_pre_shield)](https://get.src.run/serferals-media-organizer/packagist) |
+| *License*    | [![License](https://get.src.run/serferals-media-organizer/license_shield)](https://get.src.run/serferals-media-organizer/license) |
+| *Reference*  | [![License](https://get.src.run/serferals-media-organizer/api_shield)](https://get.src.run/serferals-media-organizer/api) |
 

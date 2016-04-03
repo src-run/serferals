@@ -1,0 +1,91 @@
+---
+
+imports :
+    - { resource : 'parameters.yml' }
+
+parameters :
+
+    rmf.serferals.name             : "Serferals"
+    rmf.serferals.version          : "2.0.0"
+    rmf.serferals.tpl_path_movie   : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
+    rmf.serferals.tpl_file_movie   : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if imdb is defined %%} [{{ imdb }}]{%% endif %%}.{{ ext }}"
+    rmf.serferals.tpl_path_episode : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
+    rmf.serferals.tpl_file_episode : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"
+
+services :
+
+    rmf.serferals.application :
+        class     : RMF\Serferals\Application\SerferalsApplication
+        arguments :
+            - "%rmf.serferals.name%"
+            - "%rmf.serferals.version%"
+        calls :
+            - [ setContainer, [ "@service_container" ] ]
+            - [ add, [ "@rmf.serferals.scan_command" ] ]
+
+    rmf.serferals.scan_command :
+        class : RMF\Serferals\Command\ScanCommand
+
+    rmf.serferals.filesystem :
+        class : Symfony\Component\Filesystem\Filesystem
+
+    rmf.serferals.console_logger :
+        class     : Symfony\Component\Console\Logger\ConsoleLogger
+        arguments :
+            - "@rmf.serferals.console_output"
+
+    rmf.serferals.console_input :
+        class : Symfony\Component\Console\Input\ArgvInput
+
+    rmf.serferals.console_output :
+        class : Symfony\Component\Console\Output\ConsoleOutput
+
+    rmf.serferals.console_symfony_style :
+        class     : Symfony\Component\Console\Style\SymfonyStyle
+        arguments :
+            - "@rmf.serferals.console_input"
+            - "@rmf.serferals.console_output"
+
+    rmf.serferals.operation_delete_extensions :
+        class     : RMF\Serferals\Component\Operation\DeleteExtensionsOperation
+        arguments :
+            - "@rmf.serferals.console_input"
+            - "@rmf.serferals.console_output"
+        calls :
+            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+
+    rmf.serferals.operation_scan_inputs :
+        class     : RMF\Serferals\Component\Operation\ScanInputsOperation
+        arguments :
+            - "@rmf.serferals.console_input"
+            - "@rmf.serferals.console_output"
+        calls :
+            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+
+    rmf.serferals.operation_parse_file_names :
+        class     : RMF\Serferals\Component\Operation\ParseFileNamesOperation
+        arguments :
+            - "@rmf.serferals.console_input"
+            - "@rmf.serferals.console_output"
+        calls :
+            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+
+    rmf.serferals.operation_lookup_resolver :
+        class     : RMF\Serferals\Component\Operation\LookupResolverOperation
+        arguments :
+            - "@rmf.serferals.console_input"
+            - "@rmf.serferals.console_output"
+        calls :
+            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+            - [ setApiOptions, [ "%api_key%", "%api_log%" ] ]
+
+    rmf.serferals.operation_renamer :
+        class     : RMF\Serferals\Component\Operation\RenamerOperation
+        arguments :
+            - "@rmf.serferals.console_input"
+            - "@rmf.serferals.console_output"
+        calls :
+            - [ setStyle, [ "@rmf.serferals.console_symfony_style" ] ]
+            - [ setFileNameTemplate, [ '%rmf.serferals.tpl_path_episode%', '%rmf.serferals.tpl_file_episode%' ]]
+
+...

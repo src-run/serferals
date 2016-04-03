@@ -1,0 +1,16 @@
+api_branch : origin/master
+api_parser : ~
+api_cfgmod : clone
+api_runner : ~
+api_paths  : lib
+env_make   : ~
+env_prep   : get-composer
+env_post   : ci-coveralls,ci-codacy
+php_conf   : timezone
+php_exts   : ~
+app_prep   : dep-composer
+app_post   : ~
+app_path   : ~
+pkg_name   : serferals-media-organizer
+pkg_desc   : "a CLI application for resolving and organizing movie and episode files."
+pkg_bndl   : false
