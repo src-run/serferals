@@ -89,8 +89,8 @@ class ParseFileNamesOperation
     protected function parseFileSeasonEpisodeNumber(FixtureEpisodeData $fixture, &$baseName)
     {
         if (1 !== preg_match('{s([0-9]+)e([0-9]+)-?([0-9]+)?}i', $baseName, $match) &&
-            1 !== preg_match('{([0-9]{1,2})([0-9]{2})}', $baseName, $match) &&
-            1 !== preg_match('{([0-9]{1,2})x([0-9]{1,2})}i', $baseName, $match))
+            1 !== preg_match('{([0-9]{1,2})x([0-9]{1,2})}i', $baseName, $match) &&
+            1 !== preg_match('{([0-9]{1,2})([0-9]{2})}', $baseName, $match))
         {
             return;
         }
