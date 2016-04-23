@@ -20,9 +20,9 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Class DeleteExtensionsOperation
+ * Class RemoveExtsOperation
  */
-class DeleteExtensionsOperation
+class RemoveExtsOperation
 {
     use InputOutputAwareTrait;
 
@@ -56,8 +56,8 @@ class DeleteExtensionsOperation
 
         $this->ioV(function (StyleInterface $io) use ($finder, $extensions) {
             $io->comment(sprintf(
-                'Removing %d files with extensions matching "%s".',
-                $finder->count(), implode('|', $extensions)));
+                'Found %d files matching "*.(%s)" for removal.',
+                $finder->count(), implode('|', $extensions)), false);
         });
 
         foreach ($finder as $file) {

@@ -13,11 +13,11 @@ namespace RMF\Serferals\Command;
 
 use RMF\Serferals\Component\Console\InputOutputAwareTrait;
 use RMF\Serferals\Component\Console\Style\StyleInterface;
-use RMF\Serferals\Component\Operation\DeleteExtensionsOperation;
-use RMF\Serferals\Component\Operation\LookupResolverOperation;
-use RMF\Serferals\Component\Operation\ParseFileNamesOperation;
+use RMF\Serferals\Component\Operation\RemoveExtsOperation;
+use RMF\Serferals\Component\Operation\ApiLookupOperation;
+use RMF\Serferals\Component\Operation\FileResolverOperation;
 use RMF\Serferals\Component\Operation\RenamerOperation;
-use RMF\Serferals\Component\Operation\ScanInputsOperation;
+use RMF\Serferals\Component\Operation\PathScanOperation;
 use RMF\Serferals\Component\Queue\QueueEpisodeItem;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Application;
@@ -95,29 +95,29 @@ class ScanCommand extends Command
 
         $this->showRuntimeConfiguration($outputPath, $inputPaths, $cleanExtentions, $inputExtensions);
         $this->doPreScanTasks($inputPaths, $cleanExtentions);
-        $scanner = $this->serviceScanInputPaths();
+        $scanner = $this->operationPathScan();
 
+        $lookup = $this->operationApiLookup();
         $finder = $scanner
             ->paths(...$inputPaths)
             ->extensions(...$inputExtensions)
             ->find();
 
-        $parser = $this->serviceFileNameParser();
+        $parser = $lookup->getFileResolver();
         $itemCollection = $parser
             ->using($finder)
             ->getItems();
 
         $this->ioV(function() use ($itemCollection) {
-            $this->io()->comment('Found '.count($itemCollection).' media files in search path(s).');
+            $this->io()->comment('Found '.count($itemCollection).' media files for parsing.');
         });
 
-        $lookup = $this->serviceLookupResolver();
         $itemCollection = $lookup->resolve($itemCollection);
 
-        $renamer = $this->serviceRenamer();
+        $renamer = $this->operationReNamer();
         $renamer->run($outputPath, $itemCollection);
 
-        $this->io()->comment('Complete');
+        $this->io()->success('Done');
 
         return 0;
     }
@@ -144,8 +144,7 @@ class ScanCommand extends Command
         }
 
         $this->ioV(function (StyleInterface $io) use ($tableRows) {
-            $io->section('Runtime Settings');
-            $io->text('<comment>Using the following configuration values:</comment>');
+            $io->comment('Resolved runtime configuration values');
             $io->table([], $tableRows);
         });
 
@@ -156,60 +155,68 @@ class ScanCommand extends Command
         });
         
         $this->ioN(function (StyleInterface $io) use ($outputPath, $inputExtensions, $inputPaths) {
-            $io->text('Filtering filenames by <info>'.implode('|', $inputExtensions).'</info> within '.
-                '<info>'.implode('|', $inputPaths).'</info> with destination <info>'.$outputPath.'</info>.');
+            $io->comment(
+                sprintf(
+                    'Filtering files by <info>*.(%s)</info>',
+                    implode('|', $inputExtensions)
+                ),
+                false
+            );
+
+            $io->comment(
+                sprintf(
+                    'within path(s) <info>%s</info>',
+                    implode('|', $inputPaths)
+                ),
+                false
+            );
+
+            $io->comment(
+                sprintf(
+                    'with output base path <info>%s</info>',
+                    $outputPath
+                ),
+                false
+            );
         });
     }
 
     private function doPreScanTasks(array $inputPaths, $cleanExtentions)
     {
-        $deleteExtensions = $this->serviceDeleteByExtensions();
+        $deleteExtensions = $this->operationRemoveExts();
         $deleteExtensions->run($inputPaths, ...$cleanExtentions);
-    }
-
-    private function queueItem(QueueEpisodeItem $item)
-    {
-        $this->io()->writeln($item->name);
     }
 
     /**
      * @return RenamerOperation
      */
-    private function serviceRenamer()
+    private function operationReNamer()
     {
         return $this->getService('rmf.serferals.operation_renamer');
     }
 
     /**
-     * @return LookupResolverOperation
+     * @return ApiLookupOperation
      */
-    private function serviceLookupResolver()
+    private function operationApiLookup()
     {
-        return $this->getService('rmf.serferals.operation_lookup_resolver');
+        return $this->getService('rmf.serferals.operation_api_lookup');
     }
 
     /**
-     * @return ParseFileNamesOperation
+     * @return PathScanOperation
      */
-    private function serviceFileNameParser()
+    private function operationPathScan()
     {
-        return $this->getService('rmf.serferals.operation_parse_file_names');
+        return $this->getService('rmf.serferals.operation_path_scan');
     }
 
     /**
-     * @return ScanInputsOperation
+     * @return RemoveExtsOperation
      */
-    private function serviceScanInputPaths()
+    private function operationRemoveExts()
     {
-        return $this->getService('rmf.serferals.operation_scan_inputs');
-    }
-
-    /**
-     * @return DeleteExtensionsOperation
-     */
-    private function serviceDeleteByExtensions()
-    {
-        return $this->getService('rmf.serferals.operation_delete_extensions');
+        return $this->getService('rmf.serferals.operation_remove_exts');
     }
 
     /**

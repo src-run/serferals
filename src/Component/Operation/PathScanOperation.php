@@ -19,7 +19,7 @@ use Symfony\Component\Finder\Finder;
 /**
  * Class ScanInputsOperation
  */
-class ScanInputsOperation
+class PathScanOperation
 {
     use InputOutputAwareTrait;
 

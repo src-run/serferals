@@ -94,7 +94,7 @@ interface StyleInterface extends SymfonyStyleInterface, OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function comment($message);
+    public function comment($message, $newLine = true);
 
     /**
      * {@inheritdoc}
@@ -110,6 +110,16 @@ interface StyleInterface extends SymfonyStyleInterface, OutputInterface
      * {@inheritdoc}
      */
     public function newLine($count = 1);
+
+    /**
+     * @param string        $question
+     * @param null|string   $default
+     * @param null          $validator
+     * @param null|\Closure $sanitizer
+     *
+     * @return mixed
+     */
+    public function ask($question, $default = null, $validator = null, $sanitizer = null);
 }
 
 /* EOF */

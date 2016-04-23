@@ -58,6 +58,28 @@ class FixtureData implements \Serializable
     protected $enabled;
 
     /**
+     * @return string[]
+     */
+    public function getFieldsStatic()
+    {
+        return [
+            'file' => 'File Path',
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getFieldsEditable()
+    {
+        return [
+            'enabled' => 'Enabled',
+            'name' => 'Name',
+            'year' => 'Year',
+        ];
+    }
+
+    /**
      * @param bool $enabled
      */
     final public function __construct($enabled = false)
@@ -206,6 +228,14 @@ class FixtureData implements \Serializable
         $this->fileSize = (int) $fileSize;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getEnabled()
+    {
+        return $this->isEnabled();
     }
 
     /**

@@ -11,11 +11,18 @@
 
 namespace RMF\Serferals\Component\Fixture;
 
+use RMF\Serferals\Component\Tmdb\EpisodeResolver;
+
 /**
  * Class FixtureEpisodeData
  */
 class FixtureEpisodeData extends FixtureData
 {
+    /**
+     * @var string
+     */
+    const TYPE = EpisodeResolver::TYPE;
+
     /**
      * @var null|int
      */
@@ -35,6 +42,27 @@ class FixtureEpisodeData extends FixtureData
      * @var null|string
      */
     protected $title;
+
+    /**
+     * @return string[]
+     */
+    public function getFieldsStatic()
+    {
+        return parent::getFieldsStatic();
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getFieldsEditable()
+    {
+        return array_merge(parent::getFieldsEditable(), [
+            'seasonNumber' => 'Season',
+            'episodeNumberStart' => 'Episode Number',
+            'title' => 'Episode Title'
+        ]);
+    }
+
 
     /**
      * @return int|null

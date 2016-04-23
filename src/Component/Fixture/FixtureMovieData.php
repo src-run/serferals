@@ -11,141 +11,57 @@
 
 namespace RMF\Serferals\Component\Fixture;
 
+use RMF\Serferals\Component\Tmdb\MovieResolver;
+
 /**
  * Class FixtureMovieData
  */
 class FixtureMovieData extends FixtureData
 {
     /**
-     * @var null|int
+     * @var string
      */
-    protected $seasonNumber;
+    const TYPE = MovieResolver::TYPE;
 
     /**
-     * @var null|int
+     * @var string|null
      */
-    protected $episodeNumberStart;
+    protected $imdb;
 
     /**
-     * @var null|int
+     * @return string|null
      */
-    protected $episodeNumberEnd;
-
-    /**
-     * @var null|string
-     */
-    protected $title;
-
-    /**
-     * @return int|null
-     */
-    public function getSeasonNumber()
+    public function getImdb()
     {
-        return $this->seasonNumber;
+        return $this->imdb;
     }
 
     /**
-     * @param int|null $seasonNumber
+     * @param string|null $imdb
      *
      * @return $this
      */
-    public function setSeasonNumber($seasonNumber)
+    public function setImdb($imdb)
     {
-        $this->seasonNumber = (int) $seasonNumber;
+        $this->imdb = $imdb;
 
         return $this;
     }
 
     /**
-     * @return bool
+     * @return string[]
      */
-    public function hasSeasonNumber()
+    public function getFieldsStatic()
     {
-        return $this->seasonNumber !== null;
+        return parent::getFieldsStatic();
     }
 
     /**
-     * @return int|null
+     * @return string[]
      */
-    public function getEpisodeNumberStart()
+    public function getFieldsEditable()
     {
-        return $this->episodeNumberStart;
-    }
-
-    /**
-     * @param int|null $episodeNumberStart
-     *
-     * @return $this
-     */
-    public function setEpisodeNumberStart($episodeNumberStart)
-    {
-        $this->episodeNumberStart = (int) $episodeNumberStart;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasEpisodeNumberStart()
-    {
-        return $this->episodeNumberStart !== null;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getEpisodeNumberEnd()
-    {
-        return $this->episodeNumberEnd;
-    }
-
-    /**
-     * @param int|null $episodeNumberEnd
-     *
-     * @return $this
-     */
-    public function setEpisodeNumberEnd($episodeNumberEnd)
-    {
-        $this->episodeNumberEnd = (int) $episodeNumberEnd;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasEpisodeNumberEnd()
-    {
-        return $this->episodeNumberEnd !== null;
-    }
-
-    /**
-     * @return null|string
-     */
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    /**
-     * @param null|string $title
-     *
-     * @return $this
-     */
-    public function setTitle($title)
-    {
-        $this->title = (string) $title;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasTitle()
-    {
-        return $this->title !== null;
+        return parent::getFieldsEditable();
     }
 }
 

@@ -170,11 +170,53 @@ class SrcRunStyle extends OutputStyle implements StyleInterface
      */
     public function section($message)
     {
-        $messageLen = Helper::strlenWithoutDecoration($this->getFormatter(), $message);
+        $padLength = $this->lineLength - Helper::strlenWithoutDecoration($this->getFormatter(), $message) - 6;
+        $padLeft = round($padLength / 2);
+        $padRight = $padLength - $padLeft;
 
         $this->autoPrependBlock();
         $this->writeln([
-            sprintf('<fg=magenta>%s</>', '-[ '.strtoupper($message).' ]'.str_repeat('-', $this->lineLength-$messageLen-5)),
+            sprintf(
+                '<bg=yellow;fg=black> %s[ <bg=yellow;fg=white>%s</><bg=yellow;fg=black> ]%s </>',
+                str_repeat('-', $padLeft),
+                $message,
+                str_repeat('-', $padRight)
+            )
+        ]);
+        $this->newLine();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function subSection($message)
+    {
+        $padLength = $this->lineLength - Helper::strlenWithoutDecoration($this->getFormatter(), $message) - 6;
+        $padLeft = round($padLength / 2);
+        $padRight = $padLength - $padLeft;
+
+        $this->autoPrependBlock();
+        $this->writeln([
+            sprintf(
+                '<bg=yellow;fg=black> %s[ %s ]%s </>',
+                str_repeat(' ', $padLeft),
+                $message,
+                str_repeat(' ', $padRight)
+            )
+        ]);
+        $this->newLine();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function numberedSection($i, $count, $pre, $message)
+    {
+        $messagePre = sprintf(' # <em>[ %d of %d ]</em> %s', $i, $count, strtoupper($pre));
+
+        $this->autoPrependBlock();
+        $this->writeln([
+            sprintf('%s'.PHP_EOL.' # %s', $messagePre, $message),
         ]);
         $this->newLine();
     }
@@ -209,7 +251,7 @@ class SrcRunStyle extends OutputStyle implements StyleInterface
     /**
      * {@inheritdoc}
      */
-    public function comment($message)
+    public function comment($message, $newLine = true)
     {
         $this->autoPrependText();
 
@@ -217,6 +259,15 @@ class SrcRunStyle extends OutputStyle implements StyleInterface
         foreach ($messages as $message) {
             $this->writeln(sprintf(' // %s', $message));
         }
+
+        if ($newLine === true) {
+            $this->newLine();
+        }
+    }
+
+    public function smallSuccess($title, $message)
+    {
+        $this->writeln(sprintf(' <bg=green;fg=black> %s: %s </>'.PHP_EOL, $title, $message));
     }
 
     /**
@@ -290,10 +341,14 @@ class SrcRunStyle extends OutputStyle implements StyleInterface
     /**
      * {@inheritdoc}
      */
-    public function ask($question, $default = null, $validator = null)
+    public function ask($question, $default = null, $validator = null, $sanitizer = null)
     {
         $question = new Question($question, $default);
         $question->setValidator($validator);
+
+        if ($sanitizer instanceof \Closure) {
+            return $sanitizer($this->askQuestion($question));
+        }
 
         return $this->askQuestion($question);
     }

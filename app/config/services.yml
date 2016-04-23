@@ -5,12 +5,12 @@ imports :
 
 parameters :
 
-    rmf.serferals.name             : "Serferals"
-    rmf.serferals.version          : "2.0.0"
-    rmf.serferals.tpl_path_movie   : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
-    rmf.serferals.tpl_file_movie   : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if imdb is defined %%} [{{ imdb }}]{%% endif %%}.{{ ext }}"
-    rmf.serferals.tpl_path_episode : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
-    rmf.serferals.tpl_file_episode : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"
+    rmf.serferals.name    : "Serferals"
+    rmf.serferals.version : "2.0.0"
+    tpl_path_movie        : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
+    tpl_file_movie        : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if id is defined %%} [{{ id }}]{%% endif %%}.{{ ext }}"
+    tpl_path_episode      : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
+    tpl_file_episode      : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"
 
 services :
 
@@ -46,38 +46,60 @@ services :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
 
-    rmf.serferals.operation_delete_extensions :
-        class     : RMF\Serferals\Component\Operation\DeleteExtensionsOperation
+    rmf.serferals.operation_remove_exts :
+        class     : RMF\Serferals\Component\Operation\RemoveExtsOperation
         arguments :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
         calls :
             - [ setStyle, [ "@rmf.serferals.console_style" ] ]
 
-    rmf.serferals.operation_scan_inputs :
-        class     : RMF\Serferals\Component\Operation\ScanInputsOperation
+    rmf.serferals.operation_path_scan :
+        class     : RMF\Serferals\Component\Operation\PathScanOperation
         arguments :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
         calls :
             - [ setStyle, [ "@rmf.serferals.console_style" ] ]
 
-    rmf.serferals.operation_parse_file_names :
-        class     : RMF\Serferals\Component\Operation\ParseFileNamesOperation
+    rmf.serferals.operation_file_resolver :
+        class     : RMF\Serferals\Component\Operation\FileResolverOperation
         arguments :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
         calls :
             - [ setStyle, [ "@rmf.serferals.console_style" ] ]
 
-    rmf.serferals.operation_lookup_resolver :
-        class     : RMF\Serferals\Component\Operation\LookupResolverOperation
+    rmf.serferals.operation_api_lookup :
+        class     : RMF\Serferals\Component\Operation\ApiLookupOperation
         arguments :
-            - "@rmf.serferals.console_input"
-            - "@rmf.serferals.console_output"
+            - "@rmf.serferals.operation_file_resolver"
+            - "@rmf.serferals.tmdb_episode_resolver"
+            - "@rmf.serferals.tmdb_movie_resolver"
         calls :
+            - [ setInput, [ "@rmf.serferals.console_input" ] ]
+            - [ setOutput, [ "@rmf.serferals.console_output" ] ]
             - [ setStyle, [ "@rmf.serferals.console_style" ] ]
-            - [ setApiOptions, [ "%api_key%", "%api_log%" ] ]
+
+    rmf.serferals.tmdb_episode_resolver :
+        class     : RMF\Serferals\Component\Tmdb\EpisodeResolver
+        arguments :
+            - "%tmdb_api_key%"
+            - "%tmdb_api_log%"
+        calls :
+            - [ setInput, [ "@rmf.serferals.console_input" ] ]
+            - [ setOutput, [ "@rmf.serferals.console_output" ] ]
+            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+
+    rmf.serferals.tmdb_movie_resolver :
+        class     : RMF\Serferals\Component\Tmdb\MovieResolver
+        arguments :
+            - "%tmdb_api_key%"
+            - "%tmdb_api_log%"
+        calls :
+            - [ setInput, [ "@rmf.serferals.console_input" ] ]
+            - [ setOutput, [ "@rmf.serferals.console_output" ] ]
+            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
 
     rmf.serferals.operation_renamer :
         class     : RMF\Serferals\Component\Operation\RenamerOperation
@@ -86,6 +108,7 @@ services :
             - "@rmf.serferals.console_output"
         calls :
             - [ setStyle, [ "@rmf.serferals.console_style" ] ]
-            - [ setFileNameTemplate, [ '%rmf.serferals.tpl_path_episode%', '%rmf.serferals.tpl_file_episode%' ]]
+            - [ setFileTemplateEpisode, [ '%tpl_path_episode%', '%tpl_file_episode%' ]]
+            - [ setFileTemplateMovie, [ '%tpl_path_movie%', '%tpl_file_movie%' ]]
 
 ...
