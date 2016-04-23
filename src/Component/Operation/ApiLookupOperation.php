@@ -116,7 +116,7 @@ class ApiLookupOperation
         $lookupSelection = 1;
 
         while (true) {
-            $this->io()->section(sprintf('%d of %d', $i, $count));
+            $this->io()->section(sprintf('%03d of %03d', $i, $count));
 
             if ($mode === MovieResolver::TYPE) {
                 if ($f instanceof FixtureEpisodeData) {
@@ -146,8 +146,8 @@ class ApiLookupOperation
                 $this->writeHelp($mode);
             });
 
-            if ($f->getFileSize() < 9000000) {
-                $this->io()->warning('File is less than 9,000,000B (and is likey a sample file)');
+            if ($f->getFileSize() < 10000000) {
+                $this->io()->warning('File is less than 10Mb (likely a ancillary file) - marking for removal');
                 $actionDefault = 'R';
             } else {
                 $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';

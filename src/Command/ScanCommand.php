@@ -15,11 +15,8 @@ use RMF\Serferals\Component\Console\InputOutputAwareTrait;
 use RMF\Serferals\Component\Console\Style\StyleInterface;
 use RMF\Serferals\Component\Operation\RemoveExtsOperation;
 use RMF\Serferals\Component\Operation\ApiLookupOperation;
-use RMF\Serferals\Component\Operation\FileResolverOperation;
 use RMF\Serferals\Component\Operation\RenamerOperation;
 use RMF\Serferals\Component\Operation\PathScanOperation;
-use RMF\Serferals\Component\Queue\QueueEpisodeItem;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\TableCell;
 use Symfony\Component\Console\Helper\TableStyle;
@@ -27,20 +24,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Class ScanCommand
  */
-class ScanCommand extends Command
+class ScanCommand extends AbstractCommand
 {
-    use InputOutputAwareTrait;
-
-    /**
-     * @var StyleInterface
-     */
-    protected $style;
-
     protected function configure()
     {
         $this
@@ -60,7 +49,7 @@ class ScanCommand extends Command
     }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
      *
      * @return int
@@ -73,6 +62,8 @@ class ScanCommand extends Command
             $this->getApplication()->getName(),
             $this->getApplication()->getVersion(),
             ['by', 'Rob Frawley 2nd <rmf@src.run>']);
+
+        $this->io()->comment(sprintf('Running command <info>%s</info>', 'scan'));
 
         $inputExtensions = $input->getOption('ext');
         $cleanExtentions = $input->getOption('remove');
@@ -219,61 +210,6 @@ class ScanCommand extends Command
     {
         return $this->getService('rmf.serferals.operation_remove_exts');
     }
-
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
-    private function ioSetup(InputInterface $input, OutputInterface $output)
-    {
-        $this->setInput($input);
-        $this->setOutput($output);
-        $this->setStyle($this->getService('rmf.serferals.console_style'));
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return mixed
-     */
-    private function getService($name)
-    {
-        return $this
-            ->getApplication()
-            ->getContainer()
-            ->get($name);
-    }
-
-    /**
-     * @param bool                $returnMultiple
-     * @param string|string[],... $paths
-     *
-     * @return array[]
-     */
-    private function validatePaths($returnMultiple = true, ...$paths)
-    {
-        $valid = [];
-        $invalid = [];
-
-        foreach ($paths as $p) {
-            if (false !== ($r = realpath($p)) && is_readable($p) && is_writable($p)) {
-                $valid[] = $r;
-            } else {
-                $invalid[] = $p;
-            }
-        }
-
-        if ($returnMultiple === false) {
-            $valid = array_pop($valid);
-            $invalid = array_pop($invalid);
-        }
-
-        return [ $valid, $invalid ];
-    }
-
-    private function endError()
-    {
-        $this->io()->error('Exiting script prior to completion!');
-        exit(255);
-    }
 }
+
+/* EOF */

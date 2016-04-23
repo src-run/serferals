@@ -28,7 +28,7 @@
         "symfony/serializer"           : "^3.0",
         "symfony/dependency-injection" : "^3.0",
         "symfony/config"               : "^3.0",
-        "zendframework/zend-hydrator"  : "^2.2",
+        "mhor/php-mediainfo"           : "^1.6",
         "twig/twig"                    : "^1.21,<2.0",
         "php-tmdb/api"                 : "^2.0",
         "monolog/monolog"              : "^1.18",

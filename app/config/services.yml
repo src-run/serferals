@@ -22,9 +22,13 @@ services :
         calls :
             - [ setContainer, [ "@service_container" ] ]
             - [ add, [ "@rmf.serferals.scan_command" ] ]
+            - [ add, [ "@rmf.serferals.duplicates_command" ] ]
 
     rmf.serferals.scan_command :
         class : RMF\Serferals\Command\ScanCommand
+
+    rmf.serferals.duplicates_command :
+        class : RMF\Serferals\Command\DuplicatesCommand
 
     rmf.serferals.filesystem :
         class : Symfony\Component\Filesystem\Filesystem

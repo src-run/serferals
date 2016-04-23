@@ -170,17 +170,14 @@ class SrcRunStyle extends OutputStyle implements StyleInterface
      */
     public function section($message)
     {
-        $padLength = $this->lineLength - Helper::strlenWithoutDecoration($this->getFormatter(), $message) - 6;
-        $padLeft = round($padLength / 2);
-        $padRight = $padLength - $padLeft;
+        $padLength = $this->lineLength - Helper::strlenWithoutDecoration($this->getFormatter(), $message) - 4;
 
         $this->autoPrependBlock();
         $this->writeln([
             sprintf(
-                '<bg=yellow;fg=black> %s[ <bg=yellow;fg=white>%s</><bg=yellow;fg=black> ]%s </>',
-                str_repeat('-', $padLeft),
+                '<bg=magenta;fg=white> [<bg=magenta;fg=white;options=bold>%s</><bg=magenta;fg=white>]%s </>',
                 $message,
-                str_repeat('-', $padRight)
+                str_repeat(' ', $padLength)
             )
         ]);
         $this->newLine();
