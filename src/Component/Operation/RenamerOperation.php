@@ -172,6 +172,8 @@ class RenamerOperation
 
         if (false === @copy($inputFilePath, $outputFilePath)) {
             $this->io()->error(sprintf('Could not write file "%s"', $outputFilePath));
+        } else {
+            unlink($inputFilePath);
         }
     }
 

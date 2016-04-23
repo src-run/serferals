@@ -144,7 +144,7 @@ class ScanCommand extends Command
         }
 
         $this->ioV(function (StyleInterface $io) use ($tableRows) {
-            $io->comment('Resolved runtime configuration values');
+            $io->comment('Listing runtime configuration');
             $io->table([], $tableRows);
         });
 

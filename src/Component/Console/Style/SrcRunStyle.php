@@ -145,11 +145,11 @@ class SrcRunStyle extends OutputStyle implements StyleInterface
         }
 
         $lines[] = null;
-        //$lines[] = $this->getSeparatorFullWidth();
+        $lines[] = $this->getSeparatorFullWidth();
+        $lines[] = '';
 
         $this->autoPrependBlock();
         $this->writeln($lines);
-        $this->newLine();
     }
     
     /**
