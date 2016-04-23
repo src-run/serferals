@@ -82,9 +82,19 @@ class ApiLookupOperation
         $i = 0;
         $c = count($fixtureSet);
 
-        $fixtureSet = array_map(function ($f) use ($c, &$i) {
-            return $this->lookup($f, $c, $i);
-        }, $fixtureSet);
+        $fixtureSet = array_map(
+            function (FixtureData $f) use ($c, &$i) {
+                static $skip = null;
+                if ($skip === true) {
+                    $f->setEnabled(false);
+
+                    return $f;
+                }
+
+                return $this->lookup($f, $c, $i, $skip);
+            },
+            $fixtureSet
+        );
 
         return array_filter($fixtureSet, function (FixtureData $fixture) {
             return $fixture->isEnabled();
@@ -95,10 +105,11 @@ class ApiLookupOperation
      * @param FixtureData $f
      * @param int         $count
      * @param int         $i
+     * @param bool        $skipRemaining
      *
      * @return FixtureData|FixtureEpisodeData|FixtureMovieData
      */
-    public function lookup(FixtureData $f, $count, &$i)
+    public function lookup(FixtureData $f, $count, &$i, &$skipRemaining)
     {
         ++$i;
         $mode = $f::TYPE;
@@ -184,6 +195,10 @@ class ApiLookupOperation
                     $this->writeHelp($mode, true);
                     sleep(3);
                     break;
+
+                case 'W':
+                    $skipRemaining = true;
+                    break 2;
 
                 case 'Q':
                     $this->io()->warning('User requested termination');
@@ -730,7 +745,8 @@ class ApiLookupOperation
         if ($v === true) {
             $this->io()->writeln(sprintf(' [ <em>m</em> ] Mode <info>(switch to %s)</info>', $mode), false);
             $this->io()->writeln(' [ <em>F</em> ] Forced Continue', false);
-            $this->io()->writeln(' [ <em>R</em> ] Remove', false);
+            $this->io()->writeln(' [ <em>R</em> ] Remove File/Path', false);
+            $this->io()->writeln(' [ <em>W</em> ] Write Previous', false);
             $this->io()->writeln(' [ <em>Q</em> ] Quit');
         }
     }
