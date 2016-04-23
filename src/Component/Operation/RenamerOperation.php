@@ -36,6 +36,11 @@ class RenamerOperation
     protected $outputPath;
 
     /**
+     * @var bool
+     */
+    protected $outputOverwrite;
+
+    /**
      * @var string
      */
     protected $tplPathEpisode;
@@ -88,10 +93,12 @@ class RenamerOperation
     /**
      * @param string                                  $outputPath
      * @param FixtureMovieData[]|FixtureEpisodeData[] $collection
+     * @param bool                                    $outputOverwrite
      */
-    public function run($outputPath, array $collection)
+    public function run($outputPath, array $collection, $outputOverwrite = false)
     {
         $this->outputPath = $outputPath;
+        $this->outputOverwrite = $outputOverwrite;
 
         if (count($collection) === 0) {
             $this->io()->warning('No output files to write');
@@ -154,7 +161,10 @@ class RenamerOperation
             $io->table([], $tableRows);
         });
 
-        if (file_exists($outputFilePath) && false === $this->io()->confirm(sprintf('Overwrite file "%s"', $outputFilePath), false)) {
+        if (file_exists($outputFilePath) &&
+            false === $this->outputOverwrite &&
+            false === $this->io()->confirm(sprintf('Overwrite file "%s"', $outputFilePath), false)
+        ) {
             $this->io()->comment(sprintf('Skipping "%s"', $outputFilePath));
 
             return;
@@ -185,7 +195,7 @@ class RenamerOperation
      *
      * @return \Twig_Environment[]|mixed[][]
      */
-    public function moveEpisode(FixtureEpisodeData $f, \Twig_Environment $e, $tplPathName, $tplFileName)
+    private function moveEpisode(FixtureEpisodeData $f, \Twig_Environment $e, $tplPathName, $tplFileName)
     {
         $e->setLoader(new \Twig_Loader_Array([$tplPathName => $this->tplPathEpisode, $tplFileName => $this->tplFileEpisode]));
 
@@ -215,7 +225,7 @@ class RenamerOperation
      *
      * @return \Twig_Environment[]|mixed[][]
      */
-    public function moveMovie(FixtureMovieData $f, \Twig_Environment $e, $tplPathName, $tplFileName)
+    private function moveMovie(FixtureMovieData $f, \Twig_Environment $e, $tplPathName, $tplFileName)
     {
         $e->setLoader(new \Twig_Loader_Array([$tplPathName => $this->tplPathMovie, $tplFileName => $this->tplFileMovie]));
 
@@ -238,7 +248,7 @@ class RenamerOperation
     /**
      * @return \Twig_Environment
      */
-    public function getTwig()
+    private function getTwig()
     {
         $twig = new \Twig_Environment();
         $twig->setCache(false);

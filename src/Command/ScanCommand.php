@@ -54,6 +54,7 @@ class ScanCommand extends Command
                 new InputOption('remove', null, InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'Input paths remove files with exts.', ['txt', 'nfo']),
                 new InputOption('ext', ['x'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'Input extensions to consider media.', ['mov', 'mkv', 'mp4', 'avi']),
                 new InputOption('output-dir', ['o'], InputOption::VALUE_REQUIRED, 'Path to output to.'),
+                new InputOption('overwrite', ['w'], InputOption::VALUE_NONE, 'Overwrite output files if exist.'),
                 new InputArgument('input-dirs', InputArgument::IS_ARRAY|InputArgument::REQUIRED, 'Path to read input files from.')
             ]);
     }
@@ -115,7 +116,7 @@ class ScanCommand extends Command
         $itemCollection = $lookup->resolve($itemCollection);
 
         $renamer = $this->operationReNamer();
-        $renamer->run($outputPath, $itemCollection);
+        $renamer->run($outputPath, $itemCollection, $input->getOption('overwrite'));
 
         $this->io()->success('Done');
 

@@ -146,8 +146,13 @@ class ApiLookupOperation
                 $this->writeHelp($mode);
             });
 
-            $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
-
+            if ($f->getFileSize() < 9000000) {
+                $this->io()->warning('File is less than 9,000,000B (and is likey a sample file)');
+                $actionDefault = 'R';
+            } else {
+                $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
+            }
+            
             $action = $this->io()->ask('Enter action command shortcut name', $actionDefault);
 
             switch ($action) {
@@ -740,7 +745,7 @@ class ApiLookupOperation
         $this->io()->writeln(' [ <em>s</em> ] Skip', false);
         $this->io()->writeln(' [ <em>e</em> ] Edit Fixture', false);
         $this->io()->writeln(' [ <em>l</em> ] Search Results', false);
-        $this->io()->writeln(' [ <em>?</em> ] Show Help', false);
+        $this->io()->writeln(' [ <em>?</em> ] Show All Help', false);
 
         if ($v === true) {
             $this->io()->writeln(sprintf(' [ <em>m</em> ] Mode <info>(switch to %s)</info>', $mode), false);
