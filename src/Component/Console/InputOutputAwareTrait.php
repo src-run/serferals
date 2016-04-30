@@ -117,6 +117,16 @@ trait InputOutputAwareTrait
     /**
      * @param \Closure $handler
      */
+    protected function ioVVV(\Closure $handler)
+    {
+        if ($this->io()->isDebug()) {
+            $this->ioClosure($handler);
+        }
+    }
+
+    /**
+     * @param \Closure $handler
+     */
     protected function ioClosure(\Closure $handler)
     {
         $handler($this->io(), $this->input, $this->output);

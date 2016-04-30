@@ -57,6 +57,32 @@ class AbstractCommand extends Command
     }
 
     /**
+     * @param string $name
+     *
+     * @returns mixed
+     */
+    protected function getParameter($name)
+    {
+        $getContainerCallable = [$this->getApplication(), 'getContainer'];
+
+        if (!is_callable($getContainerCallable)) {
+            $this->writeErrorAndExit('Container getter method not available for application');
+        }
+
+        $container = call_user_func($getContainerCallable);
+
+        if (false === ($container instanceof ContainerInterface)) {
+            $this->writeErrorAndExit('Invalid container object returned from application.');
+        }
+
+        if (!$container->hasParameter($name)) {
+            $this->writeErrorAndExit(sprintf('Requested parameter "%s" does not exist', $name));
+        }
+
+        return $container->getParameter($name);
+    }
+
+    /**
      * @param InputInterface  $input
      * @param OutputInterface $output
      *
@@ -108,7 +134,12 @@ class AbstractCommand extends Command
      */
     protected function writeErrorAndExit($message = null, $return = 255)
     {
-        $this->io()->error($message ?: 'Exiting script (premature)');
+        if ($this->io() instanceof StyleInterface) {
+            $this->io()->error($message ?: 'Exiting script (premature)');
+        } else {
+            echo sprintf("Error: %s. Exiting with code %d\n", $message, 255);
+        }
+
         exit($return);
     }
 }

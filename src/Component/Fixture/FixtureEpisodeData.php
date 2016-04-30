@@ -89,7 +89,7 @@ class FixtureEpisodeData extends FixtureData
      */
     public function hasSeasonNumber()
     {
-        return $this->seasonNumber !== null;
+        return $this->seasonNumber !== null && !empty($this->seasonNumber);
     }
 
     /**
@@ -117,7 +117,7 @@ class FixtureEpisodeData extends FixtureData
      */
     public function hasEpisodeNumberStart()
     {
-        return $this->episodeNumberStart !== null;
+        return $this->episodeNumberStart !== null && !empty($this->episodeNumberStart);
     }
 
     /**
@@ -145,7 +145,7 @@ class FixtureEpisodeData extends FixtureData
      */
     public function hasEpisodeNumberEnd()
     {
-        return $this->episodeNumberEnd !== null;
+        return $this->episodeNumberEnd !== null && !empty($this->episodeNumberEnd);
     }
 
     /**
@@ -173,7 +173,7 @@ class FixtureEpisodeData extends FixtureData
      */
     public function hasTitle()
     {
-        return $this->title !== null;
+        return $this->title !== null && !empty($this->title);
     }
 }
 

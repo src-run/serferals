@@ -30,21 +30,54 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class ScanCommand extends AbstractCommand
 {
+    /**
+     * @var string[]
+     */
+    private $taskExtsAsMedia;
+
+    /**
+     * @var string[]
+     */
+    private $taskExtsRemovePre;
+
+    /**
+     * @var string[]
+     */
+    private $taskExtsRemovePost;
+
+    /**
+     * @param string[]      $taskExtsAsMedia
+     * @param null|string[] $taskExtsRemovePre
+     * @param null|string[] $taskExtsRemovePost
+     */
+    public function __construct($taskExtsAsMedia, $taskExtsRemovePre = null, $taskExtsRemovePost = null)
+    {
+        $this->taskExtsAsMedia = $taskExtsAsMedia;
+        $this->taskExtsRemovePre = $taskExtsRemovePre;
+        $this->taskExtsRemovePost = $taskExtsRemovePost;
+
+        parent::__construct();
+    }
+
+    /**
+     * configure command name, desc, usage, help, options, etc
+     */
     protected function configure()
     {
         $this
             ->setName('scan')
             ->setDescription('Scan media file queue and organize.')
-            ->addUsage('--type=ep --type=movie a/path/for/input/files')
+            ->addUsage('-tTf -e avi -e mkv -o /output/dir/path a/path/for/input/files')
             ->setHelp('Scan input directory for media files, resolve episode/movie metadata, rename and output using proper directory structure and file names.')
             ->setDefinition([
-                new InputOption('type', ['t'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'Input media type.', ['supported']),
-                new InputOption('task', ['r'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'Run additional tasks.', ['clean']),
-                new InputOption('remove', null, InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'Input paths remove files with exts.', ['txt', 'nfo']),
-                new InputOption('ext', ['x'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'Input extensions to consider media.', ['mov', 'mkv', 'mp4', 'avi']),
-                new InputOption('output-dir', ['o'], InputOption::VALUE_REQUIRED, 'Path to output to.'),
-                new InputOption('overwrite', ['w'], InputOption::VALUE_NONE, 'Overwrite output files if exist.'),
-                new InputArgument('input-dirs', InputArgument::IS_ARRAY|InputArgument::REQUIRED, 'Path to read input files from.')
+                new InputOption('ext', ['e'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions understood to be media files.', $this->taskExtsAsMedia),
+                new InputOption('overwrite', ['f'], InputOption::VALUE_NONE, 'Force media file overwrite (replace) if same file already exists.'),
+                new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Output directory to write organized media to.'),
+                new InputOption('pre-task', ['t'], InputOption::VALUE_NONE, 'Enable pre-scan file/dir cleaning and other tasks.'),
+                new InputOption('post-task', ['T'], InputOption::VALUE_NONE, 'Enable post-scan file/dir cleaning and other tasks.'),
+                new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->taskExtsRemovePre),
+                new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->taskExtsRemovePost),
+                new InputArgument('input-path', InputArgument::IS_ARRAY|InputArgument::REQUIRED, 'Input directory path(s) to read unorganized media from.')
             ]);
     }
 
@@ -63,12 +96,16 @@ class ScanCommand extends AbstractCommand
             $this->getApplication()->getVersion(),
             ['by', 'Rob Frawley 2nd <rmf@src.run>']);
 
-        $this->io()->comment(sprintf('Running command <info>%s</info>', 'scan'));
+        $this->io()->comment(sprintf('Running command <comment>%s</comment>', 'scan'));
+
+        $cleanPreTask = $input->getOption('pre-task');
+        $cleanPostTask = $input->getOption('post-task');
+        $cleanExtensionsPre = $input->getOption('pre-ext');
+        $cleanExtensionsPost = $input->getOption('post-ext');
 
         $inputExtensions = $input->getOption('ext');
-        $cleanExtentions = $input->getOption('remove');
-        list($inputPaths, $inputInvalidPaths) = $this->validatePaths(true, ...$input->getArgument('input-dirs'));
-        list($outputPath, $outputInvalidPath) = $this->validatePaths(false, $input->getOption('output-dir'));
+        list($inputPaths, $inputInvalidPaths) = $this->validatePaths(true, ...$input->getArgument('input-path'));
+        list($outputPath, $outputInvalidPath) = $this->validatePaths(false, $input->getOption('output-path'));
 
         if ($outputInvalidPath) {
             $this->io()->error('Invalid output path: '.$outputInvalidPath);
@@ -85,8 +122,12 @@ class ScanCommand extends AbstractCommand
             return 255;
         }
 
-        $this->showRuntimeConfiguration($outputPath, $inputPaths, $cleanExtentions, $inputExtensions);
-        $this->doPreScanTasks($inputPaths, $cleanExtentions);
+        $this->showRuntimeConfiguration($outputPath, $inputPaths, array_unique(array_merge($cleanExtensionsPre, $cleanExtensionsPost)), $inputExtensions);
+
+        if ($cleanPreTask) {
+            $this->doPreRunTasks($inputPaths, $cleanExtensionsPre);
+        }
+
         $scanner = $this->operationPathScan();
 
         $lookup = $this->operationApiLookup();
@@ -101,13 +142,17 @@ class ScanCommand extends AbstractCommand
             ->getItems();
 
         $this->ioV(function() use ($itemCollection) {
-            $this->io()->comment('Found '.count($itemCollection).' media files for parsing.');
+            $this->io()->comment(sprintf('Found <info>%d</info> media files in input path(s)', count($itemCollection)));
         });
 
         $itemCollection = $lookup->resolve($itemCollection);
 
         $renamer = $this->operationReNamer();
         $renamer->run($outputPath, $itemCollection, $input->getOption('overwrite'));
+
+        if ($cleanPostTask) {
+            $this->doPostRunTasks($inputPaths, $cleanExtensionsPost);
+        }
 
         $this->io()->success('Done');
 
@@ -117,10 +162,10 @@ class ScanCommand extends AbstractCommand
     /**
      * @param string   $outputPath
      * @param string[] $inputPaths
-     * @param string[] $cleanExtentions
+     * @param string[] $cleanExtensions
      * @param string[] $inputExtensions
      */
-    private function showRuntimeConfiguration($outputPath, array $inputPaths, array $cleanExtentions, array $inputExtensions)
+    private function showRuntimeConfiguration($outputPath, array $inputPaths, array $cleanExtensions, array $inputExtensions)
     {
         $tableRows = [];
 
@@ -130,53 +175,41 @@ class ScanCommand extends AbstractCommand
 
         $tableRows[] = ['Output Directory', $outputPath];
         $tableRows[] = ['Search Extension List', implode(',', $inputExtensions)];
-
-        if ($this->io()->isVeryVerbose()) {
-            $tableRows[] = ['Remove Extension List', implode(',', $cleanExtentions)];
-        }
+        $tableRows[] = ['Remove Extension List', implode(',', $cleanExtensions)];
 
         $this->ioV(function (StyleInterface $io) use ($tableRows) {
             $io->comment('Listing runtime configuration');
             $io->table([], $tableRows);
         });
 
-        $this->ioVV(function () {
+        $this->ioVVV(function () {
             if (false === $this->io()->confirm('Continue using these values?', true)) {
                 $this->endError();
             }
         });
-        
-        $this->ioN(function (StyleInterface $io) use ($outputPath, $inputExtensions, $inputPaths) {
-            $io->comment(
-                sprintf(
-                    'Filtering files by <info>*.(%s)</info>',
-                    implode('|', $inputExtensions)
-                ),
-                false
-            );
-
-            $io->comment(
-                sprintf(
-                    'within path(s) <info>%s</info>',
-                    implode('|', $inputPaths)
-                ),
-                false
-            );
-
-            $io->comment(
-                sprintf(
-                    'with output base path <info>%s</info>',
-                    $outputPath
-                ),
-                false
-            );
-        });
     }
 
-    private function doPreScanTasks(array $inputPaths, $cleanExtentions)
+    /**
+     * @param string[] $inputPaths
+     * @param string[] $extensions
+     */
+    private function doPreRunTasks(array $inputPaths, $extensions)
     {
         $deleteExtensions = $this->operationRemoveExts();
-        $deleteExtensions->run($inputPaths, ...$cleanExtentions);
+        $deleteExtensions->run($inputPaths, ...$extensions);
+    }
+
+    /**
+     * @param string[] $inputPaths
+     * @param string[] $extensions
+     */
+    private function doPostRunTasks(array $inputPaths, $extensions)
+    {
+        $deleteExtensions = $this->operationRemoveExts();
+        $deleteExtensions->run($inputPaths, ...$extensions);
+
+        $deleteDirectories = $this->operationRemoveDirs();
+        $deleteDirectories->run($inputPaths);
     }
 
     /**
@@ -209,6 +242,14 @@ class ScanCommand extends AbstractCommand
     private function operationRemoveExts()
     {
         return $this->getService('rmf.serferals.operation_remove_exts');
+    }
+
+    /**
+     * @return RemoveDirsOperation
+     */
+    private function operationRemoveDirs()
+    {
+        return $this->getService('rmf.serferals.operation_remove_dirs');
     }
 }
 

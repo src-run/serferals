@@ -1,0 +1,4 @@
+parameters :
+    tmdb_api_key : 2fa18e1164ac656c8305a1d3b074b776
+    tmdb_api_log : "/tmp/api-serferals.log"
+

@@ -122,8 +122,8 @@ class RenamerOperation
     {
         static $i = 1;
 
-        $tplPathName = uniqid( 'string_template_', true );
-        $tplFileName = uniqid( 'string_template_', true );
+        $tplPathName = uniqid( 'string_template_'.mt_rand(10,99).'_', true );
+        $tplFileName = uniqid( 'string_template_'.mt_rand(10,99).'_', true );
 
         if ($f instanceof FixtureMovieData) {
             list($e, $opts) = $this->moveMovie($f, $this->getTwig(), $tplPathName, $tplFileName);

@@ -56,11 +56,16 @@ class RemoveExtsOperation
 
         $this->ioV(function (StyleInterface $io) use ($finder, $extensions) {
             $io->comment(sprintf(
-                'Found %d files matching "*.(%s)" for removal.',
+                'Found <info>%d</info> files matching <info>*.(%s)</info> for removal',
                 $finder->count(), implode('|', $extensions)), false);
         });
 
         foreach ($finder as $file) {
+            $this->ioVV(function (StyleInterface $io) use ($file) {
+                $io->comment(sprintf(
+                    'Removing <comment>%s</comment>',
+                    $file->getPathname()), false);
+            });
             $this->delete($file);
         }
     }

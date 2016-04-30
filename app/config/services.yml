@@ -5,12 +5,17 @@ imports :
 
 parameters :
 
-    rmf.serferals.name    : "Serferals"
-    rmf.serferals.version : "2.0.0"
-    tpl_path_movie        : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
-    tpl_file_movie        : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if id is defined %%} [{{ id }}]{%% endif %%}.{{ ext }}"
-    tpl_path_episode      : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
-    tpl_file_episode      : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"
+    rmf.serferals.name     : "Serferals"
+    rmf.serferals.version  : "2.0.0"
+
+    tpl_path_movie         : "movie/{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
+    tpl_file_movie         : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if id is defined %%} [{{ id }}]{%% endif %%}.{{ ext }}"
+    tpl_path_episode       : "tv/{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
+    tpl_file_episode       : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"
+
+    extensions_media       : ['mov', 'mkv', 'mp4', 'avi']
+    extensions_remove_pre  : ['nfo', 'txt']
+    extensiond_remove_post : ['srt', 'nfo', 'txt']
 
 services :
 
@@ -26,6 +31,10 @@ services :
 
     rmf.serferals.scan_command :
         class : RMF\Serferals\Command\ScanCommand
+        arguments :
+            - "%extensions_media%"
+            - "%extensions_remove_pre%"
+            - "%extensiond_remove_post%"
 
     rmf.serferals.duplicates_command :
         class : RMF\Serferals\Command\DuplicatesCommand
@@ -52,6 +61,14 @@ services :
 
     rmf.serferals.operation_remove_exts :
         class     : RMF\Serferals\Component\Operation\RemoveExtsOperation
+        arguments :
+            - "@rmf.serferals.console_input"
+            - "@rmf.serferals.console_output"
+        calls :
+            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+
+    rmf.serferals.operation_remove_dirs :
+        class     : RMF\Serferals\Component\Operation\RemoveDirsOperation
         arguments :
             - "@rmf.serferals.console_input"
             - "@rmf.serferals.console_output"
