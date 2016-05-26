@@ -140,7 +140,7 @@ class ScanCommand extends AbstractCommand
             ->getItems();
 
         $this->ioVerbose(function() use ($itemCollection) {
-            $this->io()->comment(sprintf('Found <info>%d</info> media files in input path(s)', count($itemCollection)));
+            //$this->io()->comment(sprintf('Found <info>%d</info> media files in input path(s)', count($itemCollection)));
         });
 
         $itemCollection = $lookup->resolve($itemCollection);
@@ -152,7 +152,7 @@ class ScanCommand extends AbstractCommand
             $this->doPostRunTasks($inputPaths, $cleanExtensionsPost);
         }
 
-        $this->io()->success('Done');
+        $this->io()->smallSuccess('OK', 'Done');
 
         return 0;
     }
@@ -176,7 +176,8 @@ class ScanCommand extends AbstractCommand
         $tableRows[] = ['Remove Extension List', implode(',', $cleanExtensions)];
 
         $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
-            $io->table([], $tableRows);
+            $io->subSection('Runtime Configuration');
+            $io->table($tableRows);
         });
 
         $this->ioDebug(function () {

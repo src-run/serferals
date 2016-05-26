@@ -80,6 +80,14 @@ class ApiLookupOperation
         $i = 0;
         $c = count($fixtureSet);
 
+        $this->ioVerbose(function (StyleInterface $io) use ($c) {
+            if ($c === 0) {
+                return;
+            }
+            
+            $io->subSection('File API Resolutions');
+        });
+
         $fixtureSet = array_map(
             function (FixtureData $f) use ($c, &$i) {
                 static $skip = null;
@@ -258,7 +266,7 @@ class ApiLookupOperation
             }
         );
 
-        $this->io()->table(['[#] Tvdb Id', 'Title', 'Release Year', 'Extra'], $tableRows);
+        $this->io()->table($tableRows, ['[#] Tvdb Id', 'Title', 'Release Year', 'Extra']);
         $selection = $this->io()->ask('Enter result item number', 1, null, function ($value) {
             return (int) $value;
         });
@@ -333,7 +341,7 @@ class ApiLookupOperation
 
         while(true) {
             list($tableHeads, $tableRows, $control) = $this->getEditFixtureTable($f);
-            $this->io()->table($tableHeads, $tableRows);
+            $this->io()->table($tableRows, $tableHeads);
             $action = strtolower($this->io()->ask('Enter value number or no value to exit editor', 'done'));
 
             switch ($action) {
@@ -570,10 +578,6 @@ class ApiLookupOperation
      */
     private function writeLookupSuccess(FixtureData $f, ...$parameters)
     {
-        if (!$this->io()->isVerbose()) {
-            $this->io()->comment($f->getFile()->getRelativePathname());
-        }
-
         if (count($parameters) > 1 && $f instanceof FixtureEpisodeData) {
             $this->writeLookupSuccessEpisode($f, ...$parameters);
         } elseif (count($parameters) > 1 && $f instanceof FixtureMovieData) {
@@ -599,30 +603,30 @@ class ApiLookupOperation
 
         $rows = [
             ['Tvdb Id', $m->getId().($m->getImdbId() === null ? '' : '/'.$m->getImdbId())],
-            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $m->getTitle()],
             ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
             ['Size', $this->fileSizeHuman($f->getFile())],
-            ['API Match', sprintf('<fg=green>Success: %d</>', $m->getId())],
+            ['API Match', sprintf('<fg=green>OKAY: %d</>', $m->getId())],
         ];
 
         $this->ioVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table([], $rows);
+                $style->table($rows);
             }
         );
 
         $rows = [
-            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $m->getTitle()],
             ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
             ['Size', $this->fileSizeHuman($f->getFile())],
-            ['API Match', sprintf('<fg=green>Success: %d</>', $m->getId())],
+            ['API Match', sprintf('<fg=green>OKAY: %d</>', $m->getId())],
         ];
 
-        $this->ioNoVerbose(
+        $this->ioNotVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table([], $rows);
+                $style->table($rows);
             }
         );
     }
@@ -656,7 +660,7 @@ class ApiLookupOperation
 
         $rows = [
             ['Tvdb Id', $s->getId().'/'.$e->getId()],
-            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['File Path', $f->getFile()->getPathname()],
             ['Show Name', $s->getName()],
             ['Season', $e->getSeasonNumber()],
             ['Episode Number', $e->getEpisodeNumber()],
@@ -664,27 +668,27 @@ class ApiLookupOperation
             ['Origin Country', $country],
             ['Air Date', $e->getAirDate()->format('Y\-m\-d')],
             ['Size', $this->fileSizeHuman($f->getFile())],
-            ['API Match', sprintf('<fg=green>Success: %d/%d</>', $s->getId(), $e->getId())],
+            ['API Match', sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
         ];
 
         $this->ioVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table([], $rows);
+                $style->table($rows);
             }
         );
 
         $rows = [
-            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['File Path', $f->getFile()->getPathname()],
             ['Show Name', $s->getName()],
             ['Season/Episode', sprintf('%d/%d', $e->getSeasonNumber(), $e->getEpisodeNumber())],
             ['Episode Title', $e->getName()],
             ['Size', $this->fileSizeHuman($f->getFile())],
-            ['API Match', sprintf('<fg=green>Success: %d/%d</>', $s->getId(), $e->getId())],
+            ['API Match', sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
         ];
 
-        $this->ioNoVerbose(
+        $this->ioNotVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table([], $rows);
+                $style->table($rows);
             }
         );
     }
@@ -711,28 +715,28 @@ class ApiLookupOperation
 
         $rows = [
             ['Tvdb Id', ''],
-            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $f->getName()],
             ['Release Year', $f->getYear()],
             ['Size', $this->fileSizeHuman($f->getFile())],
-            ['API Match', '<error> Failure </error>'],
+            ['API Match', '<fg=red>FAIL</>'],
         ];
 
         $this->ioVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table([], $rows);
+                $style->table($rows);
             }
         );
 
         $rows = [
-            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['File Path', $f->getFile()->getPathname()],
             ['Size', $this->fileSizeHuman($f->getFile())],
-            ['API Match', '<error>Failure</error>'],
+            ['API Match', '<fg=red>Failure</>'],
         ];
 
-        $this->ioNoVerbose(
+        $this->ioNotVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table([], $rows);
+                $style->table($rows);
             }
         );
     }
@@ -752,31 +756,31 @@ class ApiLookupOperation
         );*/
 
         $rows = [
-            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['File Path', $f->getFile()->getPathname()],
             ['Show Name', $f->getName()],
             ['Season', $f->getSeasonNumber()],
             ['Episode Number', $f->getEpisodeNumberStart()],
             ['Episode Title', $f->getTitle()],
             ['Air Year', $f->getYear()],
             ['Size', $this->fileSizeHuman($f->getFile())],
-            ['API Match', '<error> Failure </error>'],
+            ['API Match', '<fg=red>FAIL</>'],
         ];
 
         $this->ioVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table([], $rows);
+                $style->table($rows);
             }
         );
 
         $rows = [
-            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['File Path', $f->getFile()->getPathname()],
             ['Size', $this->fileSizeHuman($f->getFile())],
-            ['API Match', '<error> Failure </error>'],
+            ['API Match', '<fg=red>FAIL</>'],
         ];
 
-        $this->ioNoVerbose(
+        $this->ioNotVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table([], $rows);
+                $style->table($rows);
             }
         );
     }

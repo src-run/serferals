@@ -1219,7 +1219,7 @@
             "dist": {
                 "type": "path",
                 "url": "/pool/0/code/vermicious-console-io-library",
-                "reference": "a12ad9810f6983321d0cdf5a5f73c12373c394b8",
+                "reference": "e08556e8918d41173aa2b889794001647f529612",
                 "shasum": null
             },
             "require": {
@@ -1230,7 +1230,8 @@
                 "codacy/coverage": "^1.0",
                 "phpunit/phpunit": "^5.0",
                 "satooshi/php-coveralls": "^1.0",
-                "src-run/augustus-reflection-library": "^0.6"
+                "src-run/augustus-reflection-library": "^0.6",
+                "symfony/var-dumper": "^2.8||^3.0"
             },
             "type": "library",
             "extra": {

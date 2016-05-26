@@ -154,7 +154,7 @@ class RenameOperation
         $tableRows[] = ['Output', substr($outputFilePath, $offset)];
 
         $this->ioVeryVerbose(function (StyleInterface $io) use ($tableRows) {
-            $io->table([], $tableRows);
+            $io->table($tableRows);
         });
 
         if (file_exists($outputFilePath) &&

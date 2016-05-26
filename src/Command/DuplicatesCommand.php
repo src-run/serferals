@@ -283,7 +283,7 @@ class DuplicatesCommand extends AbstractCommand
 
         $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
             $io->comment('Listing runtime configuration');
-            $io->table([], $tableRows);
+            $io->table($tableRows);
         });
 
         $this->ioVeryVerbose(function () {
@@ -292,7 +292,7 @@ class DuplicatesCommand extends AbstractCommand
             }
         });
 
-        $this->ioNoVerbose(function (StyleInterface $io) use ($inputExtensions, $inputPaths) {
+        $this->ioNotVerbose(function (StyleInterface $io) use ($inputExtensions, $inputPaths) {
             $io->comment(
                 sprintf(
                     'Filter inputs against <info>*.(%s)</info>',
