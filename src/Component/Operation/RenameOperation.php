@@ -97,12 +97,12 @@ class RenameOperation
         $this->outputOverwrite = $outputOverwrite;
 
         if (count($collection) === 0) {
-            $this->io()->warning('No output files to write');
+            $this->io()->warning('No output files selected during run');
 
             return;
         }
 
-        $this->io()->subSection('Writing output files');
+        $this->io()->subSection('Writing Output Files');
 
         foreach ($collection as $item) {
             $this->move($item);

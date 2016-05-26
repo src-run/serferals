@@ -763,11 +763,10 @@
         {
             "name": "src-run/augustus-deprecation-library",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/rmf/code/composer-enabled/augustus-deprecation-library",
-                "reference": "401dc0b7bd8dd937580d241fa2428e1949a6e763",
-                "shasum": null
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/augustus-deprecation-library",
+                "reference": "401dc0b7bd8dd937580d241fa2428e1949a6e763"
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -820,18 +819,15 @@
                 "issues": "https://src.run/augustus-deprecation-library/issues",
                 "source": "https://src.run/augustus-deprecation-library/git"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-05-03 11:50:24"
         },
         {
             "name": "src-run/augustus-exception-library",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/rmf/code/composer-enabled/augustus-exception-library",
-                "reference": "e7bda5e384e1a68a3da80945bfbd9cf226d825f4",
-                "shasum": null
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/augustus-exception-library",
+                "reference": "e7bda5e384e1a68a3da80945bfbd9cf226d825f4"
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -885,18 +881,15 @@
                 "issues": "https://src.run/augustus-exception-library/issues",
                 "source": "https://src.run/augustus-exception-library/git"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-04-30 09:46:55"
         },
         {
             "name": "src-run/augustus-library",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/rmf/code/composer-enabled/augustus-library",
-                "reference": "37c0cdcfa38a9514dfa978f179e2ca7c1253ba53",
-                "shasum": null
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/augustus-library",
+                "reference": "37c0cdcfa38a9514dfa978f179e2ca7c1253ba53"
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -938,18 +931,15 @@
                 "issues": "https://src.run/augustus-library/issues",
                 "source": "https://src.run/augustus-library/git"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-04-30 10:23:01"
         },
         {
             "name": "src-run/augustus-polyfill-library",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/rmf/code/composer-enabled/augustus-polyfill-library",
-                "reference": "8aeee98e5245127ebbdf67c27a81549f1e0606ea",
-                "shasum": null
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/augustus-polyfill-library",
+                "reference": "8aeee98e5245127ebbdf67c27a81549f1e0606ea"
             },
             "require": {
                 "paragonie/random_compat": "^2.0",
@@ -1016,18 +1006,15 @@
                 "issues": "https://src.run/augustus-polyfill-library/issues",
                 "source": "https://src.run/augustus-polyfill-library/git"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-05-03 21:02:12"
         },
         {
             "name": "src-run/augustus-primitive-library",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/rmf/code/composer-enabled/augustus-primitive-library",
-                "reference": "6e58f0e1afbb992fb80e2da2e3d0982ed9acd910",
-                "shasum": null
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/augustus-primitive-library",
+                "reference": "6e58f0e1afbb992fb80e2da2e3d0982ed9acd910"
             },
             "require": {
                 "php": "^5.6||^7.0"
@@ -1080,18 +1067,15 @@
                 "source": "https://src.run/augustus-primitive-library/git",
                 "issues": "https://src.run/augustus-primitive-library/issues"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-04-30 09:47:14"
         },
         {
             "name": "src-run/augustus-reflection-library",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/rmf/code/composer-enabled/augustus-reflection-library",
-                "reference": "c81889210131b3f817a4f2f9a13721c35a416a14",
-                "shasum": null
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/augustus-reflection-library",
+                "reference": "c81889210131b3f817a4f2f9a13721c35a416a14"
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1145,18 +1129,15 @@
                 "source": "https://src.run/augustus-reflection-library/git",
                 "issues": "https://src.run/augustus-reflection-library/issues"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-05-19 21:19:07"
         },
         {
             "name": "src-run/augustus-utility-library",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/rmf/code/composer-enabled/augustus-utility-library",
-                "reference": "14b694d34d14fbe7985cbd0b521b3b6ddeb0c354",
-                "shasum": null
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/augustus-utility-library",
+                "reference": "14b694d34d14fbe7985cbd0b521b3b6ddeb0c354"
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1209,18 +1190,15 @@
                 "source": "https://src.run/augustus-utility-library/git",
                 "issues": "https://src.run/augustus-utility-library/issues"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-05-03 06:35:26"
         },
         {
             "name": "src-run/vermicious-console-io-library",
             "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/pool/0/code/vermicious-console-io-library",
-                "reference": "e08556e8918d41173aa2b889794001647f529612",
-                "shasum": null
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/vermicious-console-io-library",
+                "reference": "6a25880588d5222a46239fa6e7e15b0693cbeca8"
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1278,18 +1256,15 @@
                 "issues": "https://src.run/vermicious-console-io-library/issues",
                 "source": "https://src.run/vermicious-console-io-library/git"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-05-26 18:32:30"
         },
         {
             "name": "src-run/wonka-library",
-            "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "/home/rmf/code/composer-enabled/wonka-library",
-                "reference": "190a40bc26094381a3f2629d22ffd0e69c6b9f6a",
-                "shasum": null
+            "version": "0.6.0",
+            "source": {
+                "type": "git",
+                "url": "/pool/0/code/composer/wonka-library",
+                "reference": "7cc078fa6a3ae39c924dc396234a4f15758e5d83"
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1346,9 +1321,7 @@
                 "source": "https://src.run/wonka-library/git",
                 "issues": "https://src.run/wonka-library/issues"
             },
-            "transport-options": {
-                "symlink": false
-            }
+            "time": "2016-05-20 03:31:08"
         },
         {
             "name": "symfony/config",

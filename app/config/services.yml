@@ -14,8 +14,11 @@ imports :
 
 parameters :
 
-    sr.serferals.name             : "SR/Serferals"
-    sr.serferals.version          : "2.0.0"
+    sr.serferals.name             : "src-run/serferals"
+    sr.serferals.version          : "2.1.0"
+    sr.serferals.author           : "Rob Frawley 2nd"
+    sr.serferals.email            : "rmf@src.run"
+    sr.serferals.license          : "MIT License"
 
     sr.serferals.api_tmdb_key     : %api_tmdb_key%
     sr.serferals.api_tmdb_log     : %api_tmdb_log%
@@ -36,6 +39,9 @@ services :
         arguments :
             - %sr.serferals.name%
             - %sr.serferals.version%
+            - %sr.serferals.author%
+            - %sr.serferals.email%
+            - %sr.serferals.license%
         calls :
             - [ setContainer, [ "@service_container" ] ]
             - [ add,          [ "@sr.serferals.scan_command" ] ]

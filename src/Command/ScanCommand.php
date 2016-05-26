@@ -90,12 +90,27 @@ class ScanCommand extends AbstractCommand
     {
         $this->ioSetup($input, $output);
 
+        $titleExtra = [
+            [
+                'Author',
+                sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail())
+            ],
+            [
+                'License',
+                $this->getApplication()->getLicense()
+            ]
+        ];
+
+        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE && null !== $commit = $this->getApplication()->getGitHash()) {
+            $titleExtra = array_merge([
+                ['Commit', $commit]
+            ], $titleExtra);
+        }
+
         $this->io()->applicationTitle(
-            $this->getApplication()->getName(),
+            strtoupper($this->getApplication()->getName()),
             $this->getApplication()->getVersion(),
-            [null, null],
-            ['Author  :', 'Rob Frawley 2nd <rmf@src.run>'],
-            ['License :', 'MIT License']);
+            ...$titleExtra);
 
         $cleanPreTask = $input->getOption('pre-task');
         $cleanPostTask = $input->getOption('post-task');

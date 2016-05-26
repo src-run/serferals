@@ -11,7 +11,7 @@
     "finder": [
        {
             "name": ["*.php"],
-            "exclude": ["Tests", "tests"],
+            "exclude": ["Tests", "tests", "vendor"],
             "in": ["vendor"]
        },
        {
@@ -25,5 +25,6 @@
        }
     ],
     "stub": "src/Resources/phar-stub.php",
-    "web": false
+    "web": false,
+    "git-commit": "git-commit"
 }
