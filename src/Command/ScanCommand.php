@@ -67,7 +67,6 @@ class ScanCommand extends AbstractCommand
         $this
             ->setName('scan')
             ->setDescription('Scan media file queue and organize.')
-            ->addUsage('-tTf -e avi -e mkv -o /output/dir/path a/path/for/input/files')
             ->setHelp('Scan input directory for media files, resolve episode/movie metadata, rename and output using proper directory structure and file names.')
             ->setDefinition([
                 new InputOption('ext', ['e'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions understood to be media files.', $this->extAsMedia),
@@ -77,7 +76,7 @@ class ScanCommand extends AbstractCommand
                 new InputOption('post-task', ['T'], InputOption::VALUE_NONE, 'Enable post-scan file/dir cleaning and other tasks.'),
                 new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->extToRemovePre),
                 new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->extToRemovePost),
-                new InputArgument('input-path', InputArgument::IS_ARRAY|InputArgument::REQUIRED, 'Input directory path(s) to read unorganized media from.')
+                new InputArgument('input-path', InputArgument::IS_ARRAY|InputArgument::OPTIONAL, 'Input directory path(s) to read unorganized media from.', [getcwd()])
             ]);
     }
 
@@ -94,7 +93,9 @@ class ScanCommand extends AbstractCommand
         $this->io()->applicationTitle(
             $this->getApplication()->getName(),
             $this->getApplication()->getVersion(),
-            ['by', 'Rob Frawley 2nd <rmf@src.run>']);
+            [null, null],
+            ['Author  :', 'Rob Frawley 2nd <rmf@src.run>'],
+            ['License :', 'MIT License']);
 
         $cleanPreTask = $input->getOption('pre-task');
         $cleanPostTask = $input->getOption('post-task');
@@ -105,13 +106,19 @@ class ScanCommand extends AbstractCommand
         list($inputPaths, $inputInvalidPaths) = $this->validatePaths(true, ...$input->getArgument('input-path'));
         list($outputPath, $outputInvalidPath) = $this->validatePaths(false, $input->getOption('output-path'));
 
+        if (count($inputInvalidPaths) > 0 || !(count($inputPaths) > 0)) {
+            $this->io()->error('You must provide at least one valid input path.');
+
+            return 255;
+        }
+
         if ($outputInvalidPath) {
-            $this->io()->error('Invalid output path: '.$outputInvalidPath);
+            $this->io()->error('You must provide a valid output path. (Invalid: '.$outputInvalidPath.')');
             return 255;
         }
 
         if (!$outputPath) {
-            $this->io()->error('You must provide an output directory.');
+            $this->io()->error('You must provide a valid output path.');
             return 255;
         }
 
