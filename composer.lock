@@ -1198,7 +1198,7 @@
             "source": {
                 "type": "git",
                 "url": "/pool/0/code/composer/vermicious-console-io-library",
-                "reference": "6a25880588d5222a46239fa6e7e15b0693cbeca8"
+                "reference": "f3e76f094f873bffa285d814d2b0fb42076185f4"
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1256,7 +1256,7 @@
                 "issues": "https://src.run/vermicious-console-io-library/issues",
                 "source": "https://src.run/vermicious-console-io-library/git"
             },
-            "time": "2016-05-26 18:32:30"
+            "time": "2016-05-26 18:54:56"
         },
         {
             "name": "src-run/wonka-library",

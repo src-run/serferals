@@ -45,6 +45,7 @@ services :
         calls :
             - [ setContainer, [ "@service_container" ] ]
             - [ add,          [ "@sr.serferals.scan_command" ] ]
+            - [ add,          [ "@sr.serferals.duplicates_command" ] ]
 
     sr.serferals.scan_command :
         class : SR\Serferals\Command\ScanCommand

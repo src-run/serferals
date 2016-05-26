@@ -117,7 +117,7 @@ class SerferalsApplication extends Application
         $gitCommit = '@git-commit@';
 
         if ('@'.'git-commit@' !== $gitCommit) {
-            return $gitCommit;
+            return substr($gitCommit, 0, 7);
         }
 
         return null;

@@ -90,7 +90,10 @@ class ScanCommand extends AbstractCommand
     {
         $this->ioSetup($input, $output);
 
-        $titleExtra = [
+        $this->io()->applicationTitle(
+            strtoupper($this->getApplication()->getName()),
+            $this->getApplication()->getVersion(),
+            $this->getApplication()->getGitHash(),
             [
                 'Author',
                 sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail())
@@ -99,18 +102,7 @@ class ScanCommand extends AbstractCommand
                 'License',
                 $this->getApplication()->getLicense()
             ]
-        ];
-
-        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE && null !== $commit = $this->getApplication()->getGitHash()) {
-            $titleExtra = array_merge([
-                ['Commit', $commit]
-            ], $titleExtra);
-        }
-
-        $this->io()->applicationTitle(
-            strtoupper($this->getApplication()->getName()),
-            $this->getApplication()->getVersion(),
-            ...$titleExtra);
+        );
 
         $cleanPreTask = $input->getOption('pre-task');
         $cleanPostTask = $input->getOption('post-task');
@@ -160,10 +152,6 @@ class ScanCommand extends AbstractCommand
         $itemCollection = $parser
             ->using($finder)
             ->getItems();
-
-        $this->ioVerbose(function() use ($itemCollection) {
-            //$this->io()->comment(sprintf('Found <info>%d</info> media files in input path(s)', count($itemCollection)));
-        });
 
         $itemCollection = $lookup->resolve($itemCollection);
 
