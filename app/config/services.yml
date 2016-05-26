@@ -15,7 +15,7 @@ parameters :
 
     extensions_media       : ['mov', 'mkv', 'mp4', 'avi']
     extensions_remove_pre  : ['nfo', 'txt']
-    extensiond_remove_post : ['srt', 'nfo', 'txt']
+    extensiond_remove_post : ['srt', 'nfo', 'txt', 'jpg', 'png']
 
 services :
 
