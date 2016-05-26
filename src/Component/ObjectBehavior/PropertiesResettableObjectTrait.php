@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,10 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\ObjectBehavior;
+namespace SR\Serferals\Component\ObjectBehavior;
 
 use SR\Reflection\Inspect;
 use SR\Reflection\Introspection\ObjectIntrospection;
+use SR\Reflection\Introspection\PropertyIntrospection;
 use SR\Utility\ArrayUtil;
 
 /**
@@ -27,14 +28,12 @@ trait PropertiesResettableObjectTrait
     protected function propertiesToMapping(array $mapping, $default = null)
     {
         if (ArrayUtil::isHash($mapping)) {
-            $_ = function (\ReflectionProperty $p) use ($mapping, $default) {
-                $p->setAccessible(true);
+            $_ = function (PropertyIntrospection $p) use ($mapping, $default) {
                 $p->setValue($this, array_key_exists($p->getName(), $mapping) ? $mapping[$p->getName()] : $default);
             };
         } else {
-            $_ = function (\ReflectionProperty $p) use ($mapping, $default) {
+            $_ = function (PropertyIntrospection $p) use ($mapping, $default) {
                 static $i = 0;
-                $p->setAccessible(true);
                 $p->setValue($this, array_key_exists($i, $mapping) ? $mapping[$i] : $default);
                 ++$i;
             };
@@ -58,8 +57,7 @@ trait PropertiesResettableObjectTrait
      */
     protected function propertiesTo($value)
     {
-        $this->inspector()->visitProperties(function (\ReflectionProperty $p) use ($value) {
-            $p->setAccessible(true);
+        $this->inspector()->visitProperties(function (PropertyIntrospection $p) use ($value) {
             $p->setValue($this, $value);
         });
 

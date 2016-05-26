@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,10 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\Tmdb;
+namespace SR\Serferals\Component\Tmdb;
 
-use RMF\Serferals\Component\Fixture\FixtureData;
-use RMF\Serferals\Component\Fixture\FixtureEpisodeData;
+use SR\Serferals\Component\Fixture\FixtureData;
+use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use Tmdb\Model\Search\SearchQuery\TvSearchQuery;
 use Tmdb\Model\Tv;
 use Tmdb\Repository\TvEpisodeRepository;

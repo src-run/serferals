@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\Fixture;
+namespace SR\Serferals\Component\Fixture;
 
-use RMF\Serferals\Component\Tmdb\MovieResolver;
+use SR\Serferals\Component\Tmdb\MovieResolver;
 
 /**
  * Class FixtureMovieData

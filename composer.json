@@ -1,5 +1,5 @@
 {
-    "name"        : "rmf/serferals-media-organizer",
+    "name"        : "src-run/serferals-media-organizer",
     "license"     : "MIT",
     "type"        : "project",
     "homepage"    : "https://get.src.run/serferals-media-organizer",
@@ -22,18 +22,19 @@
         "serferals-media-organizer", "serferals", "media-organizer", "console", "application", "rmf", "src-run"
     ],
     "require" : {
-        "symfony/console"              : "^3.0",
-        "symfony/finder"               : "^3.0",
-        "symfony/yaml"                 : "^3.0",
-        "symfony/serializer"           : "^3.0",
-        "symfony/dependency-injection" : "^3.0",
-        "symfony/config"               : "^3.0",
-        "mhor/php-mediainfo"           : "^1.6",
-        "twig/twig"                    : "^1.21,<2.0",
-        "php-tmdb/api"                 : "^2.0",
-        "monolog/monolog"              : "^1.18",
-        "src-run/augustus-library"     : "^0.6",
-        "src-run/wonka-library"        : "^0.6"
+        "symfony/console"                       : "^3.0",
+        "symfony/finder"                        : "^3.0",
+        "symfony/yaml"                          : "^3.0",
+        "symfony/serializer"                    : "^3.0",
+        "symfony/dependency-injection"          : "^3.0",
+        "symfony/config"                        : "^3.0",
+        "mhor/php-mediainfo"                    : "^1.6",
+        "twig/twig"                             : "^1.21,<2.0",
+        "php-tmdb/api"                          : "^2.0",
+        "monolog/monolog"                       : "^1.18",
+        "src-run/augustus-library"              : "^0.6",
+        "src-run/wonka-library"                 : "^0.6",
+        "src-run/vermicious-console-io-library" : "^0.1"
     },
     "require-dev" : {
         "symfony/var-dumper"     : "^3.0",
@@ -42,12 +43,12 @@
     },
     "autoload" : {
         "psr-4" : {
-            "RMF\\Serferals\\" : "src/"
+            "SR\\Serferals\\" : "src/"
         }
     },
     "autoload-dev" : {
         "psr-4" : {
-            "RMF\\Serferals\\Tests\\" : "tests/"
+            "SR\\Serferals\\Tests\\" : "tests/"
         }
     },
     "minimum-stability" : "dev",

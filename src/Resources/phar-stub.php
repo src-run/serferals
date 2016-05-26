@@ -2,7 +2,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -36,10 +36,10 @@ $container = new ContainerBuilder();
 $loader = new YamlFileLoader($container, new FileLocator('phar://serferals.phar/app/config'));
 $loader->load('services.yml');
 
-$input = $container->get('rmf.serferals.console_input');
-$output = $container->get('rmf.serferals.console_output');
+$input = $container->get('sr.serferals.console_input');
+$output = $container->get('sr.serferals.console_output');
 
-$application = $container->get('rmf.serferals.application');
+$application = $container->get('sr.serferals.application');
 $application->run($input, $output);
 
 __HALT_COMPILER();

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,13 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\Operation;
+namespace SR\Serferals\Component\Operation;
 
-use RMF\Serferals\Component\Console\InputOutputAwareTrait;
-use RMF\Serferals\Component\Fixture\FixtureData;
-use RMF\Serferals\Component\Fixture\FixtureEpisodeData;
-use RMF\Serferals\Component\Fixture\FixtureMovieData;
-use SR\Utility\StringUtil;
+use SR\Console\Style\StyleAwareTrait;
+use SR\Serferals\Component\Fixture\FixtureData;
+use SR\Serferals\Component\Fixture\FixtureEpisodeData;
+use SR\Serferals\Component\Fixture\FixtureMovieData;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
@@ -26,7 +25,7 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 class FileResolverOperation
 {
-    use InputOutputAwareTrait;
+    use StyleAwareTrait;
 
     /**
      * @var Finder

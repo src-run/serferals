@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,10 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\ObjectBehavior;
+namespace SR\Serferals\Component\ObjectBehavior;
 
 use SR\Reflection\Inspect;
 use SR\Reflection\Introspection\ObjectIntrospection;
+use SR\Reflection\Introspection\PropertyIntrospection;
 use SR\Wonka\Serializer\AbstractSerializer;
 
 /**
@@ -47,10 +48,9 @@ trait SerializableObjectTrait
     {
         $data = [];
 
-        $this->inspector()->visitProperties(function (\ReflectionProperty $p) use (&$data) {
-            $p->setAccessible(true);
-            $data[$p->getName()] = method_exists($this, 'dataHibernateVisitor') ?
-                $this->dataHibernateVisitor($p->getValue($this), $p->getName()) :
+        $this->inspector()->visitProperties(function (PropertyIntrospection $p) use (&$data) {
+            $data[$p->nameUnqualified()] = method_exists($this, 'dataHibernateVisitor') ?
+                $this->dataHibernateVisitor($p->getValue($this), $p->nameUnqualified()) :
                 $p->getValue($this);
         });
 

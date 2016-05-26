@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,14 +9,14 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Command;
+namespace SR\Serferals\Command;
 
-use RMF\Serferals\Component\Console\InputOutputAwareTrait;
-use RMF\Serferals\Component\Console\Style\StyleInterface;
-use RMF\Serferals\Component\Operation\RemoveExtsOperation;
-use RMF\Serferals\Component\Operation\ApiLookupOperation;
-use RMF\Serferals\Component\Operation\RenamerOperation;
-use RMF\Serferals\Component\Operation\PathScanOperation;
+use SR\Console\Style\StyleInterface;
+use SR\Serferals\Component\Operation\RemoveDirOperation;
+use SR\Serferals\Component\Operation\RemoveExtOperation;
+use SR\Serferals\Component\Operation\ApiLookupOperation;
+use SR\Serferals\Component\Operation\RenameOperation;
+use SR\Serferals\Component\Operation\PathScanOperation;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\TableCell;
 use Symfony\Component\Console\Helper\TableStyle;
@@ -33,28 +33,28 @@ class ScanCommand extends AbstractCommand
     /**
      * @var string[]
      */
-    private $taskExtsAsMedia;
+    private $extAsMedia;
 
     /**
      * @var string[]
      */
-    private $taskExtsRemovePre;
+    private $extToRemovePre;
 
     /**
      * @var string[]
      */
-    private $taskExtsRemovePost;
+    private $extToRemovePost;
 
     /**
-     * @param string[]      $taskExtsAsMedia
-     * @param null|string[] $taskExtsRemovePre
-     * @param null|string[] $taskExtsRemovePost
+     * @param string[]      $extMedia
+     * @param null|string[] $extRemovePre
+     * @param null|string[] $extRemovePost
      */
-    public function __construct($taskExtsAsMedia, $taskExtsRemovePre = null, $taskExtsRemovePost = null)
+    public function __construct($extMedia, $extRemovePre = null, $extRemovePost = null)
     {
-        $this->taskExtsAsMedia = $taskExtsAsMedia;
-        $this->taskExtsRemovePre = $taskExtsRemovePre;
-        $this->taskExtsRemovePost = $taskExtsRemovePost;
+        $this->extAsMedia = $extMedia;
+        $this->extToRemovePre = $extRemovePre;
+        $this->extToRemovePost = $extRemovePost;
 
         parent::__construct();
     }
@@ -70,13 +70,13 @@ class ScanCommand extends AbstractCommand
             ->addUsage('-tTf -e avi -e mkv -o /output/dir/path a/path/for/input/files')
             ->setHelp('Scan input directory for media files, resolve episode/movie metadata, rename and output using proper directory structure and file names.')
             ->setDefinition([
-                new InputOption('ext', ['e'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions understood to be media files.', $this->taskExtsAsMedia),
+                new InputOption('ext', ['e'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions understood to be media files.', $this->extAsMedia),
                 new InputOption('overwrite', ['f'], InputOption::VALUE_NONE, 'Force media file overwrite (replace) if same file already exists.'),
                 new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Output directory to write organized media to.'),
                 new InputOption('pre-task', ['t'], InputOption::VALUE_NONE, 'Enable pre-scan file/dir cleaning and other tasks.'),
                 new InputOption('post-task', ['T'], InputOption::VALUE_NONE, 'Enable post-scan file/dir cleaning and other tasks.'),
-                new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->taskExtsRemovePre),
-                new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->taskExtsRemovePost),
+                new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->extToRemovePre),
+                new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->extToRemovePost),
                 new InputArgument('input-path', InputArgument::IS_ARRAY|InputArgument::REQUIRED, 'Input directory path(s) to read unorganized media from.')
             ]);
     }
@@ -95,8 +95,6 @@ class ScanCommand extends AbstractCommand
             $this->getApplication()->getName(),
             $this->getApplication()->getVersion(),
             ['by', 'Rob Frawley 2nd <rmf@src.run>']);
-
-        $this->io()->comment(sprintf('Running command <comment>%s</comment>', 'scan'));
 
         $cleanPreTask = $input->getOption('pre-task');
         $cleanPostTask = $input->getOption('post-task');
@@ -141,14 +139,14 @@ class ScanCommand extends AbstractCommand
             ->using($finder)
             ->getItems();
 
-        $this->ioV(function() use ($itemCollection) {
+        $this->ioVerbose(function() use ($itemCollection) {
             $this->io()->comment(sprintf('Found <info>%d</info> media files in input path(s)', count($itemCollection)));
         });
 
         $itemCollection = $lookup->resolve($itemCollection);
 
-        $renamer = $this->operationReNamer();
-        $renamer->run($outputPath, $itemCollection, $input->getOption('overwrite'));
+        $rename = $this->getServiceRename();
+        $rename->run($outputPath, $itemCollection, $input->getOption('overwrite'));
 
         if ($cleanPostTask) {
             $this->doPostRunTasks($inputPaths, $cleanExtensionsPost);
@@ -177,14 +175,13 @@ class ScanCommand extends AbstractCommand
         $tableRows[] = ['Search Extension List', implode(',', $inputExtensions)];
         $tableRows[] = ['Remove Extension List', implode(',', $cleanExtensions)];
 
-        $this->ioV(function (StyleInterface $io) use ($tableRows) {
-            $io->comment('Listing runtime configuration');
+        $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
             $io->table([], $tableRows);
         });
 
-        $this->ioVVV(function () {
+        $this->ioDebug(function () {
             if (false === $this->io()->confirm('Continue using these values?', true)) {
-                $this->endError();
+                exit(1);
             }
         });
     }
@@ -213,11 +210,11 @@ class ScanCommand extends AbstractCommand
     }
 
     /**
-     * @return RenamerOperation
+     * @return RenameOperation
      */
-    private function operationReNamer()
+    private function getServiceRename()
     {
-        return $this->getService('rmf.serferals.operation_renamer');
+        return $this->getService('sr.serferals.operation_rename');
     }
 
     /**
@@ -225,7 +222,7 @@ class ScanCommand extends AbstractCommand
      */
     private function operationApiLookup()
     {
-        return $this->getService('rmf.serferals.operation_api_lookup');
+        return $this->getService('sr.serferals.operation_api_lookup');
     }
 
     /**
@@ -233,23 +230,23 @@ class ScanCommand extends AbstractCommand
      */
     private function operationPathScan()
     {
-        return $this->getService('rmf.serferals.operation_path_scan');
+        return $this->getService('sr.serferals.operation_path_scan');
     }
 
     /**
-     * @return RemoveExtsOperation
+     * @return RemoveExtOperation
      */
     private function operationRemoveExts()
     {
-        return $this->getService('rmf.serferals.operation_remove_exts');
+        return $this->getService('sr.serferals.operation_remove_ext');
     }
 
     /**
-     * @return RemoveDirsOperation
+     * @return RemoveDirOperation
      */
     private function operationRemoveDirs()
     {
-        return $this->getService('rmf.serferals.operation_remove_dirs');
+        return $this->getService('sr.serferals.operation_remove_dir');
     }
 }
 

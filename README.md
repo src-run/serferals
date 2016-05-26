@@ -7,7 +7,7 @@
 ## Overview
 
 [Welcome](https://get.src.run/go/readme_welcome)!
-The `rmf/serferals-media-organizer` package provides
+The `src-run/serferals-media-organizer` package provides
 a CLI application for looking-up and organizing media files, with support
 for movies and tv shows.
 
@@ -38,7 +38,7 @@ your project requirements. For example, to explicitly require this project using
 the CLI, use the following command.
 
 ```bash
-$ composer require rmf/serferals-media-organizer
+$ composer require src-run/serferals-media-organizer
 ```
 
 ## Reference

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,10 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\Tmdb;
+namespace SR\Serferals\Component\Tmdb;
 
-use RMF\Serferals\Component\Console\InputOutputAwareTrait;
-use RMF\Serferals\Component\Fixture\FixtureData;
+use SR\Console\Style\StyleAwareTrait;
+use SR\Serferals\Component\Fixture\FixtureData;
 use Tmdb\ApiToken;
 use Tmdb\Client;
 use Tmdb\Model\Collection\ResultCollection;
@@ -27,7 +27,7 @@ use Tmdb\Repository\TvEpisodeRepository;
  */
 abstract class AbstractResolver
 {
-    use InputOutputAwareTrait;
+    use StyleAwareTrait;
 
     /**
      * @var string
@@ -38,7 +38,7 @@ abstract class AbstractResolver
      * @var ResultCollection|null
      */
     protected $results;
-    
+
     /**
      * @var string
      */
@@ -80,7 +80,7 @@ abstract class AbstractResolver
 
     /**
      * @param bool $new
-     * 
+     *
      * @return Client
      */
     public function getClient($new = true)

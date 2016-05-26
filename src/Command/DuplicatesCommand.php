@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,13 +9,13 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Command;
+namespace SR\Serferals\Command;
 
-use RMF\Serferals\Component\Console\Style\StyleInterface;
-use RMF\Serferals\Component\Fixture\FixtureData;
-use RMF\Serferals\Component\Fixture\FixtureEpisodeData;
-use RMF\Serferals\Component\Fixture\FixtureMovieData;
-use RMF\Serferals\Component\Operation\FileResolverOperation;
+use SR\Console\Style\StyleInterface;
+use SR\Serferals\Component\Fixture\FixtureData;
+use SR\Serferals\Component\Fixture\FixtureEpisodeData;
+use SR\Serferals\Component\Fixture\FixtureMovieData;
+use SR\Serferals\Component\Operation\FileResolverOperation;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\TableCell;
 use Symfony\Component\Console\Helper\TableStyle;
@@ -262,7 +262,7 @@ class DuplicatesCommand extends AbstractCommand
      */
     private function operationFileResolver()
     {
-        return $this->getService('rmf.serferals.operation_file_resolver');
+        return $this->getService('sr.serferals.operation_file_resolver');
     }
 
     /**
@@ -281,18 +281,18 @@ class DuplicatesCommand extends AbstractCommand
             $tableRows[] = [sprintf('Extension %d', ($i+1)), $extension];
         }
 
-        $this->ioV(function (StyleInterface $io) use ($tableRows) {
+        $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
             $io->comment('Listing runtime configuration');
             $io->table([], $tableRows);
         });
 
-        $this->ioVV(function () {
+        $this->ioVeryVerbose(function () {
             if (false === $this->io()->confirm('Continue using these values?', true)) {
                 $this->endError();
             }
         });
-        
-        $this->ioN(function (StyleInterface $io) use ($inputExtensions, $inputPaths) {
+
+        $this->ioNoVerbose(function (StyleInterface $io) use ($inputExtensions, $inputPaths) {
             $io->comment(
                 sprintf(
                     'Filter inputs against <info>*.(%s)</info>',

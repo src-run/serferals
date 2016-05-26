@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,10 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Command;
+namespace SR\Serferals\Command;
 
-use RMF\Serferals\Component\Console\InputOutputAwareTrait;
-use RMF\Serferals\Component\Console\Style\StyleInterface;
+use SR\Console\Style\StyleAwareTrait;
+use SR\Console\Style\StyleInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,11 +23,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class AbstractCommand extends Command
 {
-    use InputOutputAwareTrait;
+    use StyleAwareTrait;
 
     protected function checkRequirements()
     {
-        
+
     }
 
     /**
@@ -93,7 +93,7 @@ class AbstractCommand extends Command
         $this->setInput($input);
         $this->setOutput($output);
 
-        $style = $this->getService('rmf.serferals.console_style');
+        $style = $this->getService('sr.serferals.console_style');
 
         if ($style instanceof StyleInterface) {
             $this->setStyle($style);

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,22 +9,20 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\Operation;
+namespace SR\Serferals\Component\Operation;
 
-use RMF\Serferals\Component\Console\InputOutputAwareTrait;
-use RMF\Serferals\Component\Console\Style\StyleInterface;
+use SR\Console\Style\StyleAwareTrait;
+use SR\Console\Style\StyleInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Class RemoveDirsOperation
+ * Class RemoveDirOperation
  */
-class RemoveDirsOperation
+class RemoveDirOperation
 {
-    use InputOutputAwareTrait;
+    use StyleAwareTrait;
 
     /**
      * @param InputInterface  $input
@@ -48,7 +46,7 @@ class RemoveDirsOperation
             $this->removePath($in, $extensions, $deletions, true);
         }
 
-        $this->ioV(function(StyleInterface $io) use ($in, $deletions) {
+        $this->ioVerbose(function(StyleInterface $io) use ($in, $deletions) {
             $io->comment(sprintf('Found <info>%d</info> files/paths for cleanup in input path(s)', $deletions));
         });
     }
@@ -84,7 +82,7 @@ class RemoveDirsOperation
             } else {
                 ++$deletions;
                 --$count;
-                $this->ioVV(function (StyleInterface $io) use ($f) {
+                $this->ioVeryVerbose(function (StyleInterface $io) use ($f) {
                     $io->comment(sprintf('Removing <comment>%s</comment>', $i), false);
                 });
             }
@@ -95,8 +93,8 @@ class RemoveDirsOperation
         }
 
         if (false === @rmdir($folder)) {
-            $this->ioV(function (StyleInterface $io) use ($folder) {
-                $io->comment(sprintf('Error removing <comment>%s</comment>', $folder), false); 
+            $this->ioVerbose(function (StyleInterface $io) use ($folder) {
+                $io->comment(sprintf('Error removing <comment>%s</comment>', $folder), false);
             });
 
             return false;
@@ -104,7 +102,7 @@ class RemoveDirsOperation
 
         ++$deletions;
 
-        $this->ioVV(function (StyleInterface $io) use ($folder) {
+        $this->ioVeryVerbose(function (StyleInterface $io) use ($folder) {
             $io->comment(sprintf('Removing <comment>%s</comment>', $folder), false);
         });
 

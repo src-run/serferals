@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,12 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\Fixture;
+namespace SR\Serferals\Component\Fixture;
 
-use RMF\Serferals\Component\ObjectBehavior\FactoryAwareObjectTrait;
-use RMF\Serferals\Component\ObjectBehavior\IntrospectionAwareObjectTrait;
-use RMF\Serferals\Component\ObjectBehavior\PropertiesResettableObjectTrait;
-use RMF\Serferals\Component\ObjectBehavior\SerializableObjectTrait;
+use SR\Serferals\Component\ObjectBehavior\FactoryAwareObjectTrait;
+use SR\Serferals\Component\ObjectBehavior\IntrospectionAwareObjectTrait;
+use SR\Serferals\Component\ObjectBehavior\PropertiesResettableObjectTrait;
+use SR\Serferals\Component\ObjectBehavior\SerializableObjectTrait;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**

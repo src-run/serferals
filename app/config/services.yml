@@ -1,135 +1,146 @@
 ---
 
+##
+# This file is part of the `src-run/serferals-media-organizer` project.
+#
+# (c) Rob Frawley 2nd <rmf@src.run>
+#
+# For the full copyright and license information, view the LICENSE.md
+# file distributed with this source code.
+##
+
 imports :
     - { resource : 'parameters.yml' }
 
 parameters :
 
-    rmf.serferals.name     : "Serferals"
-    rmf.serferals.version  : "2.0.0"
+    sr.serferals.name             : "SR/Serferals"
+    sr.serferals.version          : "2.0.0"
 
-    tpl_path_movie         : "movie/{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
-    tpl_file_movie         : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if id is defined %%} [{{ id }}]{%% endif %%}.{{ ext }}"
-    tpl_path_episode       : "tv/{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
-    tpl_file_episode       : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"
+    sr.serferals.api_tmdb_key     : %api_tmdb_key%
+    sr.serferals.api_tmdb_log     : %api_tmdb_log%
 
-    extensions_media       : ['mov', 'mkv', 'mp4', 'avi']
-    extensions_remove_pre  : ['nfo', 'txt']
-    extensiond_remove_post : ['srt', 'nfo', 'txt', 'jpg', 'png']
+    sr.serferals.ext_media        : %ext_media%
+    sr.serferals.ext_remove_pre   : %ext_remove_pre%
+    sr.serferals.ext_remove_post  : %ext_remove_post%
+
+    sr.serferals.tpl_path_movie   : "movie/{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
+    sr.serferals.tpl_file_movie   : "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if id is defined %%} [{{ id }}]{%% endif %%}.{{ ext }}"
+    sr.serferals.tpl_path_episode : "tv/{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
+    sr.serferals.tpl_file_episode : "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"
 
 services :
 
-    rmf.serferals.application :
-        class     : RMF\Serferals\Application\SerferalsApplication
+    sr.serferals.application :
+        class     : SR\Serferals\Application\SerferalsApplication
         arguments :
-            - "%rmf.serferals.name%"
-            - "%rmf.serferals.version%"
+            - %sr.serferals.name%
+            - %sr.serferals.version%
         calls :
             - [ setContainer, [ "@service_container" ] ]
-            - [ add, [ "@rmf.serferals.scan_command" ] ]
-            - [ add, [ "@rmf.serferals.duplicates_command" ] ]
+            - [ add,          [ "@sr.serferals.scan_command" ] ]
 
-    rmf.serferals.scan_command :
-        class : RMF\Serferals\Command\ScanCommand
+    sr.serferals.scan_command :
+        class : SR\Serferals\Command\ScanCommand
         arguments :
-            - "%extensions_media%"
-            - "%extensions_remove_pre%"
-            - "%extensiond_remove_post%"
+            - %sr.serferals.ext_media%
+            - %sr.serferals.ext_remove_pre%
+            - %sr.serferals.ext_remove_post%
 
-    rmf.serferals.duplicates_command :
-        class : RMF\Serferals\Command\DuplicatesCommand
+    sr.serferals.duplicates_command :
+        class : SR\Serferals\Command\DuplicatesCommand
 
-    rmf.serferals.filesystem :
+    sr.serferals.filesystem :
         class : Symfony\Component\Filesystem\Filesystem
 
-    rmf.serferals.console_logger :
+    sr.serferals.console_logger :
         class     : Symfony\Component\Console\Logger\ConsoleLogger
         arguments :
-            - "@rmf.serferals.console_output"
+            - "@sr.serferals.console_output"
 
-    rmf.serferals.console_input :
+    sr.serferals.console_input :
         class : Symfony\Component\Console\Input\ArgvInput
 
-    rmf.serferals.console_output :
+    sr.serferals.console_output :
         class : Symfony\Component\Console\Output\ConsoleOutput
 
-    rmf.serferals.console_style :
-        class     : RMF\Serferals\Component\Console\Style\SrcRunStyle
+    sr.serferals.console_style :
+        class     : SR\Console\Style\Style
         arguments :
-            - "@rmf.serferals.console_input"
-            - "@rmf.serferals.console_output"
+            - "@sr.serferals.console_input"
+            - "@sr.serferals.console_output"
 
-    rmf.serferals.operation_remove_exts :
-        class     : RMF\Serferals\Component\Operation\RemoveExtsOperation
+    sr.serferals.operation_remove_ext :
+        class     : SR\Serferals\Component\Operation\RemoveExtOperation
         arguments :
-            - "@rmf.serferals.console_input"
-            - "@rmf.serferals.console_output"
+            - "@sr.serferals.console_input"
+            - "@sr.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+            - [ setStyle, [ "@sr.serferals.console_style" ] ]
 
-    rmf.serferals.operation_remove_dirs :
-        class     : RMF\Serferals\Component\Operation\RemoveDirsOperation
+    sr.serferals.operation_remove_dir :
+        class     : SR\Serferals\Component\Operation\RemoveDirOperation
         arguments :
-            - "@rmf.serferals.console_input"
-            - "@rmf.serferals.console_output"
+            - "@sr.serferals.console_input"
+            - "@sr.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+            - [ setStyle, [ "@sr.serferals.console_style" ] ]
 
-    rmf.serferals.operation_path_scan :
-        class     : RMF\Serferals\Component\Operation\PathScanOperation
+    sr.serferals.operation_path_scan :
+        class     : SR\Serferals\Component\Operation\PathScanOperation
         arguments :
-            - "@rmf.serferals.console_input"
-            - "@rmf.serferals.console_output"
+            - "@sr.serferals.console_input"
+            - "@sr.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+            - [ setStyle, [ "@sr.serferals.console_style" ] ]
 
-    rmf.serferals.operation_file_resolver :
-        class     : RMF\Serferals\Component\Operation\FileResolverOperation
+    sr.serferals.operation_file_resolver :
+        class     : SR\Serferals\Component\Operation\FileResolverOperation
         arguments :
-            - "@rmf.serferals.console_input"
-            - "@rmf.serferals.console_output"
+            - "@sr.serferals.console_input"
+            - "@sr.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+            - [ setStyle, [ "@sr.serferals.console_style" ] ]
 
-    rmf.serferals.operation_api_lookup :
-        class     : RMF\Serferals\Component\Operation\ApiLookupOperation
+    sr.serferals.operation_api_lookup :
+        class     : SR\Serferals\Component\Operation\ApiLookupOperation
         arguments :
-            - "@rmf.serferals.operation_file_resolver"
-            - "@rmf.serferals.tmdb_episode_resolver"
-            - "@rmf.serferals.tmdb_movie_resolver"
+            - "@sr.serferals.operation_file_resolver"
+            - "@sr.serferals.tmdb_episode_resolver"
+            - "@sr.serferals.tmdb_movie_resolver"
         calls :
-            - [ setInput, [ "@rmf.serferals.console_input" ] ]
-            - [ setOutput, [ "@rmf.serferals.console_output" ] ]
-            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+            - [ setInput, [ "@sr.serferals.console_input" ] ]
+            - [ setOutput, [ "@sr.serferals.console_output" ] ]
+            - [ setStyle, [ "@sr.serferals.console_style" ] ]
 
-    rmf.serferals.tmdb_episode_resolver :
-        class     : RMF\Serferals\Component\Tmdb\EpisodeResolver
+    sr.serferals.tmdb_episode_resolver :
+        class     : SR\Serferals\Component\Tmdb\EpisodeResolver
         arguments :
-            - "%tmdb_api_key%"
-            - "%tmdb_api_log%"
+            - %sr.serferals.api_tmdb_key%
+            - %sr.serferals.api_tmdb_log%
         calls :
-            - [ setInput, [ "@rmf.serferals.console_input" ] ]
-            - [ setOutput, [ "@rmf.serferals.console_output" ] ]
-            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+            - [ setInput, [ "@sr.serferals.console_input" ] ]
+            - [ setOutput, [ "@sr.serferals.console_output" ] ]
+            - [ setStyle, [ "@sr.serferals.console_style" ] ]
 
-    rmf.serferals.tmdb_movie_resolver :
-        class     : RMF\Serferals\Component\Tmdb\MovieResolver
+    sr.serferals.tmdb_movie_resolver :
+        class     : SR\Serferals\Component\Tmdb\MovieResolver
         arguments :
-            - "%tmdb_api_key%"
-            - "%tmdb_api_log%"
+            - %sr.serferals.api_tmdb_key%
+            - %sr.serferals.api_tmdb_log%
         calls :
-            - [ setInput, [ "@rmf.serferals.console_input" ] ]
-            - [ setOutput, [ "@rmf.serferals.console_output" ] ]
-            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
+            - [ setInput, [ "@sr.serferals.console_input" ] ]
+            - [ setOutput, [ "@sr.serferals.console_output" ] ]
+            - [ setStyle, [ "@sr.serferals.console_style" ] ]
 
-    rmf.serferals.operation_renamer :
-        class     : RMF\Serferals\Component\Operation\RenamerOperation
+    sr.serferals.operation_rename :
+        class     : SR\Serferals\Component\Operation\RenameOperation
         arguments :
-            - "@rmf.serferals.console_input"
-            - "@rmf.serferals.console_output"
+            - "@sr.serferals.console_input"
+            - "@sr.serferals.console_output"
         calls :
-            - [ setStyle, [ "@rmf.serferals.console_style" ] ]
-            - [ setFileTemplateEpisode, [ '%tpl_path_episode%', '%tpl_file_episode%' ]]
-            - [ setFileTemplateMovie, [ '%tpl_path_movie%', '%tpl_file_movie%' ]]
+            - [ setStyle, [ "@sr.serferals.console_style" ] ]
+            - [ setFileTemplateEpisode, [ %sr.serferals.tpl_path_episode%, %sr.serferals.tpl_file_episode% ]]
+            - [ setFileTemplateMovie, [ %sr.serferals.tpl_path_movie%, %sr.serferals.tpl_file_movie% ]]
 
 ...

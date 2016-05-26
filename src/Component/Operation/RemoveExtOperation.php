@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,10 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\Operation;
+namespace SR\Serferals\Component\Operation;
 
-use RMF\Serferals\Component\Console\InputOutputAwareTrait;
-use RMF\Serferals\Component\Console\Style\StyleInterface;
+use SR\Console\Style\StyleAwareTrait;
+use SR\Console\Style\StyleInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -20,11 +20,11 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Class RemoveExtsOperation
+ * Class RemoveExtOperation
  */
-class RemoveExtsOperation
+class RemoveExtOperation
 {
-    use InputOutputAwareTrait;
+    use StyleAwareTrait;
 
     /**
      * @param InputInterface  $input
@@ -54,14 +54,14 @@ class RemoveExtsOperation
             $finder->name('*.'.$e);
         }
 
-        $this->ioV(function (StyleInterface $io) use ($finder, $extensions) {
+        $this->ioVerbose(function (StyleInterface $io) use ($finder, $extensions) {
             $io->comment(sprintf(
                 'Found <info>%d</info> files matching <info>*.(%s)</info> for removal',
                 $finder->count(), implode('|', $extensions)), false);
         });
 
         foreach ($finder as $file) {
-            $this->ioVV(function (StyleInterface $io) use ($file) {
+            $this->ioVeryVerbose(function (StyleInterface $io) use ($file) {
                 $io->comment(sprintf(
                     'Removing <comment>%s</comment>',
                     $file->getPathname()), false);

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the `rmf/serferals` project.
+ * This file is part of the `src-run/serferals` project.
  *
  * (c) Rob Frawley 2nd <rmf@src.run>
  *
@@ -9,23 +9,21 @@
  * file that was distributed with this source code.
  */
 
-namespace RMF\Serferals\Component\Operation;
+namespace SR\Serferals\Component\Operation;
 
-use RMF\Serferals\Component\Console\InputOutputAwareTrait;
-use RMF\Serferals\Component\Console\Style\StyleInterface;
-use RMF\Serferals\Component\Fixture\FixtureData;
-use RMF\Serferals\Component\Fixture\FixtureEpisodeData;
-use RMF\Serferals\Component\Fixture\FixtureMovieData;
-use RMF\Serferals\Component\Tmdb\EpisodeResolver;
-use RMF\Serferals\Component\Tmdb\MovieResolver;
+use SR\Console\Style\StyleAwareTrait;
+use SR\Console\Style\StyleInterface;
+use SR\Serferals\Component\Fixture\FixtureData;
+use SR\Serferals\Component\Fixture\FixtureEpisodeData;
+use SR\Serferals\Component\Fixture\FixtureMovieData;
+use SR\Serferals\Component\Tmdb\EpisodeResolver;
+use SR\Serferals\Component\Tmdb\MovieResolver;
 use SR\Reflection\Inspect;
-use SR\Utility\StringUtil;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tmdb\Model\AbstractModel;
 use Tmdb\Model\Collection\ResultCollection;
-use Tmdb\Model\Common\Country;
 use Tmdb\Model\Movie;
 use Tmdb\Model\Search\SearchQuery;
 use Tmdb\Model\Tv;
@@ -35,7 +33,7 @@ use Tmdb\Model\Tv;
  */
 class ApiLookupOperation
 {
-    use InputOutputAwareTrait;
+    use StyleAwareTrait;
 
     /**
      * @var FileResolverOperation
@@ -142,7 +140,7 @@ class ApiLookupOperation
                 $this->writeLookupSuccess($f, $item, $resultSelected);
             }
 
-            $this->ioV(function() use ($mode) {
+            $this->ioVerbose(function() use ($mode) {
                 $this->writeHelp($mode);
             });
 
@@ -152,7 +150,7 @@ class ApiLookupOperation
             } else {
                 $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
             }
-            
+
             $action = $this->io()->ask('Enter action command shortcut name', $actionDefault);
 
             switch ($action) {
@@ -254,7 +252,7 @@ class ApiLookupOperation
             return $row !== null;
         });
 
-        $this->ioV(
+        $this->ioVerbose(
             function (StyleInterface $io) {
                 $io->comment('Listing Tvdb lookup search results');
             }
@@ -327,7 +325,7 @@ class ApiLookupOperation
      */
     private function editFixture(FixtureData $f)
     {
-        $this->ioV(
+        $this->ioVerbose(
             function (StyleInterface $io) use ($f) {
                 $io->comment('Listing fixture property values');
             }
@@ -429,7 +427,7 @@ class ApiLookupOperation
      */
     private function removeFileItem(FixtureData $f, $path, $newLine = false)
     {
-        $this->ioV(function(StyleInterface $io) use ($path, $newLine) {
+        $this->ioVerbose(function(StyleInterface $io) use ($path, $newLine) {
             $io->comment(sprintf('Removing "%s"', $path), $newLine);
         });
 
@@ -462,7 +460,7 @@ class ApiLookupOperation
             }
         }
 
-        $this->ioV(function(StyleInterface $io) use ($path) {
+        $this->ioVerbose(function(StyleInterface $io) use ($path) {
             $io->comment(sprintf('Removing "%s"', $path), false);
         });
 
@@ -589,7 +587,7 @@ class ApiLookupOperation
      */
     private function writeLookupSuccessMovie(FixtureMovieData $f, Movie $m)
     {
-        $this->io()->success(
+        /*$this->io()->success(
             sprintf(
                 'Match Found: %s (%d) [%d%s]',
                 $m->getTitle(),
@@ -597,7 +595,7 @@ class ApiLookupOperation
                 $m->getId(),
                 empty($m->getImdbId()) ? '' : '/'.$m->getImdbId()
             )
-        );
+        );*/
 
         $rows = [
             ['Tvdb Id', $m->getId().($m->getImdbId() === null ? '' : '/'.$m->getImdbId())],
@@ -605,23 +603,28 @@ class ApiLookupOperation
             ['Movie Title', $m->getTitle()],
             ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
             ['Size', $this->fileSizeHuman($f->getFile())],
+            ['API Match', sprintf('<fg=green>Success: %d</>', $m->getId())],
         ];
 
-        if ($this->io()->isVerbose() && false) {
-            $overview = $m->getOverview();
-            $i = 0;
-
-            $rows[] = new TableSeparator();
-
-            while ($i < strlen($overview)) {
-                $rows[] = [$i === 0 ? 'Overview' : '', substr($overview, $i, 80),];
-                $i = $i + 80;
+        $this->ioVerbose(
+            function (StyleInterface $style) use ($rows) {
+                $style->table([], $rows);
             }
-        }
+        );
 
-        if ($this->io()->isVerbose()) {
-            $this->io()->table([], $rows);
-        }
+        $rows = [
+            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['Movie Title', $m->getTitle()],
+            ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
+            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['API Match', sprintf('<fg=green>Success: %d</>', $m->getId())],
+        ];
+
+        $this->ioNoVerbose(
+            function (StyleInterface $style) use ($rows) {
+                $style->table([], $rows);
+            }
+        );
     }
 
     /**
@@ -631,7 +634,7 @@ class ApiLookupOperation
      */
     private function writeLookupSuccessEpisode(FixtureEpisodeData $f, Tv\Episode $e, Tv $s)
     {
-        $this->io()->success(
+        /*$this->io()->success(
             sprintf(
                 'Match Found: %s S%02dE%02d "%s" [%d/%d]',
                 $s->getName(),
@@ -641,7 +644,7 @@ class ApiLookupOperation
                 $s->getId(),
                 $e->getId()
             )
-        );
+        );*/
 
         $country = '';
         $countrySet = $s->getOriginCountry();
@@ -661,23 +664,29 @@ class ApiLookupOperation
             ['Origin Country', $country],
             ['Air Date', $e->getAirDate()->format('Y\-m\-d')],
             ['Size', $this->fileSizeHuman($f->getFile())],
+            ['API Match', sprintf('<fg=green>Success: %d/%d</>', $s->getId(), $e->getId())],
         ];
 
-        if ($this->io()->isVerbose() && false) {
-            $overview = $e->getOverview();
-            $i = 0;
-
-            $rows[] = new TableSeparator();
-
-            while ($i < strlen($overview)) {
-                $rows[] = [$i === 0 ? 'Overview' : '', substr($overview, $i, 80),];
-                $i = $i + 80;
+        $this->ioVerbose(
+            function (StyleInterface $style) use ($rows) {
+                $style->table([], $rows);
             }
-        }
+        );
 
-        if ($this->io()->isVerbose()) {
-            $this->io()->table([], $rows);
-        }
+        $rows = [
+            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['Show Name', $s->getName()],
+            ['Season/Episode', sprintf('%d/%d', $e->getSeasonNumber(), $e->getEpisodeNumber())],
+            ['Episode Title', $e->getName()],
+            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['API Match', sprintf('<fg=green>Success: %d/%d</>', $s->getId(), $e->getId())],
+        ];
+
+        $this->ioNoVerbose(
+            function (StyleInterface $style) use ($rows) {
+                $style->table([], $rows);
+            }
+        );
     }
 
     function fileSizeHuman(\SplFileInfo $file, $decimals = 2) {
@@ -693,23 +702,39 @@ class ApiLookupOperation
      */
     private function writeLookupFailureMovie(FixtureMovieData $f)
     {
-        $this->io()->error(
+        /*$this->io()->error(
             sprintf(
                 'Match failure: %s',
                 $f->getFile()->getRelativePathname()
             )
-        );
+        );*/
 
         $rows = [
             ['Tvdb Id', ''],
             ['Path Name', $f->getFile()->getRelativePathname()],
             ['Movie Title', $f->getName()],
             ['Release Year', $f->getYear()],
+            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['API Match', '<error> Failure </error>'],
         ];
 
-        if ($this->io()->isVerbose()) {
-            $this->io()->table([], $rows);
-        }
+        $this->ioVerbose(
+            function (StyleInterface $style) use ($rows) {
+                $style->table([], $rows);
+            }
+        );
+
+        $rows = [
+            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['API Match', '<error>Failure</error>'],
+        ];
+
+        $this->ioNoVerbose(
+            function (StyleInterface $style) use ($rows) {
+                $style->table([], $rows);
+            }
+        );
     }
 
     /**
@@ -717,28 +742,43 @@ class ApiLookupOperation
      */
     private function writeLookupFailureEpisode(FixtureEpisodeData $f)
     {
-        $this->io()->error(
+        /*$this->io()->error(
             sprintf(
                 'Match failure: %s S%02dE%02d',
                 $f->getName(),
                 $f->getSeasonNumber(),
                 $f->getEpisodeNumberStart()
             )
-        );
+        );*/
 
         $rows = [
-            ['Tvdb Id', ''],
             ['Path Name', $f->getFile()->getRelativePathname()],
             ['Show Name', $f->getName()],
             ['Season', $f->getSeasonNumber()],
             ['Episode Number', $f->getEpisodeNumberStart()],
             ['Episode Title', $f->getTitle()],
             ['Air Year', $f->getYear()],
+            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['API Match', '<error> Failure </error>'],
         ];
 
-        if ($this->io()->isVerbose()) {
-            $this->io()->table([], $rows);
-        }
+        $this->ioVerbose(
+            function (StyleInterface $style) use ($rows) {
+                $style->table([], $rows);
+            }
+        );
+
+        $rows = [
+            ['Path Name', $f->getFile()->getRelativePathname()],
+            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['API Match', '<error> Failure </error>'],
+        ];
+
+        $this->ioNoVerbose(
+            function (StyleInterface $style) use ($rows) {
+                $style->table([], $rows);
+            }
+        );
     }
 
     /**
@@ -749,7 +789,7 @@ class ApiLookupOperation
         if ($v === true) {
             $this->io()->comment('Listing available actions');
         }
-        
+
         $mode = ($mode === EpisodeResolver::TYPE ? MovieResolver::TYPE : EpisodeResolver::TYPE);
         $this->io()->writeln(' [ <em>c</em> ] Continue <info>(default)</info>', false);
         $this->io()->writeln(' [ <em>s</em> ] Skip', false);
