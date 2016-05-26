@@ -142,15 +142,14 @@ class SerferalsApplication extends Application
     public function getLongVersion()
     {
         $version = sprintf(
-            '%s by <comment>%s \<%s></comment> under <comment>%s</comment>',
+            '%s by <comment>%s \<%s></comment>',
             parent::getLongVersion(),
             $this->author,
-            $this->email,
-            $this->license
+            $this->email
         );
 
         if (null !== ($gitCommit = $this->getGitHash())) {
-            $version .= sprintf(' (git:%s)', $gitCommit);
+            $version .= sprintf(' (%s)', $gitCommit);
         }
 
         return $version;
