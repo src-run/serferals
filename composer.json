@@ -32,8 +32,8 @@
         "twig/twig"                    : "^1.21,<2.0",
         "php-tmdb/api"                 : "^2.0",
         "monolog/monolog"              : "^1.18",
-        "src-run/augustus-library"     : "^0.5",
-        "src-run/wonka-library"        : "^0.5"
+        "src-run/augustus-library"     : "^0.6",
+        "src-run/wonka-library"        : "^0.6"
     },
     "require-dev" : {
         "symfony/var-dumper"     : "^3.0",

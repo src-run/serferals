@@ -604,6 +604,7 @@ class ApiLookupOperation
             ['Path Name', $f->getFile()->getRelativePathname()],
             ['Movie Title', $m->getTitle()],
             ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
+            ['Size', $this->fileSizeHuman($f->getFile())],
         ];
 
         if ($this->io()->isVerbose() && false) {
@@ -659,6 +660,7 @@ class ApiLookupOperation
             ['Episode Title', $e->getName()],
             ['Origin Country', $country],
             ['Air Date', $e->getAirDate()->format('Y\-m\-d')],
+            ['Size', $this->fileSizeHuman($f->getFile())],
         ];
 
         if ($this->io()->isVerbose() && false) {
@@ -676,6 +678,14 @@ class ApiLookupOperation
         if ($this->io()->isVerbose()) {
             $this->io()->table([], $rows);
         }
+    }
+
+    function fileSizeHuman(\SplFileInfo $file, $decimals = 2) {
+        $bytes = $file->getSize();
+        $sz = 'BKMGTP';
+        $factor = floor((strlen($bytes) - 1) / 3);
+
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
     }
 
     /**

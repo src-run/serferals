@@ -1,0 +1,29 @@
+{
+    "output": "serferals.phar",
+    "chmod": "0755",
+    "compactors": [
+        "Herrera\\Box\\Compactor\\Php"
+    ],
+    "extract": false,
+    "files": [
+        "LICENSE.md"
+    ],
+    "finder": [
+       {
+            "name": ["*.php"],
+            "exclude": ["Tests", "tests"],
+            "in": ["vendor"]
+       },
+       {
+            "name": ["*.php"],
+            "exclude": ["Tests", "tests"],
+            "in": ["src"]
+       },
+       {
+            "name": ["*.yml"],
+            "in": ["app"]
+       }
+    ],
+    "stub": "src/Resources/phar-stub.php",
+    "web": false
+}
