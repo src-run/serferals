@@ -221,7 +221,11 @@ class FileResolverOperation
      */
     protected function parseMovieTitle(FixtureMovieData $fixture, &$baseName)
     {
-        $name = ucwords(trim(str_replace('.', ' ', $baseName[0])));
+        $name = $baseName[0];
+
+        foreach (['.', '-', '['] as $search) {
+            $name = ucwords(trim(str_replace($search, ' ', $name)));
+        }
 
         $fixture->setName($name);
     }
