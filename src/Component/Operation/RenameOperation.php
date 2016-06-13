@@ -197,7 +197,7 @@ class RenameOperation
     /**
      * @param string $output
      * @param string $input
-     * 
+     *
      * @return bool
      */
     private function handleExistingFile($output, $input)
@@ -220,12 +220,14 @@ class RenameOperation
 
             switch ($action) {
                 case 'o':
+                    $this->io()->comment('Overwriting output path.');
                     return true;
 
                 case 's':
                     return false;
 
-                case 'e':
+                case 'R':
+                    $this->io()->comment('Removing input file.');
                     unlink($input);
                     return false;
 
