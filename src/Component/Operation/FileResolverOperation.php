@@ -141,7 +141,9 @@ class FileResolverOperation
     {
         $name = $baseName[0];
         $name = preg_replace('{(us|uk)}i', '', $name);
-        $name = ucwords(trim(str_replace('.', ' ', $name)));
+        foreach (['.', '-', '['] as $search) {
+            $name = ucwords(trim(str_replace($search, ' ', $name)));
+        }
 
         $fixture->setName($name);
     }
