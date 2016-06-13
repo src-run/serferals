@@ -18,6 +18,7 @@ use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Class RenameOperation
@@ -97,12 +98,12 @@ class RenameOperation
         $this->outputOverwrite = $outputOverwrite;
 
         if (count($collection) === 0) {
-            $this->io()->warning('No output files to write');
+            $this->io()->warning('No output files selected during run');
 
             return;
         }
 
-        $this->io()->subSection('Writing output files');
+        $this->io()->subSection('Writing Output Files');
 
         foreach ($collection as $item) {
             $this->move($item);
@@ -116,8 +117,6 @@ class RenameOperation
      */
     private function move(FixtureData $f)
     {
-        static $i = 1;
-
         $tplPathName = uniqid( 'string_template_'.mt_rand(10,99).'_', true );
         $tplFileName = uniqid( 'string_template_'.mt_rand(10,99).'_', true );
 
@@ -153,16 +152,14 @@ class RenameOperation
         $tableRows[] = ['Input', substr($inputFilePath, $offset)];
         $tableRows[] = ['Output', substr($outputFilePath, $offset)];
 
-        $this->ioVeryVerbose(function (StyleInterface $io) use ($tableRows) {
-            $io->table($tableRows);
+        $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
+            $io->table($tableRows, []);
         });
 
         if (file_exists($outputFilePath) &&
             false === $this->outputOverwrite &&
-            false === $this->io()->confirm(sprintf('Overwrite file "%s"', $outputFilePath), false)
+            false === $this->handleExistingFile($outputFilePath, $inputFilePath)
         ) {
-            $this->io()->comment(sprintf('Skipping "%s"', $outputFilePath));
-
             return;
         }
 
@@ -180,6 +177,62 @@ class RenameOperation
             $this->io()->error(sprintf('Could not write file "%s"', $outputFilePath));
         } else {
             unlink($inputFilePath);
+        }
+    }
+
+    /**
+     * @param string $file
+     * @param int    $decimals
+     *
+     * @return string
+     */
+    function fileSizeHuman($file, $decimals = 2) {
+        $bytes = filesize($file);
+        $sz = 'BKMGTP';
+        $factor = floor((strlen($bytes) - 1) / 3);
+
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[(int) $factor];
+    }
+
+    /**
+     * @param string $output
+     * @param string $input
+     * 
+     * @return bool
+     */
+    private function handleExistingFile($output, $input)
+    {
+        $rows = [
+            ['Input Size', $this->fileSizeHuman($input)],
+            ['Output Size', $this->fileSizeHuman($output)],
+        ];
+
+        $this->io()->table($rows, []);
+
+        while(true) {
+            $this->io()->comment('File already exists in output path');
+
+            $this->io()->writeln(' [ <em>o</em> ] Overwrite <info>(default)</info>', false);
+            $this->io()->writeln(' [ <em>s</em> ] Skip', false);
+            $this->io()->writeln(' [ <em>R</em> ] Delete Input', false);
+
+            $action = $this->io()->ask('Enter action command shortcut name', 'o');
+
+            switch ($action) {
+                case 'o':
+                    return true;
+
+                case 's':
+                    return false;
+
+                case 'e':
+                    unlink($input);
+                    return false;
+
+                default:
+                    $this->io()->error(sprintf('Invalid command shortcut "%s"', $action));
+                    sleep(3);
+            }
         }
     }
 

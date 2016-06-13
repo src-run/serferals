@@ -91,11 +91,18 @@ class ScanCommand extends AbstractCommand
         $this->ioSetup($input, $output);
 
         $this->io()->applicationTitle(
-            $this->getApplication()->getName(),
+            strtoupper($this->getApplication()->getName()),
             $this->getApplication()->getVersion(),
-            [null, null],
-            ['Author  :', 'Rob Frawley 2nd <rmf@src.run>'],
-            ['License :', 'MIT License']);
+            $this->getApplication()->getGitHash(),
+            [
+                'Author',
+                sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail())
+            ],
+            [
+                'License',
+                $this->getApplication()->getLicense()
+            ]
+        );
 
         $cleanPreTask = $input->getOption('pre-task');
         $cleanPostTask = $input->getOption('post-task');
@@ -145,10 +152,6 @@ class ScanCommand extends AbstractCommand
         $itemCollection = $parser
             ->using($finder)
             ->getItems();
-
-        $this->ioVerbose(function() use ($itemCollection) {
-            //$this->io()->comment(sprintf('Found <info>%d</info> media files in input path(s)', count($itemCollection)));
-        });
 
         $itemCollection = $lookup->resolve($itemCollection);
 

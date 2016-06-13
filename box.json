@@ -25,5 +25,6 @@
        }
     ],
     "stub": "src/Resources/phar-stub.php",
-    "web": false
+    "web": false,
+    "git-commit": "git-commit"
 }
