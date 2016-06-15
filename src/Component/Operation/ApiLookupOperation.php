@@ -46,6 +46,11 @@ class ApiLookupOperation
     protected $movieResolver;
 
     /**
+     * @var bool
+     */
+    protected $skipLookupFailure;
+
+    /**
      * @param FileResolverOperation $fileResolver
      * @param EpisodeResolver       $episodeResolver
      * @param MovieResolver         $movieResolver
@@ -70,8 +75,9 @@ class ApiLookupOperation
      *
      * @return FixtureData[]|FixtureEpisodeData[]|FixtureMovieData[]
      */
-    public function resolve(array $fixtureSet)
+    public function resolve(array $fixtureSet, $skipLookupFailure = false)
     {
+        $this->skipLookupFailure = $skipLookupFailure;
         $i = 0;
         $c = count($fixtureSet);
 
@@ -155,6 +161,12 @@ class ApiLookupOperation
             }
 
             $action = $this->io()->ask('Enter action command shortcut name', $actionDefault);
+
+            if ($this->skipLookupFailure === true && ($results->count() == 0 || !$item)) {
+                $this->io()->comment('Auto skipping lookup failure.');
+                $this->io()->newLine();
+                break;
+            }
 
             switch ($action) {
                 case 'c':
@@ -607,7 +619,7 @@ class ApiLookupOperation
 
         $this->ioVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table($rows);
+                $style->table($rows, []);
             }
         );
 

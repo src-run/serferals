@@ -72,6 +72,7 @@ class ScanCommand extends AbstractCommand
                 new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Output directory to write organized media to.'),
                 new InputOption('pre-task', ['t'], InputOption::VALUE_NONE, 'Enable pre-scan file/dir cleaning and other tasks.'),
                 new InputOption('post-task', ['T'], InputOption::VALUE_NONE, 'Enable post-scan file/dir cleaning and other tasks.'),
+                new InputOption('skip-lookup-failure', ['S'], InputOption::VALUE_NONE, 'Skip all files that fail API lookup.'),
                 new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->extToRemovePre),
                 new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->extToRemovePost),
                 new InputArgument('input-path', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Input directory path(s) to read unorganized media from.', [getcwd()]),
@@ -154,7 +155,7 @@ class ScanCommand extends AbstractCommand
             ->using($finder)
             ->getItems();
 
-        $itemCollection = $lookup->resolve($itemCollection);
+        $itemCollection = $lookup->resolve($itemCollection, $input->getOption('skip-lookup-failure'));
 
         $rename = $this->getServiceRename();
         $rename->run($outputPath, $itemCollection, $input->getOption('overwrite'), $input->getOption('smart-overwrite'));
