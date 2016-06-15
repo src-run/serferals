@@ -14,7 +14,7 @@ namespace SR\Serferals\Component\Fixture;
 use SR\Serferals\Component\Tmdb\MovieResolver;
 
 /**
- * Class FixtureMovieData
+ * Class FixtureMovieData.
  */
 class FixtureMovieData extends FixtureData
 {

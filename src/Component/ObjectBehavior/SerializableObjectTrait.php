@@ -11,13 +11,12 @@
 
 namespace SR\Serferals\Component\ObjectBehavior;
 
-use SR\Reflection\Inspect;
 use SR\Reflection\Introspection\ObjectIntrospection;
 use SR\Reflection\Introspection\PropertyIntrospection;
 use SR\Wonka\Serializer\AbstractSerializer;
 
 /**
- * Class SerializableObjectTrait
+ * Class SerializableObjectTrait.
  */
 trait SerializableObjectTrait
 {
@@ -59,8 +58,6 @@ trait SerializableObjectTrait
 
     /**
      * @param mixed[] $data
-     *
-     * @return null
      */
     protected function dataHydrate(array $data)
     {

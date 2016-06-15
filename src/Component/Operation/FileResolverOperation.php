@@ -21,7 +21,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Class FileResolverOperation
+ * Class FileResolverOperation.
  */
 class FileResolverOperation
 {
@@ -70,6 +70,7 @@ class FileResolverOperation
 
     /**
      * @param SplFileInfo $file
+     *
      * @return FixtureEpisodeData|FixtureMovieData
      */
     public function parseFile(SplFileInfo $file)
@@ -171,8 +172,7 @@ class FileResolverOperation
     {
         if (1 !== preg_match('{s([0-9]+)e([0-9]+)-?([0-9]+)?}i', $baseName, $match) &&
             1 !== preg_match('{([0-9]{1,2})x([0-9]{1,2})}i', $baseName, $match) &&
-            1 !== preg_match('{([0-9]{1,2})([0-9]{2})}', $baseName, $match))
-        {
+            1 !== preg_match('{([0-9]{1,2})([0-9]{2})}', $baseName, $match)) {
             return;
         }
 
@@ -185,7 +185,7 @@ class FileResolverOperation
 
         $baseName = [
             substr($baseName, 0, strpos($baseName, $match[0])),
-            substr($baseName, strpos($baseName, $match[0])+strlen($match[0]))
+            substr($baseName, strpos($baseName, $match[0]) + strlen($match[0])),
         ];
     }
 
@@ -211,7 +211,7 @@ class FileResolverOperation
 
         $baseName = [
             substr($baseName, 0, strpos($baseName, $match[0])),
-            substr($baseName, strpos($baseName, $match[0])+strlen($match[0]))
+            substr($baseName, strpos($baseName, $match[0]) + strlen($match[0])),
         ];
     }
 

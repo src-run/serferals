@@ -17,16 +17,13 @@ use SR\Serferals\Component\Operation\RemoveExtOperation;
 use SR\Serferals\Component\Operation\ApiLookupOperation;
 use SR\Serferals\Component\Operation\RenameOperation;
 use SR\Serferals\Component\Operation\PathScanOperation;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Helper\TableCell;
-use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
- * Class ScanCommand
+ * Class ScanCommand.
  */
 class ScanCommand extends AbstractCommand
 {
@@ -60,7 +57,7 @@ class ScanCommand extends AbstractCommand
     }
 
     /**
-     * configure command name, desc, usage, help, options, etc
+     * configure command name, desc, usage, help, options, etc.
      */
     protected function configure()
     {
@@ -69,15 +66,15 @@ class ScanCommand extends AbstractCommand
             ->setDescription('Scan media file queue and organize.')
             ->setHelp('Scan input directory for media files, resolve episode/movie metadata, rename and output using proper directory structure and file names.')
             ->setDefinition([
-                new InputOption('ext', ['e'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions understood to be media files.', $this->extAsMedia),
+                new InputOption('ext', ['e'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions understood to be media files.', $this->extAsMedia),
                 new InputOption('overwrite', ['f'], InputOption::VALUE_NONE, 'Force media path overwrite if output already exists.'),
                 new InputOption('smart-overwrite', ['s'], InputOption::VALUE_NONE, 'Force media path overwrite if output already exists and input is larger.'),
                 new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Output directory to write organized media to.'),
                 new InputOption('pre-task', ['t'], InputOption::VALUE_NONE, 'Enable pre-scan file/dir cleaning and other tasks.'),
                 new InputOption('post-task', ['T'], InputOption::VALUE_NONE, 'Enable post-scan file/dir cleaning and other tasks.'),
-                new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->extToRemovePre),
-                new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->extToRemovePost),
-                new InputArgument('input-path', InputArgument::IS_ARRAY|InputArgument::OPTIONAL, 'Input directory path(s) to read unorganized media from.', [getcwd()])
+                new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->extToRemovePre),
+                new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->extToRemovePost),
+                new InputArgument('input-path', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Input directory path(s) to read unorganized media from.', [getcwd()]),
             ]);
     }
 
@@ -97,11 +94,11 @@ class ScanCommand extends AbstractCommand
             $this->getApplication()->getGitHash(),
             [
                 'Author',
-                sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail())
+                sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail()),
             ],
             [
                 'License',
-                $this->getApplication()->getLicense()
+                $this->getApplication()->getLicense(),
             ]
         );
 
@@ -122,16 +119,19 @@ class ScanCommand extends AbstractCommand
 
         if ($outputInvalidPath) {
             $this->io()->error('You must provide a valid output path. (Invalid: '.$outputInvalidPath.')');
+
             return 255;
         }
 
         if (!$outputPath) {
             $this->io()->error('You must provide a valid output path.');
+
             return 255;
         }
 
         if (count($inputInvalidPaths) !== 0) {
             $this->io()->error('Invalid input path(s): '.implode(', ', $inputInvalidPaths));
+
             return 255;
         }
 
@@ -179,7 +179,7 @@ class ScanCommand extends AbstractCommand
         $tableRows = [];
 
         foreach ($inputPaths as $i => $path) {
-            $tableRows[] = ['Search Directory (#'.($i+1).')', $path];
+            $tableRows[] = ['Search Directory (#'.($i + 1).')', $path];
         }
 
         $tableRows[] = ['Output Directory', $outputPath];

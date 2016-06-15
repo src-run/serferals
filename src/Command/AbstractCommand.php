@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class AbstractCommand
+ * Class AbstractCommand.
  */
 class AbstractCommand extends Command
 {
@@ -27,7 +27,6 @@ class AbstractCommand extends Command
 
     protected function checkRequirements()
     {
-
     }
 
     /**
@@ -126,7 +125,7 @@ class AbstractCommand extends Command
             $invalid = array_pop($invalid);
         }
 
-        return [ $valid, $invalid ];
+        return [$valid, $invalid];
     }
 
     /**

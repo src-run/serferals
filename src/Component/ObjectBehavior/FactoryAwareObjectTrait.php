@@ -12,7 +12,7 @@
 namespace SR\Serferals\Component\ObjectBehavior;
 
 /**
- * Class FactoryAwareObjectTrait
+ * Class FactoryAwareObjectTrait.
  */
 trait FactoryAwareObjectTrait
 {

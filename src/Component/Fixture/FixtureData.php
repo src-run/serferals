@@ -18,7 +18,7 @@ use SR\Serferals\Component\ObjectBehavior\SerializableObjectTrait;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Class FixtureData
+ * Class FixtureData.
  */
 class FixtureData implements \Serializable
 {
@@ -89,8 +89,8 @@ class FixtureData implements \Serializable
 
     /**
      * @param SplFileInfo $file
-     * @param string       $name
-     * @param bool         $enabled
+     * @param string      $name
+     * @param bool        $enabled
      *
      * @return $this
      */
@@ -172,7 +172,7 @@ class FixtureData implements \Serializable
 
     /**
      * @param string $name
-     * 
+     *
      * @return $this
      */
     public function setName($name)
@@ -192,7 +192,7 @@ class FixtureData implements \Serializable
 
     /**
      * @param int|null $year
-     * 
+     *
      * @return $this
      */
     public function setYear($year)
@@ -267,7 +267,7 @@ class FixtureData implements \Serializable
     protected function dataHibernateVisitor($value, $name)
     {
         if ($value instanceof SplFileInfo) {
-            return [$value->getPathname(),$value->getRelativePath(),$value->getRelativePathname()];
+            return [$value->getPathname(), $value->getRelativePath(), $value->getRelativePathname()];
         }
 
         return $value;

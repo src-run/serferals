@@ -14,11 +14,10 @@ namespace SR\Serferals\Application;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class SerferalsApplication
+ * Class SerferalsApplication.
  */
 class SerferalsApplication extends Application
 {

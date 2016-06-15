@@ -18,7 +18,7 @@ use Tmdb\Model\Tv;
 use Tmdb\Repository\TvEpisodeRepository;
 
 /**
- * Class EpisodeResolver
+ * Class EpisodeResolver.
  */
 class EpisodeResolver extends AbstractResolver
 {
@@ -56,7 +56,7 @@ class EpisodeResolver extends AbstractResolver
 
     /**
      * @param FixtureEpisodeData $fixture
-     * @param Tv|null $result
+     * @param Tv|null            $result
      *
      * @return null|\Tmdb\Model\AbstractModel|Tv\Episode
      */
@@ -71,7 +71,8 @@ class EpisodeResolver extends AbstractResolver
         try {
             $repo = $this->getSingleRepository();
             $item = $repo->load($result->getId(), $fixture->getSeasonNumber(), $fixture->getEpisodeNumberStart());
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return $item instanceof Tv\Episode ? $item : null;
     }

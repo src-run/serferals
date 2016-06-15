@@ -17,7 +17,7 @@ use SR\Wonka\Serializer\AbstractSerializer;
 use SR\Wonka\Serializer\SerializerFactory;
 
 /**
- * Class IntrospectionAwareObjectTrait
+ * Class IntrospectionAwareObjectTrait.
  */
 trait IntrospectionAwareObjectTrait
 {

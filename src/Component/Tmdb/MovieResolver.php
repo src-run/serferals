@@ -17,7 +17,7 @@ use Tmdb\Model\Search\SearchQuery\MovieSearchQuery;
 use Tmdb\Repository\MovieRepository;
 
 /**
- * Class MovieResolver
+ * Class MovieResolver.
  */
 class MovieResolver extends AbstractResolver
 {

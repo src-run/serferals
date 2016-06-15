@@ -15,12 +15,11 @@ use SR\Console\Style\StyleAwareTrait;
 use SR\Console\Style\StyleInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Class RemoveExtOperation
+ * Class RemoveExtOperation.
  */
 class RemoveExtOperation
 {
@@ -37,7 +36,7 @@ class RemoveExtOperation
     }
 
     /**
-     * @param string[]    $ins
+     * @param string[] $ins
      * @param string[] ...$extensions
      */
     public function run(array $ins, ...$extensions)

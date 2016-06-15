@@ -14,7 +14,7 @@ namespace SR\Serferals\Component\Fixture;
 use SR\Serferals\Component\Tmdb\EpisodeResolver;
 
 /**
- * Class FixtureEpisodeData
+ * Class FixtureEpisodeData.
  */
 class FixtureEpisodeData extends FixtureData
 {
@@ -59,10 +59,9 @@ class FixtureEpisodeData extends FixtureData
         return array_merge(parent::getFieldsEditable(), [
             'seasonNumber' => 'Season',
             'episodeNumberStart' => 'Episode Number',
-            'title' => 'Episode Title'
+            'title' => 'Episode Title',
         ]);
     }
-
 
     /**
      * @return int|null

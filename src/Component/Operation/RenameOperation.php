@@ -18,10 +18,9 @@ use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Class RenameOperation
+ * Class RenameOperation.
  */
 class RenameOperation
 {
@@ -124,8 +123,8 @@ class RenameOperation
      */
     private function move(FixtureData $f)
     {
-        $tplPathName = uniqid( 'string_template_'.mt_rand(10,99).'_', true );
-        $tplFileName = uniqid( 'string_template_'.mt_rand(10,99).'_', true );
+        $tplPathName = uniqid('string_template_'.mt_rand(10, 99).'_', true);
+        $tplFileName = uniqid('string_template_'.mt_rand(10, 99).'_', true);
 
         if ($f instanceof FixtureMovieData) {
             list($e, $opts) = $this->moveMovie($f, $this->getTwig(), $tplPathName, $tplFileName);
@@ -145,7 +144,7 @@ class RenameOperation
         $inputFilePath = $f->getFile()->getRealPath();
 
         $offset = 2;
-        while(true) {
+        while (true) {
             if (strncmp($outputFilePath, $inputFilePath, $offset++) !== 0) {
                 $offset = $offset - 2;
                 break;
@@ -194,7 +193,8 @@ class RenameOperation
      *
      * @return string
      */
-    function fileSize($file, $decimals = 2, $human = true) {
+    public function fileSize($file, $decimals = 2, $human = true)
+    {
         $bytes = filesize($file);
 
         if ($human === false) {
@@ -204,7 +204,7 @@ class RenameOperation
         $sz = 'BKMGTP';
         $factor = floor((strlen($bytes) - 1) / 3);
 
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[(int) $factor];
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)).@$sz[(int) $factor];
     }
 
     /**
@@ -225,6 +225,7 @@ class RenameOperation
         if ($this->smartOutputOverwrite === true && $this->fileSize($input) >= $this->fileSize($output)) {
             $this->io()->comment('Overwriting larger input to output path (smart overwrite).');
             $this->io()->newLine();
+
             return true;
         }
 
@@ -232,10 +233,11 @@ class RenameOperation
             unlink($input);
             $this->io()->comment('Removing smaller input file (smart overwrite).');
             $this->io()->newLine();
+
             return false;
         }
 
-        while(true) {
+        while (true) {
             $this->io()->comment('File already exists in output path');
 
             $this->io()->writeln(' [ <em>o</em> ] Overwrite <info>(default)</info>', false);
@@ -248,17 +250,16 @@ class RenameOperation
                 case 'o':
                     $this->io()->comment('Overwriting output path.');
                     $this->io()->newLine();
-                    return true;
 
+                    return true;
                 case 's':
                     return false;
-
                 case 'R':
                     $this->io()->comment('Removing input file.');
                     $this->io()->newLine();
                     unlink($input);
-                    return false;
 
+                    return false;
                 default:
                     $this->io()->error(sprintf('Invalid command shortcut "%s"', $action));
                     $this->io()->newLine();
@@ -283,7 +284,7 @@ class RenameOperation
             'name' => $f->getName(),
             'season' => str_pad($f->getSeasonNumber(), 2, 0, STR_PAD_LEFT),
             'start' => str_pad($f->getEpisodeNumberStart(), 2, 0, STR_PAD_LEFT),
-            'ext' => pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION)
+            'ext' => pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION),
         ];
 
         if ($f->hasTitle()) {
@@ -311,7 +312,7 @@ class RenameOperation
 
         $opts = [
             'name' => $f->getName(),
-            'ext' => pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION)
+            'ext' => pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION),
         ];
 
         if ($f->hasId()) {

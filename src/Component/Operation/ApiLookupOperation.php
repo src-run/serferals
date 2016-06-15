@@ -18,18 +18,13 @@ use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
 use SR\Serferals\Component\Tmdb\EpisodeResolver;
 use SR\Serferals\Component\Tmdb\MovieResolver;
-use SR\Reflection\Inspect;
-use Symfony\Component\Console\Helper\TableSeparator;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Tmdb\Model\AbstractModel;
 use Tmdb\Model\Collection\ResultCollection;
 use Tmdb\Model\Movie;
-use Tmdb\Model\Search\SearchQuery;
 use Tmdb\Model\Tv;
 
 /**
- * Class LookupResolverOperation
+ * Class LookupResolverOperation.
  */
 class ApiLookupOperation
 {
@@ -84,7 +79,7 @@ class ApiLookupOperation
             if ($c === 0) {
                 return;
             }
-            
+
             $io->subSection('File API Resolutions');
         });
 
@@ -148,7 +143,7 @@ class ApiLookupOperation
                 $this->writeLookupSuccess($f, $item, $resultSelected);
             }
 
-            $this->ioVerbose(function() use ($mode) {
+            $this->ioVerbose(function () use ($mode) {
                 $this->writeHelp($mode);
             });
 
@@ -339,7 +334,7 @@ class ApiLookupOperation
             }
         );
 
-        while(true) {
+        while (true) {
             list($tableHeads, $tableRows, $control) = $this->getEditFixtureTable($f);
             $this->io()->table($tableRows, $tableHeads);
             $action = strtolower($this->io()->ask('Enter value number or no value to exit editor', 'done'));
@@ -416,6 +411,7 @@ class ApiLookupOperation
 
         if (!is_writable($removeItem)) {
             $this->io()->error(sprintf('Could not delete "%s"', $relativePathName));
+
             return 1;
         }
 
@@ -435,7 +431,7 @@ class ApiLookupOperation
      */
     private function removeFileItem(FixtureData $f, $path, $newLine = false)
     {
-        $this->ioVerbose(function(StyleInterface $io) use ($path, $newLine) {
+        $this->ioVerbose(function (StyleInterface $io) use ($path, $newLine) {
             $io->comment(sprintf('Removing "%s"', $path), $newLine);
         });
 
@@ -468,7 +464,7 @@ class ApiLookupOperation
             }
         }
 
-        $this->ioVerbose(function(StyleInterface $io) use ($path) {
+        $this->ioVerbose(function (StyleInterface $io) use ($path) {
             $io->comment(sprintf('Removing "%s"', $path), false);
         });
 
@@ -480,6 +476,7 @@ class ApiLookupOperation
 
         if (count($resultSet) !== 0) {
             $this->io()->error(sprintf('Could not remove "%s"', $path));
+
             return 1;
         }
 
@@ -487,8 +484,6 @@ class ApiLookupOperation
 
         return 2;
     }
-
-
 
     /**
      * @param FixtureData     $f
@@ -693,12 +688,13 @@ class ApiLookupOperation
         );
     }
 
-    function fileSizeHuman(\SplFileInfo $file, $decimals = 2) {
+    public function fileSizeHuman(\SplFileInfo $file, $decimals = 2)
+    {
         $bytes = $file->getSize();
         $sz = 'BKMGTP';
         $factor = floor((strlen($bytes) - 1) / 3);
 
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)).@$sz[$factor];
     }
 
     /**

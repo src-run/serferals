@@ -15,10 +15,9 @@ use SR\Console\Style\StyleAwareTrait;
 use SR\Console\Style\StyleInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Class RemoveDirOperation
+ * Class RemoveDirOperation.
  */
 class RemoveDirOperation
 {
@@ -35,7 +34,7 @@ class RemoveDirOperation
     }
 
     /**
-     * @param string[]    $ins
+     * @param string[] $ins
      * @param string[] ...$extensions
      */
     public function run(array $ins, ...$extensions)
@@ -46,7 +45,7 @@ class RemoveDirOperation
             $this->removePath($in, $extensions, $deletions, true);
         }
 
-        $this->ioVerbose(function(StyleInterface $io) use ($in, $deletions) {
+        $this->ioVerbose(function (StyleInterface $io) use ($in, $deletions) {
             $io->comment(sprintf('Found <info>%d</info> files/paths for cleanup in input path(s)', $deletions));
         });
     }
@@ -63,7 +62,7 @@ class RemoveDirOperation
             return $i != '.' && $i != '..';
         });
         $inner = array_map(function ($i) use ($folder) {
-            return $folder . DIRECTORY_SEPARATOR . $i;
+            return $folder.DIRECTORY_SEPARATOR.$i;
         }, $inner);
         $count = count($inner);
 

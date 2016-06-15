@@ -23,7 +23,7 @@ use Tmdb\Repository\SearchRepository;
 use Tmdb\Repository\TvEpisodeRepository;
 
 /**
- * Class AbstractResolver
+ * Class AbstractResolver.
  */
 abstract class AbstractResolver
 {
@@ -146,7 +146,8 @@ abstract class AbstractResolver
 
         try {
             $this->results = @call_user_func_array([$r, $method], [$fixture->getName(), $q]);
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return $this;
     }

@@ -11,13 +11,12 @@
 
 namespace SR\Serferals\Component\ObjectBehavior;
 
-use SR\Reflection\Inspect;
 use SR\Reflection\Introspection\ObjectIntrospection;
 use SR\Reflection\Introspection\PropertyIntrospection;
 use SR\Utility\ArrayUtil;
 
 /**
- * Class PropertiesResettableObjectTrait
+ * Class PropertiesResettableObjectTrait.
  */
 trait PropertiesResettableObjectTrait
 {

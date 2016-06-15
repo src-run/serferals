@@ -12,27 +12,18 @@
 namespace SR\Serferals\Command;
 
 use SR\Console\Style\StyleInterface;
-use SR\Serferals\Component\Fixture\FixtureData;
-use SR\Serferals\Component\Fixture\FixtureEpisodeData;
-use SR\Serferals\Component\Fixture\FixtureMovieData;
 use SR\Serferals\Component\Operation\ApiLookupOperation;
-use SR\Serferals\Component\Operation\FileResolverOperation;
 use SR\Serferals\Component\Operation\PathScanOperation;
 use SR\Serferals\Component\Operation\RemoveDirOperation;
 use SR\Serferals\Component\Operation\RemoveExtOperation;
 use SR\Serferals\Component\Operation\RenameOperation;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Helper\TableCell;
-use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
- * Class DuplicatesCommand
+ * Class DuplicatesCommand.
  */
 class DuplicatesCommand extends AbstractCommand
 {
@@ -44,13 +35,13 @@ class DuplicatesCommand extends AbstractCommand
             ->addUsage('an/input/path/to/search')
             ->setHelp('Scan input directory for media files and resolve duplicate items.')
             ->setDefinition([
-                new InputOption('ext', ['x'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'Input extensions to consider media.', ['mov', 'mkv', 'mp4', 'avi']),
-                new InputArgument('input-dirs', InputArgument::IS_ARRAY|InputArgument::REQUIRED, 'Path to read input files from.')
+                new InputOption('ext', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Input extensions to consider media.', ['mov', 'mkv', 'mp4', 'avi']),
+                new InputArgument('input-dirs', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Path to read input files from.'),
             ]);
     }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
      *
      * @return int
@@ -67,11 +58,11 @@ class DuplicatesCommand extends AbstractCommand
             $this->getApplication()->getGitHash(),
             [
                     'Author',
-                    sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail())
+                    sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail()),
             ],
             [
                 'License',
-                $this->getApplication()->getLicense()
+                $this->getApplication()->getLicense(),
             ]
         );
 
@@ -104,7 +95,8 @@ class DuplicatesCommand extends AbstractCommand
      * @param string[] $inputPaths
      * @param string[] $inputExtensions
      */
-    private function showRuntimeConfiguration(array $inputPaths, array $inputExtensions) {
+    private function showRuntimeConfiguration(array $inputPaths, array $inputExtensions)
+    {
         $tableRows = [];
 
         foreach ($inputPaths as $i => $path) {
