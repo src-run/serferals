@@ -38,6 +38,11 @@ class RenameOperation
     protected $outputOverwrite;
 
     /**
+     * @var bool
+     */
+    protected $smartOutputOverwrite;
+
+    /**
      * @var string
      */
     protected $tplPathEpisode;
@@ -91,11 +96,13 @@ class RenameOperation
      * @param string                                  $outputPath
      * @param FixtureMovieData[]|FixtureEpisodeData[] $collection
      * @param bool                                    $outputOverwrite
+     * @param bool                                    $smartOutputOverwrite
      */
-    public function run($outputPath, array $collection, $outputOverwrite = false)
+    public function run($outputPath, array $collection, $outputOverwrite = false, $smartOutputOverwrite = false)
     {
         $this->outputPath = $outputPath;
         $this->outputOverwrite = $outputOverwrite;
+        $this->smartOutputOverwrite = $smartOutputOverwrite;
 
         if (count($collection) === 0) {
             $this->io()->warning('No output files selected during run');
@@ -183,11 +190,17 @@ class RenameOperation
     /**
      * @param string $file
      * @param int    $decimals
+     * @param bool   $human
      *
      * @return string
      */
-    function fileSizeHuman($file, $decimals = 2) {
+    function fileSize($file, $decimals = 2, $human = true) {
         $bytes = filesize($file);
+
+        if ($human === false) {
+            return $bytes;
+        }
+
         $sz = 'BKMGTP';
         $factor = floor((strlen($bytes) - 1) / 3);
 
@@ -203,11 +216,24 @@ class RenameOperation
     private function handleExistingFile($output, $input)
     {
         $rows = [
-            ['Input Size', $this->fileSizeHuman($input)],
-            ['Output Size', $this->fileSizeHuman($output)],
+            ['Input Size', $this->fileSize($input)],
+            ['Output Size', $this->fileSize($output)],
         ];
 
         $this->io()->table($rows, []);
+
+        if ($this->smartOutputOverwrite === true && $this->fileSize($input) >= $this->fileSize($output)) {
+            $this->io()->comment('Overwriting larger input to output path (smart overwrite).');
+            $this->io()->newLine();
+            return true;
+        }
+
+        if ($this->smartOutputOverwrite === true && $this->fileSize($input) < $this->fileSize($output)) {
+            unlink($input);
+            $this->io()->comment('Removing smaller input file (smart overwrite).');
+            $this->io()->newLine();
+            return false;
+        }
 
         while(true) {
             $this->io()->comment('File already exists in output path');
@@ -221,6 +247,7 @@ class RenameOperation
             switch ($action) {
                 case 'o':
                     $this->io()->comment('Overwriting output path.');
+                    $this->io()->newLine();
                     return true;
 
                 case 's':
@@ -228,11 +255,13 @@ class RenameOperation
 
                 case 'R':
                     $this->io()->comment('Removing input file.');
+                    $this->io()->newLine();
                     unlink($input);
                     return false;
 
                 default:
                     $this->io()->error(sprintf('Invalid command shortcut "%s"', $action));
+                    $this->io()->newLine();
                     sleep(3);
             }
         }

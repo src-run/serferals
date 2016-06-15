@@ -70,7 +70,8 @@ class ScanCommand extends AbstractCommand
             ->setHelp('Scan input directory for media files, resolve episode/movie metadata, rename and output using proper directory structure and file names.')
             ->setDefinition([
                 new InputOption('ext', ['e'], InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extensions understood to be media files.', $this->extAsMedia),
-                new InputOption('overwrite', ['f'], InputOption::VALUE_NONE, 'Force media file overwrite (replace) if same file already exists.'),
+                new InputOption('overwrite', ['f'], InputOption::VALUE_NONE, 'Force media path overwrite if output already exists.'),
+                new InputOption('smart-overwrite', ['s'], InputOption::VALUE_NONE, 'Force media path overwrite if output already exists and input is larger.'),
                 new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Output directory to write organized media to.'),
                 new InputOption('pre-task', ['t'], InputOption::VALUE_NONE, 'Enable pre-scan file/dir cleaning and other tasks.'),
                 new InputOption('post-task', ['T'], InputOption::VALUE_NONE, 'Enable post-scan file/dir cleaning and other tasks.'),
@@ -156,7 +157,7 @@ class ScanCommand extends AbstractCommand
         $itemCollection = $lookup->resolve($itemCollection);
 
         $rename = $this->getServiceRename();
-        $rename->run($outputPath, $itemCollection, $input->getOption('overwrite'));
+        $rename->run($outputPath, $itemCollection, $input->getOption('overwrite'), $input->getOption('smart-overwrite'));
 
         if ($cleanPostTask) {
             $this->doPostRunTasks($inputPaths, $cleanExtensionsPost);
