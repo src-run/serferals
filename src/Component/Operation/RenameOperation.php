@@ -222,14 +222,14 @@ class RenameOperation
 
         $this->io()->table($rows, []);
 
-        if ($this->smartOutputOverwrite === true && $this->fileSize($input) > $this->fileSize($output)) {
+        if ($this->smartOutputOverwrite === true && $this->fileSize($input, 2, false) > $this->fileSize($output, 2, false)) {
             $this->io()->comment('Overwriting larger input to output path (smart overwrite).');
             $this->io()->newLine();
 
             return true;
         }
 
-        if ($this->smartOutputOverwrite === true && $this->fileSize($input) <= $this->fileSize($output)) {
+        if ($this->smartOutputOverwrite === true && $this->fileSize($input, 2, false) <= $this->fileSize($output, 2, false)) {
             unlink($input);
             $this->io()->comment('Removing smaller (or equal) input file (smart overwrite).');
             $this->io()->newLine();
