@@ -160,13 +160,13 @@ class ApiLookupOperation
                 $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
             }
 
-            $action = $this->io()->ask('Enter action command shortcut name', $actionDefault);
-
             if ($this->skipLookupFailure === true && ($results->count() == 0 || !$item)) {
                 $this->io()->comment('Auto skipping lookup failure.');
                 $this->io()->newLine();
                 break;
             }
+
+            $action = $this->io()->ask('Enter action command shortcut name', $actionDefault);
 
             switch ($action) {
                 case 'c':
