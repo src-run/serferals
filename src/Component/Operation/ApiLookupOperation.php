@@ -149,6 +149,12 @@ class ApiLookupOperation
                 $this->writeLookupSuccess($f, $item, $resultSelected);
             }
 
+            if ($this->skipLookupFailure === true && ($results->count() == 0 || !$item)) {
+                $this->io()->comment('Auto skipping lookup failure.');
+                $this->io()->newLine();
+                break;
+            }
+
             $this->ioVerbose(function () use ($mode) {
                 $this->writeHelp($mode);
             });
@@ -158,12 +164,6 @@ class ApiLookupOperation
                 $actionDefault = 'R';
             } else {
                 $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
-            }
-
-            if ($this->skipLookupFailure === true && ($results->count() == 0 || !$item)) {
-                $this->io()->comment('Auto skipping lookup failure.');
-                $this->io()->newLine();
-                break;
             }
 
             $action = $this->io()->ask('Enter action command shortcut name', $actionDefault);

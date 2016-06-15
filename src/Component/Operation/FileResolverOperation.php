@@ -141,9 +141,22 @@ class FileResolverOperation
     protected function parseEpisodeName(FixtureEpisodeData $fixture, &$baseName)
     {
         $name = $baseName[0];
-        $name = preg_replace('{\b(\[?\(?us|uk\)?\]?)\b}i', '', $name);
-        foreach (['.', '-', '['] as $search) {
-            $name = ucwords(trim(str_replace($search, ' ', $name)));
+
+        $regex = [
+            '{\b(\[?\(?us|uk\)?\]?)\b}i' => '',
+            '{([a-z])([A-Za-z})' => '$1 $2',
+        ];
+        foreach ($regex as $search => $replace) {
+            $name = ucwords(trim(preg_replace($search, $replace, $name)));
+        }
+
+        $search = [
+            '.',
+            '-',
+            '['
+        ];
+        foreach ($search as $s) {
+            $name = ucwords(trim(str_replace($s, ' ', $name)));
         }
 
         $fixture->setName($name);
