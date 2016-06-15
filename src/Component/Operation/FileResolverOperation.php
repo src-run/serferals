@@ -145,6 +145,7 @@ class FileResolverOperation
         $regex = [
             '{\b(\[?\(?us|uk\)?\]?)\b}i' => '',
             '{(\B[A-Z][a-z])}' => ' $1',
+            '{\s+}' => ' ',
         ];
         foreach ($regex as $search => $replace) {
             $name = ucwords(trim(preg_replace($search, $replace, $name)));
