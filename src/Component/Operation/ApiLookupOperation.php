@@ -127,6 +127,7 @@ class ApiLookupOperation
 
             if (!file_exists($f->getFile()->getRelativePathname())) {
                 $this->io()->error(sprintf('File no longer exists: %s', $f->getFile()->getRelativePathname()));
+                break;
             }
 
             if ($mode === MovieResolver::TYPE) {
