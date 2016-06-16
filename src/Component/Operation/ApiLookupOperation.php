@@ -166,7 +166,7 @@ class ApiLookupOperation
 
             if ($f->getFileSize() < 10000000) {
                 $this->io()->warning('File is less than 10Mb (likely a ancillary file) - marking for removal');
-                $actionDefault = 'R';
+                $actionDefault = 'r';
             } else {
                 $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
             }
