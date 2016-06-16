@@ -157,7 +157,6 @@ class ApiLookupOperation
 
             if ($this->skipLookupFailure === true && ($results->count() == 0 || !$item)) {
                 $this->io()->warning('Ignoring due to command line option to skip lookup failures.');
-                $this->io()->newLine();
                 break;
             }
 
