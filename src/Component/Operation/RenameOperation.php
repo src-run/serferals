@@ -284,7 +284,7 @@ class RenameOperation
             'name' => $f->getName(),
             'season' => str_pad($f->getSeasonNumber(), 2, 0, STR_PAD_LEFT),
             'start' => str_pad($f->getEpisodeNumberStart(), 2, 0, STR_PAD_LEFT),
-            'ext' => pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION),
+            'ext' => strtolower(pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION)),
         ];
 
         if ($f->hasTitle()) {
@@ -312,7 +312,7 @@ class RenameOperation
 
         $opts = [
             'name' => $f->getName(),
-            'ext' => pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION),
+            'ext' => strtolower(pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION)),
         ];
 
         if ($f->hasId()) {
