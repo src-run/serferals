@@ -144,7 +144,7 @@ class FileResolverOperation
 
         $regex = [
             '{\b(\[?\(?us|uk\)?\]?)\b}i' => '',
-            '{(\B[A-Z][a-z])}' => ' $1',
+            '{([a-z])([A-Z][a-z])}' => '$1 $2',
             '{\s+}' => ' ',
         ];
         foreach ($regex as $search => $replace) {
