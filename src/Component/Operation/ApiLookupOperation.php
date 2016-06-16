@@ -125,7 +125,7 @@ class ApiLookupOperation
         while (true) {
             $this->io()->section(sprintf('%03d of %03d', $i, $count));
 
-            if (!file_exists($f->getFile()->getRelativePathname())) {
+            if (!file_exists($f->getFile()->getPathname())) {
                 $this->io()->error(sprintf('File no longer exists: %s', $f->getFile()->getRelativePathname()));
                 break;
             }
