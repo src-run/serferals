@@ -121,6 +121,7 @@ class ApiLookupOperation
         ++$i;
         $mode = $f::TYPE;
         $lookupSelection = 1;
+        $showFullHelp = false;
 
         while (true) {
             $this->io()->section(sprintf('%03d of %03d', $i, $count));
@@ -160,8 +161,8 @@ class ApiLookupOperation
                 break;
             }
 
-            $this->ioVerbose(function () use ($mode) {
-                $this->writeHelp($mode);
+            $this->ioVerbose(function () use ($mode, &$showFullHelp) {
+                $this->writeHelp($mode, $showFullHelp);
             });
 
             if ($f->getFileSize() < 10000000) {
@@ -178,7 +179,7 @@ class ApiLookupOperation
                     $this->hydrateFixture($f, $item, $this->getResultSelection($results, $lookupSelection));
                     break 2;
 
-                case 'F':
+                case 'C':
                     $f->setEnabled(true);
                     break 2;
 
@@ -195,7 +196,7 @@ class ApiLookupOperation
                     $this->io()->comment('Skipping...');
                     break 2;
 
-                case 'R':
+                case 'r':
                     $f->setEnabled(false);
                     $removeResult = $this->remove($f);
                     $this->io()->newLine();
@@ -215,11 +216,14 @@ class ApiLookupOperation
                     break;
 
                 case '?':
-                    $this->writeHelp($mode, true);
-                    sleep(3);
+                    $showFullHelp = true;
                     break;
 
-                case 'W':
+                case 'h':
+                    $showFullHelp = true;
+                    break;
+
+                case 'D':
                     $skipRemaining = true;
                     break 2;
 
@@ -229,7 +233,7 @@ class ApiLookupOperation
 
                 default:
                     $this->io()->error(sprintf('Invalid command shortcut "%s"', $action));
-                    sleep(3);
+                    sleep(1);
             }
         }
 
@@ -800,27 +804,69 @@ class ApiLookupOperation
 
     /**
      * @param string $mode
+     * @param bool   $showFullHelp
      */
-    private function writeHelp($mode, $v = false)
+    private function writeHelp($mode, &$showFullHelp = false)
     {
-        if ($v === true) {
+        $help = [
+            'c' => ['Continue',         'Accept entry details and move to next',                   false],
+            'C' => ['Forced Continue',  'Enable manually described entry',                         true],
+            's' => ['Skip',             'Ignore/skip over entry and move to next',                 false],
+            'm' => ['Mode',             sprintf('Change API lookup mode to "%s"', ucwords(EpisodeResolver::TYPE ? MovieResolver::TYPE : EpisodeResolver::TYPE)), true],
+            'e' => ['Edit Fixture',     'Manually edit all entry details',                         true],
+            'l' => ['List API Results', 'Show listing of API search results',                      true],
+            'r' => ['Remove',           'Remove entry\'s file or path',                            true],
+            'D' => ['Done/Write',       'Write out enabled entries and skip remaining',            true],
+            'Q' => ['Quit',             'Quit without writing anything',                           true],
+        ];
+
+        $maxActionLength = 0;
+        foreach ($help as $h) {
+            if ($h[2] === true && $showFullHelp !== true) {
+                continue;
+            }
+
+            if (strlen($h[0]) > $maxActionLength) {
+                $maxActionLength = strlen($h[0]);
+            }
+        }
+
+        $this->ioVerbose(function () {
             $this->io()->comment('Listing available actions');
+            $this->io()->newLine();
+        });
+
+        foreach ($help as $key => $h) {
+            list($action, $description, $full) = $h;
+
+            if ($full === true && $showFullHelp !== true) {
+                continue;
+            }
+
+            $this->writeHelpLine($key, $action, $description, $showFullHelp, $maxActionLength);
         }
 
-        $mode = ($mode === EpisodeResolver::TYPE ? MovieResolver::TYPE : EpisodeResolver::TYPE);
-        $this->io()->writeln(' [ <em>c</em> ] Continue <info>(default)</info>', false);
-        $this->io()->writeln(' [ <em>s</em> ] Skip', false);
-        $this->io()->writeln(' [ <em>e</em> ] Edit Fixture', false);
-        $this->io()->writeln(' [ <em>l</em> ] Search Results', false);
-        $this->io()->writeln(' [ <em>?</em> ] Show All Help', false);
+        $this->writeHelpLine('?', 'Help', 'Display listing of all available actions with help text', $showFullHelp, $maxActionLength);
 
-        if ($v === true) {
-            $this->io()->writeln(sprintf(' [ <em>m</em> ] Mode <info>(switch to %s)</info>', $mode), false);
-            $this->io()->writeln(' [ <em>F</em> ] Forced Continue', false);
-            $this->io()->writeln(' [ <em>R</em> ] Remove File/Path', false);
-            $this->io()->writeln(' [ <em>W</em> ] Write Previous', false);
-            $this->io()->writeln(' [ <em>Q</em> ] Quit');
-        }
+        $showFullHelp = false;
+    }
+
+    /**
+     * @param string $key
+     * @param string $action
+     * @param string $description
+     * @param bool   $showFullHelp
+     * @param int    $padding
+     */
+    protected function writeHelpLine($key, $action, $description, $showFullHelp, $padding)
+    {
+        $this->io()->writeln(sprintf(
+            ' [ <em>%s</em> ] %s%s<comment>%s</comment>',
+            $key,
+            $action,
+            $showFullHelp ? str_repeat(' ', $padding - strlen($action) + 1) : '',
+            $showFullHelp ? strtolower($description) : ''
+        ));
     }
 }
 

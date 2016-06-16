@@ -154,7 +154,7 @@ class FileResolverOperation
         $search = [
             '.',
             '-',
-            '['
+            '[',
         ];
         foreach ($search as $s) {
             $name = ucwords(trim(str_replace($s, ' ', $name)));
