@@ -110,8 +110,11 @@ class RenameOperation
         }
 
         $this->io()->subSection('Writing Output Files');
+        $count = count($collection);
+        $i = 1;
 
         foreach ($collection as $item) {
+            $this->io()->section(sprintf('%03d of %03d', $i++, $count));
             $this->move($item);
         }
 
