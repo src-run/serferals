@@ -55,9 +55,11 @@ class FileResolverOperation
     }
 
     /**
+     * @param bool $modeEpisode
+     *
      * @return FixtureData[]
      */
-    public function getItems()
+    public function getItems($modeEpisode = false)
     {
         $fixtureCollection = [];
 
@@ -65,7 +67,13 @@ class FileResolverOperation
             $fixtureCollection[] = $this->parseFile($file);
         }
 
-        return $fixtureCollection;
+        if ($modeEpisode === false) {
+            return $fixtureCollection;
+        }
+
+        return array_filter($fixtureCollection, function ($item) {
+            return $item instanceof FixtureEpisodeData;
+        });
     }
 
     /**

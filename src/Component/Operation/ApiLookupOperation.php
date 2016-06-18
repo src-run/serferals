@@ -72,10 +72,11 @@ class ApiLookupOperation
 
     /**
      * @param FixtureData[] $fixtureSet
+     * @param bool          $modeAuto
      *
      * @return FixtureData[]|FixtureEpisodeData[]|FixtureMovieData[]
      */
-    public function resolve(array $fixtureSet, $skipLookupFailure = false)
+    public function resolve(array $fixtureSet, $skipLookupFailure = false, $modeAuto = false)
     {
         $this->skipLookupFailure = $skipLookupFailure;
         $i = 0;
