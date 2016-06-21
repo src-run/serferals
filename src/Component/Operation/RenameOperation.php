@@ -135,9 +135,6 @@ class RenameOperation
         $newName = str_replace(DIRECTORY_SEPARATOR, '-', $newName);
         $f->setFile(new FileInfo(sprintf('%s%s%s', $newPath, DIRECTORY_SEPARATOR, $newName)));
 
-        var_dump($f->getFile()->getPathname());
-        die(var_dump($f->getFile()));
-
         $tplPathName = uniqid('string_template_'.mt_rand(10, 99).'_', true);
         $tplFileName = uniqid('string_template_'.mt_rand(10, 99).'_', true);
 
