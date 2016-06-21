@@ -163,9 +163,8 @@ class RenameOperation
         $inputFileInfo = new FileInfo($inputFilePath);
 
         $tableRows[] = [
-            'IN',
-            sprintf('[...]%s', dirname(substr($inputFilePath, $offset))),
-            basename($inputFilePath),
+            'Input File',
+            sprintf('[...]%s', basename($inputFilePath)),
             $inputFileInfo->getSizeHuman(),
         ];
 
@@ -176,13 +175,12 @@ class RenameOperation
         }
 
         $tableRows[] = [
-            'OUT',
-            sprintf('[...]%s', dirname(substr($outputFilePath, $offset))),
-            basename($outputFilePath),
+            'Output File',
+            sprintf('[...]%s', preg_replace('{[/+]}', '/', sprintf('%s/%s', $path, $file))),
             $outputFileSize,
         ];
 
-        $this->io()->table($tableRows, [null, 'Directory Path', 'File Name', 'File Size']);
+        $this->io()->table($tableRows, [null, 'Path', 'Size']);
 
         if (file_exists($outputFilePath) &&
             false === $this->outputOverwrite &&
