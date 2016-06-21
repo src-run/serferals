@@ -158,14 +158,18 @@ class RenameOperation
             }
         }
 
+        if ($offset !== 0) {
+            $tableRows[] = ['Base Path', substr($outputFilePath, 0, $offset)];
+        }
+
         $outputFileInfo = new FileInfo($outputFilePath, null, null, false);
         $inputFileInfo = new FileInfo($inputFilePath);
 
-        $tableRows[] = ['Input File', $inputFileInfo->getRelativePathname()];
+        $tableRows[] = ['Input File', substr($inputFilePath, $offset)];
         $tableRows[] = ['Input Size', $inputFileInfo->getSizeHuman()];
-        $tableRows[] = ['Output File', $outputFileInfo->getRelativePathname()];
+        $tableRows[] = ['Output File', substr($outputFilePath, $offset)];
 
-        if (file_exists($outputFileInfo->getPathname())) {
+        if (file_exists($outputFilePath)) {
             $tablesRows[] = ['Output Size', $outputFileInfo->getSizeHuman()];
         }
 
