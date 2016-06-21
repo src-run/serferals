@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "857aae8f2eaa544aa566f472f70d4292",
-    "content-hash": "4b76d56389b250ad9d0415b9eaaee659",
+    "hash": "7e29fe67a159a0f7b933bc9d67a23831",
+    "content-hash": "43e224746b7bafea75d755a3a50d1a44",
     "packages": [
         {
             "name": "doctrine/cache",
@@ -763,16 +763,11 @@
         {
             "name": "src-run/augustus-deprecation-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/augustus-deprecation-library.git",
-                "reference": "401dc0b7bd8dd937580d241fa2428e1949a6e763"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/augustus-deprecation-library/zipball/401dc0b7bd8dd937580d241fa2428e1949a6e763",
-                "reference": "401dc0b7bd8dd937580d241fa2428e1949a6e763",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/augustus-deprecation-library",
+                "reference": "c8cffa0764ce98d846105cf437cf327dbb845eeb",
+                "shasum": null
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -794,7 +789,11 @@
                     "SR\\Deprecation\\": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Tests\\Deprecation\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -816,21 +815,23 @@
                 "rmf",
                 "src-run"
             ],
-            "time": "2016-05-03 11:50:24"
+            "support": {
+                "email": "rmf@src.run",
+                "issues": "https://src.run/augustus-deprecation-library/issues",
+                "source": "https://src.run/augustus-deprecation-library/git"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/augustus-exception-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/augustus-exception-library.git",
-                "reference": "e7bda5e384e1a68a3da80945bfbd9cf226d825f4"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/augustus-exception-library/zipball/e7bda5e384e1a68a3da80945bfbd9cf226d825f4",
-                "reference": "e7bda5e384e1a68a3da80945bfbd9cf226d825f4",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/augustus-exception-library",
+                "reference": "116d6dead085c4d324f56f5cd0bca0b15c4d1ab4",
+                "shasum": null
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -853,7 +854,11 @@
                     "SR\\Exception\\": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Exception\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -875,21 +880,23 @@
                 "rmf",
                 "src-run"
             ],
-            "time": "2016-04-30 09:46:55"
+            "support": {
+                "email": "rmf@src.run",
+                "issues": "https://src.run/augustus-exception-library/issues",
+                "source": "https://src.run/augustus-exception-library/git"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/augustus-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/augustus-library.git",
-                "reference": "560231fd44756cf20abed06b841c7074fbbd47a7"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/augustus-library/zipball/560231fd44756cf20abed06b841c7074fbbd47a7",
-                "reference": "560231fd44756cf20abed06b841c7074fbbd47a7",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/augustus-library",
+                "reference": "070c9462b400f760b9bee0ba79d8f9aed76133f7",
+                "shasum": null
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -907,7 +914,6 @@
                     "dev-master": "0.6-dev"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -928,21 +934,23 @@
                 "rmf",
                 "src-run"
             ],
-            "time": "2016-06-12 01:57:50"
+            "support": {
+                "email": "rmf@src.run",
+                "issues": "https://src.run/augustus-library/issues",
+                "source": "https://src.run/augustus-library/git"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/augustus-polyfill-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/augustus-polyfill-library.git",
-                "reference": "8aeee98e5245127ebbdf67c27a81549f1e0606ea"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/augustus-polyfill-library/zipball/8aeee98e5245127ebbdf67c27a81549f1e0606ea",
-                "reference": "8aeee98e5245127ebbdf67c27a81549f1e0606ea",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/augustus-polyfill-library",
+                "reference": "b6086e4e18c6cc7dc1d22ffd8957fc7370c043f2",
+                "shasum": null
             },
             "require": {
                 "paragonie/random_compat": "^2.0",
@@ -978,7 +986,11 @@
                     "bootstrap.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Polyfill\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -1000,24 +1012,28 @@
                 "rmf",
                 "src-run"
             ],
-            "time": "2016-05-03 21:02:12"
+            "support": {
+                "email": "rmf@src.run",
+                "issues": "https://src.run/augustus-polyfill-library/issues",
+                "source": "https://src.run/augustus-polyfill-library/git"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/augustus-primitive-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/augustus-primitive-library.git",
-                "reference": "6e58f0e1afbb992fb80e2da2e3d0982ed9acd910"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/augustus-primitive-library/zipball/6e58f0e1afbb992fb80e2da2e3d0982ed9acd910",
-                "reference": "6e58f0e1afbb992fb80e2da2e3d0982ed9acd910",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/augustus-primitive-library",
+                "reference": "83821595a669b1fc61b67aedcceb39b0081bbd37",
+                "shasum": null
             },
             "require": {
-                "php": "^5.6||^7.0"
+                "php": "^5.6 || ^7.0",
+                "src-run/augustus-exception-library": "^0.6",
+                "symfony/finder": "^2.8 || ^3.0"
             },
             "require-dev": {
                 "codacy/coverage": "^1.0",
@@ -1036,7 +1052,11 @@
                     "SR\\Primitive\\": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Primitive\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -1058,21 +1078,23 @@
                 "rmf",
                 "src-run"
             ],
-            "time": "2016-04-30 09:47:14"
+            "support": {
+                "email": "rmf@src.run",
+                "source": "https://src.run/augustus-primitive-library/git",
+                "issues": "https://src.run/augustus-primitive-library/issues"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/augustus-reflection-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/augustus-reflection-library.git",
-                "reference": "c81889210131b3f817a4f2f9a13721c35a416a14"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/augustus-reflection-library/zipball/c81889210131b3f817a4f2f9a13721c35a416a14",
-                "reference": "c81889210131b3f817a4f2f9a13721c35a416a14",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/augustus-reflection-library",
+                "reference": "104cede9e42f670fb183f89fc5cc46f067673b5f",
+                "shasum": null
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1095,7 +1117,11 @@
                     "SR\\Reflection\\": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Reflection\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -1117,21 +1143,23 @@
                 "rmf",
                 "src-run"
             ],
-            "time": "2016-05-19 21:19:07"
+            "support": {
+                "email": "rmf@src.run",
+                "source": "https://src.run/augustus-reflection-library/git",
+                "issues": "https://src.run/augustus-reflection-library/issues"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/augustus-serializer-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/augustus-serializer-library.git",
-                "reference": "e8518d983dcaec60f946a1da3536740492f256b3"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/augustus-serializer-library/zipball/e8518d983dcaec60f946a1da3536740492f256b3",
-                "reference": "e8518d983dcaec60f946a1da3536740492f256b3",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/augustus-serializer-library",
+                "reference": "42841b958066a0ccd0dedface327b11b13110e87",
+                "shasum": null
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1153,7 +1181,11 @@
                     "SR\\Serializer\\": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Serializer\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -1175,21 +1207,23 @@
                 "serializer",
                 "src-run"
             ],
-            "time": "2016-04-30 23:39:37"
+            "support": {
+                "email": "rmf@src.run",
+                "issues": "https://src.run/augustus-serializer-library/issues",
+                "source": "https://src.run/augustus-serializer-library/git"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/augustus-utility-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/augustus-utility-library.git",
-                "reference": "14b694d34d14fbe7985cbd0b521b3b6ddeb0c354"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/augustus-utility-library/zipball/14b694d34d14fbe7985cbd0b521b3b6ddeb0c354",
-                "reference": "14b694d34d14fbe7985cbd0b521b3b6ddeb0c354",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/augustus-utility-library",
+                "reference": "32b11f0ae8ee8f74056a6f4ee1e0f517736598e6",
+                "shasum": null
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1211,7 +1245,11 @@
                     "SR\\Utility\\": "lib/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Utility\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -1233,32 +1271,34 @@
                 "src-run",
                 "utility"
             ],
-            "time": "2016-05-03 06:35:26"
+            "support": {
+                "email": "rmf@src.run",
+                "source": "https://src.run/augustus-utility-library/git",
+                "issues": "https://src.run/augustus-utility-library/issues"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/vermicious-console-io-library",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/vermicious-console-io-library.git",
-                "reference": "ba2fe6551e4a8b2cc32aaed860e6630ee1334678"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/vermicious-console-io-library/zipball/ba2fe6551e4a8b2cc32aaed860e6630ee1334678",
-                "reference": "ba2fe6551e4a8b2cc32aaed860e6630ee1334678",
-                "shasum": ""
+                "type": "path",
+                "url": "/home/rmf/code/composer/vermicious-console-io-library",
+                "reference": "f5f5d7d3a7b0577f918eb475d5bc9c3472341469",
+                "shasum": null
             },
             "require": {
                 "php": "^5.6||^7.0",
-                "symfony/console": "^2.8||^3.0"
+                "symfony/console": "^2.7||^2.8||^3.0"
             },
             "require-dev": {
                 "codacy/coverage": "^1.0",
                 "phpunit/phpunit": "^5.0",
                 "satooshi/php-coveralls": "^1.0",
                 "src-run/augustus-reflection-library": "^0.6",
-                "symfony/var-dumper": "^2.8||^3.0"
+                "symfony/var-dumper": "^2.7||^2.8||^3.0"
             },
             "type": "library",
             "extra": {
@@ -1274,7 +1314,11 @@
                     "SR\\Console\\Std\\": "lib/Std/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Console\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -1297,7 +1341,14 @@
                 "vermicious",
                 "vermicious-console-io-library"
             ],
-            "time": "2016-06-05 06:17:42"
+            "support": {
+                "email": "rmf@src.run",
+                "issues": "https://src.run/vermicious-console-io-library/issues",
+                "source": "https://src.run/vermicious-console-io-library/git"
+            },
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "src-run/wonka-library",
@@ -1306,12 +1357,6 @@
                 "type": "git",
                 "url": "https://github.com/src-run/wonka-library.git",
                 "reference": "190a40bc26094381a3f2629d22ffd0e69c6b9f6a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/src-run/wonka-library/zipball/190a40bc26094381a3f2629d22ffd0e69c6b9f6a",
-                "reference": "190a40bc26094381a3f2629d22ffd0e69c6b9f6a",
-                "shasum": ""
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1338,7 +1383,11 @@
                     "lib/stub/functions-collections.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SR\\Wonka\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -1359,6 +1408,11 @@
                 "wonka",
                 "wonka-library"
             ],
+            "support": {
+                "email": "rmf@src.run",
+                "source": "https://src.run/wonka-library/git",
+                "issues": "https://src.run/wonka-library/issues"
+            },
             "time": "2016-05-20 03:31:08"
         },
         {
@@ -1822,38 +1876,21 @@
             "time": "2016-05-12 15:59:27"
         },
         {
-            "name": "symfony/polyfill",
+            "name": "symfony/polyfill-apcu",
             "version": "v1.2.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/polyfill.git",
-                "reference": "ee2c9c2576fdd4a42b024260a1906a9888770c34"
+                "url": "https://github.com/symfony/polyfill-apcu.git",
+                "reference": "6d58bceaeea2c2d3eb62503839b18646e161cd6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill/zipball/ee2c9c2576fdd4a42b024260a1906a9888770c34",
-                "reference": "ee2c9c2576fdd4a42b024260a1906a9888770c34",
+                "url": "https://api.github.com/repos/symfony/polyfill-apcu/zipball/6d58bceaeea2c2d3eb62503839b18646e161cd6b",
+                "reference": "6d58bceaeea2c2d3eb62503839b18646e161cd6b",
                 "shasum": ""
             },
             "require": {
-                "ircmaxell/password-compat": "~1.0",
-                "paragonie/random_compat": "~1.0|~2.0",
-                "php": ">=5.3.3",
-                "symfony/intl": "~2.3|~3.0"
-            },
-            "replace": {
-                "symfony/polyfill-apcu": "self.version",
-                "symfony/polyfill-iconv": "self.version",
-                "symfony/polyfill-intl-grapheme": "self.version",
-                "symfony/polyfill-intl-icu": "self.version",
-                "symfony/polyfill-intl-normalizer": "self.version",
-                "symfony/polyfill-mbstring": "self.version",
-                "symfony/polyfill-php54": "self.version",
-                "symfony/polyfill-php55": "self.version",
-                "symfony/polyfill-php56": "self.version",
-                "symfony/polyfill-php70": "self.version",
-                "symfony/polyfill-util": "self.version",
-                "symfony/polyfill-xml": "self.version"
+                "php": ">=5.3.3"
             },
             "type": "library",
             "extra": {
@@ -1862,26 +1899,8 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\": "src/"
-                },
                 "files": [
-                    "src/Apcu/bootstrap.php",
-                    "src/Php54/bootstrap.php",
-                    "src/Php55/bootstrap.php",
-                    "src/Php56/bootstrap.php",
-                    "src/Php70/bootstrap.php",
-                    "src/Iconv/bootstrap.php",
-                    "src/Intl/Grapheme/bootstrap.php",
-                    "src/Intl/Icu/bootstrap.php",
-                    "src/Intl/Normalizer/bootstrap.php",
-                    "src/Mbstring/bootstrap.php",
-                    "src/Xml/bootstrap.php"
-                ],
-                "classmap": [
-                    "src/Intl/Normalizer/Resources/stubs",
-                    "src/Php70/Resources/stubs",
-                    "src/Php54/Resources/stubs"
+                    "bootstrap.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1898,7 +1917,530 @@
                     "homepage": "https://symfony.com/contributors"
                 }
             ],
-            "description": "Symfony polyfills backporting features to lower PHP versions",
+            "description": "Symfony polyfill backporting apcu_* functions to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "apcu",
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-iconv",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-iconv.git",
+                "reference": "b287e8554b1ffd9b5b20b5df940d906930ff4a10"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-iconv/zipball/b287e8554b1ffd9b5b20b5df940d906930ff4a10",
+                "reference": "b287e8554b1ffd9b5b20b5df940d906930ff4a10",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "suggest": {
+                "ext-iconv": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Iconv\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for the Iconv extension",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "iconv",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-intl-grapheme",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
+                "reference": "900b52f2c4f1d1db24c047081c907dcf08faacca"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/900b52f2c4f1d1db24c047081c907dcf08faacca",
+                "reference": "900b52f2c4f1d1db24c047081c907dcf08faacca",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "suggest": {
+                "ext-intl": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Intl\\Grapheme\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for intl's grapheme_* functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "grapheme",
+                "intl",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-intl-icu",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-intl-icu.git",
+                "reference": "0f8dc2c45f69f8672379e9210bca4a115cd5146f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-icu/zipball/0f8dc2c45f69f8672379e9210bca4a115cd5146f",
+                "reference": "0f8dc2c45f69f8672379e9210bca4a115cd5146f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3",
+                "symfony/intl": "~2.3|~3.0"
+            },
+            "suggest": {
+                "ext-intl": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for intl's ICU-related data and classes",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "icu",
+                "intl",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-intl-normalizer",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-intl-normalizer.git",
+                "reference": "5a4d25700c0c01abc799532156dd68f3d8798b64"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-normalizer/zipball/5a4d25700c0c01abc799532156dd68f3d8798b64",
+                "reference": "5a4d25700c0c01abc799532156dd68f3d8798b64",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "suggest": {
+                "ext-intl": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Intl\\Normalizer\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ],
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for intl's Normalizer class and related functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "intl",
+                "normalizer",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-mbstring",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-mbstring.git",
+                "reference": "dff51f72b0706335131b00a7f49606168c582594"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/dff51f72b0706335131b00a7f49606168c582594",
+                "reference": "dff51f72b0706335131b00a7f49606168c582594",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "suggest": {
+                "ext-mbstring": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Mbstring\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for the Mbstring extension",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "mbstring",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-php55",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php55.git",
+                "reference": "bf2ff9ad6be1a4772cb873e4eea94d70daa95c6d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php55/zipball/bf2ff9ad6be1a4772cb873e4eea94d70daa95c6d",
+                "reference": "bf2ff9ad6be1a4772cb873e4eea94d70daa95c6d",
+                "shasum": ""
+            },
+            "require": {
+                "ircmaxell/password-compat": "~1.0",
+                "php": ">=5.3.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php55\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 5.5+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-php56",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php56.git",
+                "reference": "3edf57a8fbf9a927533344cef65ad7e1cf31030a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php56/zipball/3edf57a8fbf9a927533344cef65ad7e1cf31030a",
+                "reference": "3edf57a8fbf9a927533344cef65ad7e1cf31030a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3",
+                "symfony/polyfill-util": "~1.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php56\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 5.6+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-php70",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php70.git",
+                "reference": "a42f4b6b05ed458910f8af4c4e1121b0101b2d85"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php70/zipball/a42f4b6b05ed458910f8af4c4e1121b0101b2d85",
+                "reference": "a42f4b6b05ed458910f8af4c4e1121b0101b2d85",
+                "shasum": ""
+            },
+            "require": {
+                "paragonie/random_compat": "~1.0|~2.0",
+                "php": ">=5.3.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php70\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ],
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 7.0+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-util",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-util.git",
+                "reference": "ef830ce3d218e622b221d6bfad42c751d974bf99"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-util/zipball/ef830ce3d218e622b221d6bfad42c751d974bf99",
+                "reference": "ef830ce3d218e622b221d6bfad42c751d974bf99",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Util\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony utilities for portability of PHP codes",
             "homepage": "https://symfony.com",
             "keywords": [
                 "compat",
@@ -1906,7 +2448,65 @@
                 "polyfill",
                 "shim"
             ],
-            "time": "2016-05-18 14:27:53"
+            "time": "2016-05-18 14:26:46"
+        },
+        {
+            "name": "symfony/polyfill-xml",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-xml.git",
+                "reference": "9da643c5fdbe1108747a047cb0371f1f00028acd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-xml/zipball/9da643c5fdbe1108747a047cb0371f1f00028acd",
+                "reference": "9da643c5fdbe1108747a047cb0371f1f00028acd",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "suggest": {
+                "ext-xml": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Xml\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for xml's utf8_encode and utf8_decode functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "time": "2016-05-18 14:26:46"
         },
         {
             "name": "symfony/process",
@@ -2783,16 +3383,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "5.4.5",
+            "version": "5.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "744a50838ef373be00fb658ce9544905cf587c17"
+                "reference": "2f1fc94b77ea6418bd6a06c64a1dac0645fbce59"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/744a50838ef373be00fb658ce9544905cf587c17",
-                "reference": "744a50838ef373be00fb658ce9544905cf587c17",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/2f1fc94b77ea6418bd6a06c64a1dac0645fbce59",
+                "reference": "2f1fc94b77ea6418bd6a06c64a1dac0645fbce59",
                 "shasum": ""
             },
             "require": {
@@ -2857,7 +3457,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-06-15 07:20:05"
+            "time": "2016-06-16 06:01:15"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -3189,16 +3789,16 @@
         },
         {
             "name": "sebastian/exporter",
-            "version": "1.2.1",
+            "version": "1.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/exporter.git",
-                "reference": "7ae5513327cb536431847bcc0c10edba2701064e"
+                "reference": "42c4c2eec485ee3e159ec9884f95b431287edde4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/exporter/zipball/7ae5513327cb536431847bcc0c10edba2701064e",
-                "reference": "7ae5513327cb536431847bcc0c10edba2701064e",
+                "url": "https://api.github.com/repos/sebastianbergmann/exporter/zipball/42c4c2eec485ee3e159ec9884f95b431287edde4",
+                "reference": "42c4c2eec485ee3e159ec9884f95b431287edde4",
                 "shasum": ""
             },
             "require": {
@@ -3206,12 +3806,13 @@
                 "sebastian/recursion-context": "~1.0"
             },
             "require-dev": {
+                "ext-mbstring": "*",
                 "phpunit/phpunit": "~4.4"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.2.x-dev"
+                    "dev-master": "1.3.x-dev"
                 }
             },
             "autoload": {
@@ -3251,7 +3852,7 @@
                 "export",
                 "exporter"
             ],
-            "time": "2015-06-21 07:55:53"
+            "time": "2016-06-17 09:04:28"
         },
         {
             "name": "sebastian/global-state",

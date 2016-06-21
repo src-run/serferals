@@ -94,14 +94,9 @@ class ScanCommand extends AbstractCommand
         $this->io()->applicationTitle(
             strtoupper($this->getApplication()->getName()),
             $this->getApplication()->getVersion(),
-            $this->getApplication()->getGitHash(),
-            [
-                'Author',
-                sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail()),
-            ],
-            [
-                'License',
-                $this->getApplication()->getLicense(),
+            $this->getApplication()->getGitHash(), [
+                'Author' => sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail()),
+                'License' => $this->getApplication()->getLicense(),
             ]
         );
 

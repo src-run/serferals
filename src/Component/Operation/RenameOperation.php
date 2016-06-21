@@ -13,6 +13,7 @@ namespace SR\Serferals\Component\Operation;
 
 use SR\Console\Style\StyleAwareTrait;
 use SR\Console\Style\StyleInterface;
+use SR\Primitive\FileInfo;
 use SR\Serferals\Component\Fixture\FixtureData;
 use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
@@ -161,8 +162,16 @@ class RenameOperation
             $tableRows[] = ['Base Path', substr($outputFilePath, 0, $offset)];
         }
 
-        $tableRows[] = ['Input', substr($inputFilePath, $offset)];
-        $tableRows[] = ['Output', substr($outputFilePath, $offset)];
+        $outputFileInfo = new FileInfo($outputFilePath, null, null, false);
+        $inputFileInfo = new FileInfo($inputFilePath);
+
+        $tableRows[] = ['Input File', $inputFileInfo->getRelativePathname()];
+        $tableRows[] = ['Input Size', $inputFileInfo->getSizeHuman()];
+        $tableRows[] = ['Output File', $outputFileInfo->getRelativePathname()];
+
+        if (file_exists($outputFileInfo->getPathname())) {
+            $tablesRows[] = ['Output Size', $outputFileInfo->getSizeHuman()];
+        }
 
         $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
             $io->table($tableRows, []);
@@ -170,7 +179,7 @@ class RenameOperation
 
         if (file_exists($outputFilePath) &&
             false === $this->outputOverwrite &&
-            false === $this->handleExistingFile($outputFilePath, $inputFilePath)
+            false === $this->handleExistingFile($outputFileInfo, $inputFileInfo)
         ) {
             return;
         }
@@ -219,26 +228,17 @@ class RenameOperation
      *
      * @return bool
      */
-    private function handleExistingFile($output, $input)
+    private function handleExistingFile(FileInfo $output, FileInfo $input)
     {
-        $rows = [
-            ['Input Size', $this->fileSize($input)],
-            ['Output Size', $this->fileSize($output)],
-        ];
-
-        $this->io()->table($rows, []);
-
-        if ($this->smartOutputOverwrite === true && $this->fileSize($input, 2, false) > $this->fileSize($output, 2, false)) {
-            $this->io()->comment('Overwriting larger input to output path (smart overwrite).');
-            $this->io()->newLine();
+        if ($this->smartOutputOverwrite === true && $input->getSize() > $output->getSize()) {
+            $this->io()->warning('Overwriting larger input to output path (smart overwrite).');
 
             return true;
         }
 
-        if ($this->smartOutputOverwrite === true && $this->fileSize($input, 2, false) <= $this->fileSize($output, 2, false)) {
-            unlink($input);
-            $this->io()->comment('Removing smaller (or equal) input file (smart overwrite).');
-            $this->io()->newLine();
+        if ($this->smartOutputOverwrite === true && $input->getSize() <= $output->getSize()) {
+            unlink($input->getPathname());
+            $this->io()->warning('Removing smaller (or equal) input file (smart overwrite).');
 
             return false;
         }
@@ -261,14 +261,12 @@ class RenameOperation
                 case 's':
                     return false;
                 case 'R':
-                    $this->io()->comment('Removing input file.');
-                    $this->io()->newLine();
-                    unlink($input);
+                    unlink($input->getPathname());
+                    $this->io()->warning('Removing input file.');
 
                     return false;
                 default:
                     $this->io()->error(sprintf('Invalid command shortcut "%s"', $action));
-                    $this->io()->newLine();
                     sleep(3);
             }
         }

@@ -1,13 +1,13 @@
 {
-    "name"        : "src-run/serferals-media-organizer",
+    "name"        : "src-run/serferals",
     "license"     : "MIT",
     "type"        : "project",
-    "homepage"    : "https://get.src.run/serferals-media-organizer",
+    "homepage"    : "https://src.run/serferals",
     "description" : "A CLI application for resolving and organizing movie and episode files.",
     "support" : {
         "email"  : "rmf@src.run",
-        "issues" : "https://get.src.run/serferals-media-organizer/issues",
-        "source" : "https://get.src.run/serferals-media-organizer/git",
+        "issues" : "https://src.run/serferals/issues",
+        "source" : "https://src.run/serferals/git",
         "irc"    : "irc://irc.efnet.org/src-run"
     },
     "authors" : [
