@@ -183,7 +183,9 @@ class RenameOperation
 
         $tableRows[] = [
             'Base Path',
-            new TableCell(substr($outputFilePath, 0, $offset), ['colspan' => 2]),
+            substr($outputFilePath, 0, $offset),
+            null,
+            null
         ];
 
         $this->io()->table($tableRows, ['Type', 'Directory Path', 'File Name', 'File Size']);
