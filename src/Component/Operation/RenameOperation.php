@@ -231,14 +231,14 @@ class RenameOperation
     private function handleExistingFile(FileInfo $output, FileInfo $input)
     {
         if ($this->smartOutputOverwrite === true && $input->getSize() > $output->getSize()) {
-            $this->io()->warning('Overwriting larger input to output path (smart overwrite).');
+            $this->io()->warning('Automatically overwriting smaller output filepath with larger input.');
 
             return true;
         }
 
         if ($this->smartOutputOverwrite === true && $input->getSize() <= $output->getSize()) {
             unlink($input->getPathname());
-            $this->io()->warning('Removing smaller (or equal) input file (smart overwrite).');
+            $this->io()->warning('Automatically removing input filepath of less than or equal size to existing output filepath.');
 
             return false;
         }
