@@ -144,9 +144,12 @@ abstract class AbstractResolver
         $r = $this->getSearchRepository();
         $q = $this->getQuery();
 
+        var_dump("@call_user_func_array([$r, $method], [$fixture->getName(), $q]");
         try {
             $this->results = @call_user_func_array([$r, $method], [$fixture->getName(), $q]);
+            var_dump($this->results);
         } catch (\Exception $e) {
+            var_dump($e);
         }
 
         return $this;
