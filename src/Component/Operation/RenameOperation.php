@@ -147,7 +147,7 @@ class RenameOperation
         $path = $e->render($tplPathName, $opts);
         $file = $e->render($tplFileName, $opts);
 
-        $outputFilePath = preg_replace('{[/+]}', '/', $this->outputPath.'/'.$path.'/'.$file);
+        $outputFilePath = preg_replace('{[/]+}', '/', sprintf('%s/%s/%s', $this->outputPath, $path, $file));
         $outputPath = pathinfo($outputFilePath, PATHINFO_DIRNAME);
         $inputFilePath = $f->getFile()->getRealPath();
 
@@ -176,7 +176,7 @@ class RenameOperation
 
         $tableRows[] = [
             'Output File',
-            sprintf('[...]%s', preg_replace('{[/+]}', '/', sprintf('%s/%s', $path, $file))),
+            sprintf('[...]%s', preg_replace('{[/]+}', '/', sprintf('%s/%s', $path, $file))),
             $outputFileSize,
         ];
 
