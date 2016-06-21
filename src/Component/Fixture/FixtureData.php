@@ -89,8 +89,8 @@ class FixtureData implements \Serializable
 
     /**
      * @param FileInfo $file
-     * @param string      $name
-     * @param bool        $enabled
+     * @param string   $name
+     * @param bool     $enabled
      *
      * @return $this
      */

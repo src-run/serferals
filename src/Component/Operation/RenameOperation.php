@@ -115,7 +115,7 @@ class RenameOperation
         $i = 1;
 
         foreach ($collection as $item) {
-            $this->ioVerbose(function() use (&$i, $count) {
+            $this->ioVerbose(function () use (&$i, $count) {
                 $this->io()->section(sprintf('%03d of %03d', $i++, $count));
             });
 

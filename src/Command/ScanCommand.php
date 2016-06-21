@@ -12,7 +12,6 @@
 namespace SR\Serferals\Command;
 
 use SR\Console\Style\StyleInterface;
-use SR\Primitive\FileInfo;
 use SR\Serferals\Component\Operation\RemoveDirOperation;
 use SR\Serferals\Component\Operation\RemoveExtOperation;
 use SR\Serferals\Component\Operation\ApiLookupOperation;
