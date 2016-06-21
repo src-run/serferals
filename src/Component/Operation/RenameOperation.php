@@ -161,8 +161,8 @@ class RenameOperation
         $inputFileInfo = new FileInfo($inputFilePath);
 
         $tableRows[] = [
-            'Input',
-            dirname(substr($inputFilePath, $offset)),
+            'IN',
+            sprintf('[...]%s', dirname(substr($inputFilePath, $offset))),
             basename($inputFilePath),
             $inputFileInfo->getSizeHuman(),
         ];
@@ -170,24 +170,17 @@ class RenameOperation
         try {
             $outputFileSize = $outputFileInfo->getSizeHuman();
         } catch (\RuntimeException $e) {
-            $outputFileSize = 'n/a';
+            $outputFileSize = null;
         }
 
         $tableRows[] = [
-            'Output',
-            dirname(substr($outputFilePath, $offset)),
+            'OUT',
+            sprintf('[...]%s', dirname(substr($outputFilePath, $offset))),
             basename($outputFilePath),
             $outputFileSize,
         ];
 
-        $tableRows[] = [
-            'Base Path',
-            substr($outputFilePath, 0, $offset),
-            null,
-            null,
-        ];
-
-        $this->io()->table($tableRows, ['Type', 'Directory Path', 'File Name', 'File Size']);
+        $this->io()->table($tableRows, [null, 'Directory Path', 'File Name', 'File Size']);
 
         if (file_exists($outputFilePath) &&
             false === $this->outputOverwrite &&
