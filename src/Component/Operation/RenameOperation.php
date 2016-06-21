@@ -129,11 +129,7 @@ class RenameOperation
      */
     private function move(FixtureData $f)
     {
-        $newPath = $f->getFile()->getPath();
-        $newName = $f->getFile()->getFilename();
-
-        $newName = str_replace(DIRECTORY_SEPARATOR, '-', $newName);
-        $f->setFile(new FileInfo(sprintf('%s%s%s', $newPath, DIRECTORY_SEPARATOR, $newName)));
+        $f->setName(str_replace(DIRECTORY_SEPARATOR, '-', $f->getName());
 
         $tplPathName = uniqid('string_template_'.mt_rand(10, 99).'_', true);
         $tplFileName = uniqid('string_template_'.mt_rand(10, 99).'_', true);
