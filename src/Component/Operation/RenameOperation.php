@@ -17,6 +17,7 @@ use SR\Primitive\FileInfo;
 use SR\Serferals\Component\Fixture\FixtureData;
 use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
+use Symfony\Component\Console\Helper\TableCell;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -158,27 +159,35 @@ class RenameOperation
             }
         }
 
-        if ($offset !== 0) {
-            $tableRows[] = ['Base Path', substr($outputFilePath, 0, $offset)];
-        }
-
         $outputFileInfo = new FileInfo($outputFilePath, null, null, false);
         $inputFileInfo = new FileInfo($inputFilePath);
 
-        $tableRows[] = ['Input File', substr($inputFilePath, $offset)];
-        $tableRows[] = ['Input Size', $inputFileInfo->getSizeHuman()];
-        $tableRows[] = ['Output File', substr($outputFilePath, $offset)];
-
+        $tableRows[] = [
+            'Input',
+            dirname(substr($inputFilePath, $offset)),
+            basename($inputFilePath),
+            $inputFileInfo->getSizeHuman()
+        ];
 
         try {
-            $tablesRows[] = ['Output Size', $outputFileInfo->getSizeHuman()];
+            $outputFileSize = $outputFileInfo->getSizeHuman();
         } catch (\RuntimeException $e) {
-            $tablesRows[] = ['Output Size', 'N/A'];
+            $outputFileSize = 'n/a';
         }
 
-        $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
-            $io->table($tableRows, []);
-        });
+        $tableRows[] = [
+            'Output',
+            dirname(substr($outputFilePath, $offset)),
+            basename($outputFilePath),
+            $outputFileSize
+        ];
+
+        $tableRows[] = [
+            'Shared Path',
+            new TableCell(substr($outputFilePath, 0, $offset), ['colspan' => 3])
+        ];
+
+        $this->io()->table($tableRows, ['Type', 'Directory Path', 'File Name', 'File Size']);
 
         if (file_exists($outputFilePath) &&
             false === $this->outputOverwrite &&
