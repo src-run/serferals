@@ -182,8 +182,8 @@ class RenameOperation
         ];
 
         $tableRows[] = [
-            'Shared Path',
-            new TableCell(substr($outputFilePath, 0, $offset), ['colspan' => 3]),
+            'Base Path',
+            new TableCell(substr($outputFilePath, 0, $offset), ['colspan' => 2]),
         ];
 
         $this->io()->table($tableRows, ['Type', 'Directory Path', 'File Name', 'File Size']);
