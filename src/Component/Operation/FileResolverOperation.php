@@ -34,6 +34,54 @@ class FileResolverOperation
     protected $finder;
 
     /**
+     * @var bool
+     */
+    protected $modeMovie = false;
+
+    /**
+     * @var bool
+     */
+    protected $modeEpisode = false;
+
+    /**
+     * @return boolean
+     */
+    public function isModeMovie()
+    {
+        return $this->modeMovie;
+    }
+
+    /**
+     * @param boolean $modeMovie
+     *
+     * @return FileResolverOperation
+     */
+    public function setModeMovie($modeMovie)
+    {
+        $this->modeMovie = $modeMovie;
+        return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isModeEpisode()
+    {
+        return $this->modeEpisode;
+    }
+
+    /**
+     * @param boolean $modeEpisode
+     *
+     * @return FileResolverOperation
+     */
+    public function setModeEpisode($modeEpisode)
+    {
+        $this->modeEpisode = $modeEpisode;
+        return $this;
+    }
+
+    /**
      * @param InputInterface  $input
      * @param OutputInterface $output
      */
@@ -60,7 +108,7 @@ class FileResolverOperation
      *
      * @return FixtureData[]
      */
-    public function getItems($modeEpisode = false)
+    public function getItems()
     {
         $fixtureCollection = [];
 
@@ -68,13 +116,19 @@ class FileResolverOperation
             $fixtureCollection[] = $this->parseFile($file);
         }
 
-        if ($modeEpisode === false) {
-            return $fixtureCollection;
+        if ($this->isModeEpisode()) {
+            return array_filter($fixtureCollection, function ($item) {
+                return $item instanceof FixtureEpisodeData;
+            });
         }
 
-        return array_filter($fixtureCollection, function ($item) {
-            return $item instanceof FixtureEpisodeData;
-        });
+        if ($this->isModeMovie()) {
+            return array_filter($fixtureCollection, function ($item) {
+                return $item instanceof FixtureMovieData;
+            });
+        }
+
+        return $fixtureCollection;
     }
 
     /**
@@ -271,7 +325,8 @@ class FileResolverOperation
             '{\bx?h?264\b}' => '',
             '{\bACC\b}' => '',
             '{\bHDTV\b}' => '',
-            '{\(\)}' => '',
+            '{\(}' => '',
+            '{\)}' => '',
             '{\[}' => '',
             '{\]}' => '',
             '{\s+}' => ' ',

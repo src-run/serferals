@@ -73,7 +73,8 @@ class ScanCommand extends AbstractCommand
                 new InputOption('pre-task', ['t'], InputOption::VALUE_NONE, 'Enable pre-scan file/dir cleaning and other tasks.'),
                 new InputOption('post-task', ['T'], InputOption::VALUE_NONE, 'Enable post-scan file/dir cleaning and other tasks.'),
                 new InputOption('skip-lookup-failure', ['S'], InputOption::VALUE_NONE, 'Skip all files that fail API lookup.'),
-                new InputOption('mode-tv', ['E'], InputOption::VALUE_NONE, 'Set mode explicitly to TV; skip movie matches.'),
+                new InputOption('mode-episode', ['E'], InputOption::VALUE_NONE, 'Set mode explicitly to TV eisodes; skip movie matches.'),
+                new InputOption('mode-movie', ['M'], InputOption::VALUE_NONE, 'Set mode explicitly to movies; skip TV episode matches.'),
                 new InputOption('auto', ['A'], InputOption::VALUE_NONE, 'Enable auto mode.'),
                 new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->extToRemovePre),
                 new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->extToRemovePost),
@@ -104,8 +105,14 @@ class ScanCommand extends AbstractCommand
         $cleanPostTask = $input->getOption('post-task');
         $cleanExtensionsPre = $input->getOption('pre-ext');
         $cleanExtensionsPost = $input->getOption('post-ext');
-        $modeEpisode = $input->getOption('mode-tv');
+        $modeEpisode = $input->getOption('mode-episode');
+        $modeMovie = $input->getOption('mode-movie');
         $modeAuto = $input->getOption('auto');
+
+        if ($modeEpisode === true && $modeMovie === true) {
+            $this->io()->error('Cannot set mode to both episodes and movies. Select one or the other.');
+            exit(255);
+        }
 
         $inputExtensions = $input->getOption('ext');
         list($inputPaths, $inputInvalidPaths) = $this->validatePaths(true, ...$input->getArgument('input-path'));
@@ -152,7 +159,9 @@ class ScanCommand extends AbstractCommand
         $parser = $lookup->getFileResolver();
         $itemCollection = $parser
             ->using($finder)
-            ->getItems($modeEpisode);
+            ->setModeEpisode($modeEpisode)
+            ->setModeMovie($modeMovie)
+            ->getItems();
 
         $itemCollection = $lookup->resolve($itemCollection, $input->getOption('skip-lookup-failure'), $modeAuto);
 
