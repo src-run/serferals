@@ -137,7 +137,6 @@ class ApiLookupOperation
                     $f = $this->fileResolver->parseFileAsMovie($f->getFile());
                 }
 
-                var_dump($f);
                 $results = $this->movieResolver->resolve($f)->getResults();
                 $resultSelected = $this->getResultSelection($results, $lookupSelection);
                 $item = $this->getResultSelection($results, $lookupSelection);
@@ -146,6 +145,7 @@ class ApiLookupOperation
                     $f = $this->fileResolver->parseFileAsEpisode($f->getFile());
                 }
 
+                var_dump($f);
                 $results = $this->episodeResolver->resolve($f)->getResults();
                 $resultSelected = $this->getResultSelection($results, $lookupSelection);
                 $item = $this->episodeResolver->resolveSingle($f, $resultSelected);
