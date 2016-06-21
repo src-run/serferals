@@ -1027,7 +1027,7 @@
             "dist": {
                 "type": "path",
                 "url": "/home/rmf/code/composer/augustus-primitive-library",
-                "reference": "83821595a669b1fc61b67aedcceb39b0081bbd37",
+                "reference": "3f52da263ece33f3d144342952b4d5705d8d18f9",
                 "shasum": null
             },
             "require": {

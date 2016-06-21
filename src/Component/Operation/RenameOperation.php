@@ -169,8 +169,11 @@ class RenameOperation
         $tableRows[] = ['Input Size', $inputFileInfo->getSizeHuman()];
         $tableRows[] = ['Output File', substr($outputFilePath, $offset)];
 
-        if (file_exists($outputFilePath)) {
+
+        try {
             $tablesRows[] = ['Output Size', $outputFileInfo->getSizeHuman()];
+        } catch (\RuntimeException $e) {
+            $tablesRows[] = ['Output Size', 'N/A'];
         }
 
         $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
@@ -199,27 +202,6 @@ class RenameOperation
         } else {
             unlink($inputFilePath);
         }
-    }
-
-    /**
-     * @param string $file
-     * @param int    $decimals
-     * @param bool   $human
-     *
-     * @return string
-     */
-    public function fileSize($file, $decimals = 2, $human = true)
-    {
-        $bytes = filesize($file);
-
-        if ($human === false) {
-            return $bytes;
-        }
-
-        $sz = 'BKMGTP';
-        $factor = floor((strlen($bytes) - 1) / 3);
-
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)).@$sz[(int) $factor];
     }
 
     /**

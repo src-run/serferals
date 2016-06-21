@@ -12,6 +12,7 @@
 namespace SR\Serferals\Component\Operation;
 
 use SR\Console\Style\StyleAwareTrait;
+use SR\Primitive\FileInfo;
 use SR\Serferals\Component\Fixture\FixtureData;
 use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
@@ -83,6 +84,8 @@ class FileResolverOperation
      */
     public function parseFile(SplFileInfo $file)
     {
+        $file = FileInfo::createFromSplFileInfo($file);
+
         $episode = $this->parseFileAsEpisode($file);
 
         if ($episode->hasEpisodeNumberStart() && $episode->hasSeasonNumber()) {
@@ -95,11 +98,11 @@ class FileResolverOperation
     }
 
     /**
-     * @param SplFileInfo $file
+     * @param FileInfo $file
      *
      * @return FixtureEpisodeData
      */
-    public function parseFileAsEpisode(SplFileInfo $file)
+    public function parseFileAsEpisode(FileInfo $file)
     {
         $fixture = FixtureEpisodeData::create($file);
         $baseName = $fixture->getFile()->getBasename();
@@ -110,17 +113,15 @@ class FileResolverOperation
         $this->parseEpisodeName($fixture, $baseName);
         $this->parseEpisodeTitle($fixture, $baseName);
 
-        $fixture->setFileSize(filesize($fixture->getFile()->getRealPath()));
-
         return $fixture;
     }
 
     /**
-     * @param SplFileInfo $file
+     * @param FileInfo $file
      *
      * @return FixtureMovieData
      */
-    public function parseFileAsMovie(SplFileInfo $file)
+    public function parseFileAsMovie(FileInfo $file)
     {
         $fixture = FixtureMovieData::create($file);
         $baseName = $fixture->getFile()->getBasename();
@@ -128,8 +129,6 @@ class FileResolverOperation
         $this->cleanMovieFileName($baseName);
         $this->parseMovieYear($fixture, $baseName);
         $this->parseMovieTitle($fixture, $baseName);
-
-        $fixture->setFileSize(filesize($fixture->getFile()->getRealPath()));
 
         return $fixture;
     }

@@ -165,7 +165,7 @@ class ApiLookupOperation
                 $this->writeHelp($mode, $showFullHelp);
             });
 
-            if ($f->getFileSize() < 10000000) {
+            if ($f->getFile()->getSize() < 10000000) {
                 $this->io()->warning('File is less than 10Mb (likely a ancillary file) - marking for removal');
                 $actionDefault = 'r';
             } else {
@@ -622,7 +622,7 @@ class ApiLookupOperation
             ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $m->getTitle()],
             ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
-            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['Size', $f->getFile()->getSizeHuman()],
             ['API Match', sprintf('<fg=green>OKAY: %d</>', $m->getId())],
         ];
 
@@ -636,7 +636,7 @@ class ApiLookupOperation
             ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $m->getTitle()],
             ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
-            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['Size', $f->getFile()->getSizeHuman()],
             ['API Match', sprintf('<fg=green>OKAY: %d</>', $m->getId())],
         ];
 
@@ -683,7 +683,7 @@ class ApiLookupOperation
             ['Episode Title', $e->getName()],
             ['Origin Country', $country],
             ['Air Date', $e->getAirDate()->format('Y\-m\-d')],
-            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['Size', $f->getFile()->getSizeHuman()],
             ['API Match', sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
         ];
 
@@ -698,7 +698,7 @@ class ApiLookupOperation
             ['Show Name', $s->getName()],
             ['Season/Episode', sprintf('%d/%d', $e->getSeasonNumber(), $e->getEpisodeNumber())],
             ['Episode Title', $e->getName()],
-            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['Size', $f->getFile()->getSizeHuman()],
             ['API Match', sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
         ];
 
@@ -709,33 +709,17 @@ class ApiLookupOperation
         );
     }
 
-    public function fileSizeHuman(\SplFileInfo $file, $decimals = 2)
-    {
-        $bytes = $file->getSize();
-        $sz = 'BKMGTP';
-        $factor = floor((strlen($bytes) - 1) / 3);
-
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)).@$sz[$factor];
-    }
-
     /**
      * @param FixtureMovieData $f
      */
     private function writeLookupFailureMovie(FixtureMovieData $f)
     {
-        /*$this->io()->error(
-            sprintf(
-                'Match failure: %s',
-                $f->getFile()->getRelativePathname()
-            )
-        );*/
-
         $rows = [
             ['Tvdb Id', ''],
             ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $f->getName()],
             ['Release Year', $f->getYear()],
-            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['Size', $f->getFile()->getSizeHuman()],
             ['API Match', '<fg=red>FAIL</>'],
         ];
 
@@ -747,7 +731,7 @@ class ApiLookupOperation
 
         $rows = [
             ['File Path', $f->getFile()->getPathname()],
-            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['Size', $f->getFile()->getSizeHuman()],
             ['API Match', '<fg=red>Failure</>'],
         ];
 
@@ -779,7 +763,7 @@ class ApiLookupOperation
             ['Episode Number', $f->getEpisodeNumberStart()],
             ['Episode Title', $f->getTitle()],
             ['Air Year', $f->getYear()],
-            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['Size', $f->getFile()->getSizeHuman()],
             ['API Match', '<fg=red>FAIL</>'],
         ];
 
@@ -791,7 +775,7 @@ class ApiLookupOperation
 
         $rows = [
             ['File Path', $f->getFile()->getPathname()],
-            ['Size', $this->fileSizeHuman($f->getFile())],
+            ['Size', $f->getFile()->getSizeHuman()],
             ['API Match', '<fg=red>FAIL</>'],
         ];
 

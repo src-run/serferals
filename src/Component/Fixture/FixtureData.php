@@ -11,11 +11,11 @@
 
 namespace SR\Serferals\Component\Fixture;
 
+use SR\Primitive\FileInfo;
 use SR\Serferals\Component\ObjectBehavior\FactoryAwareObjectTrait;
 use SR\Serferals\Component\ObjectBehavior\IntrospectionAwareObjectTrait;
 use SR\Serferals\Component\ObjectBehavior\PropertiesResettableObjectTrait;
 use SR\Serferals\Component\ObjectBehavior\SerializableObjectTrait;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Class FixtureData.
@@ -28,7 +28,7 @@ class FixtureData implements \Serializable
     use SerializableObjectTrait;
 
     /**
-     * @var SplFileInfo
+     * @var FileInfo
      */
     protected $file;
 
@@ -88,13 +88,13 @@ class FixtureData implements \Serializable
     }
 
     /**
-     * @param SplFileInfo $file
+     * @param FileInfo $file
      * @param string      $name
      * @param bool        $enabled
      *
      * @return $this
      */
-    public static function create(SplFileInfo $file, $name = null, $enabled = false)
+    public static function create(FileInfo $file, $name = null, $enabled = false)
     {
         $instance = static::newInstance($enabled)
             ->setFile($file)
@@ -143,7 +143,7 @@ class FixtureData implements \Serializable
     }
 
     /**
-     * @return SplFileInfo
+     * @return FileInfo
      */
     public function getFile()
     {
@@ -151,11 +151,11 @@ class FixtureData implements \Serializable
     }
 
     /**
-     * @param SplFileInfo $file
+     * @param FileInfo $file
      *
      * @return $this
      */
-    public function setFile(SplFileInfo $file)
+    public function setFile(FileInfo $file)
     {
         $this->file = clone $file;
 
@@ -215,19 +215,7 @@ class FixtureData implements \Serializable
      */
     public function getFileSize()
     {
-        return $this->fileSize;
-    }
-
-    /**
-     * @param int|null $fileSize
-     *
-     * @return $this
-     */
-    public function setFileSize($fileSize)
-    {
-        $this->fileSize = (int) $fileSize;
-
-        return $this;
+        return $this->file->getSize();
     }
 
     /**
@@ -266,7 +254,7 @@ class FixtureData implements \Serializable
      */
     protected function dataHibernateVisitor($value, $name)
     {
-        if ($value instanceof SplFileInfo) {
+        if ($value instanceof FileInfo) {
             return [$value->getPathname(), $value->getRelativePath(), $value->getRelativePathname()];
         }
 
@@ -282,7 +270,7 @@ class FixtureData implements \Serializable
     protected function dataHydrateVisitor($value, $name)
     {
         if ($name === 'file' && count($value) === 3) {
-            return new SplFileInfo(...$value);
+            return new FileInfo(...$value);
         }
 
         return $value;
