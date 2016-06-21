@@ -44,7 +44,7 @@ class FileResolverOperation
     protected $modeEpisode = false;
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isModeMovie()
     {
@@ -52,18 +52,19 @@ class FileResolverOperation
     }
 
     /**
-     * @param boolean $modeMovie
+     * @param bool $modeMovie
      *
      * @return FileResolverOperation
      */
     public function setModeMovie($modeMovie)
     {
         $this->modeMovie = $modeMovie;
+
         return $this;
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isModeEpisode()
     {
@@ -71,13 +72,14 @@ class FileResolverOperation
     }
 
     /**
-     * @param boolean $modeEpisode
+     * @param bool $modeEpisode
      *
      * @return FileResolverOperation
      */
     public function setModeEpisode($modeEpisode)
     {
         $this->modeEpisode = $modeEpisode;
+
         return $this;
     }
 

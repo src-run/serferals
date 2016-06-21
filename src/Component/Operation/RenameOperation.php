@@ -16,7 +16,6 @@ use SR\Primitive\FileInfo;
 use SR\Serferals\Component\Fixture\FixtureData;
 use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
-use Symfony\Component\Console\Helper\TableCell;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -185,7 +184,7 @@ class RenameOperation
             'Base Path',
             substr($outputFilePath, 0, $offset),
             null,
-            null
+            null,
         ];
 
         $this->io()->table($tableRows, ['Type', 'Directory Path', 'File Name', 'File Size']);
