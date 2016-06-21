@@ -12,7 +12,6 @@
 namespace SR\Serferals\Component\Operation;
 
 use SR\Console\Style\StyleAwareTrait;
-use SR\Console\Style\StyleInterface;
 use SR\Primitive\FileInfo;
 use SR\Serferals\Component\Fixture\FixtureData;
 use SR\Serferals\Component\Fixture\FixtureEpisodeData;
@@ -166,7 +165,7 @@ class RenameOperation
             'Input',
             dirname(substr($inputFilePath, $offset)),
             basename($inputFilePath),
-            $inputFileInfo->getSizeHuman()
+            $inputFileInfo->getSizeHuman(),
         ];
 
         try {
@@ -179,12 +178,12 @@ class RenameOperation
             'Output',
             dirname(substr($outputFilePath, $offset)),
             basename($outputFilePath),
-            $outputFileSize
+            $outputFileSize,
         ];
 
         $tableRows[] = [
             'Shared Path',
-            new TableCell(substr($outputFilePath, 0, $offset), ['colspan' => 3])
+            new TableCell(substr($outputFilePath, 0, $offset), ['colspan' => 3]),
         ];
 
         $this->io()->table($tableRows, ['Type', 'Directory Path', 'File Name', 'File Size']);
