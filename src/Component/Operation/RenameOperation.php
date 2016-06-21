@@ -158,10 +158,6 @@ class RenameOperation
             }
         }
 
-        if ($offset !== 0) {
-            $tableRows[] = ['Base Path', substr($outputFilePath, 0, $offset)];
-        }
-
         $outputFileInfo = new FileInfo($outputFilePath, null, null, false);
         $inputFileInfo = new FileInfo($inputFilePath);
 
