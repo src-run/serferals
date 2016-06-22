@@ -157,7 +157,7 @@ class ApiLookupOperation
             }
 
             if ($this->skipLookupFailure === true && ($results->count() == 0 || !$item)) {
-                $this->io()->warning('Ignoring due to command line option to skip lookup failures.');
+                $this->io()->caution('Skipping: Option enabled for API lookup failures to be auto-skip.');
                 break;
             }
 
@@ -232,7 +232,7 @@ class ApiLookupOperation
                     break 2;
 
                 case 'Q':
-                    $this->io()->warning('User requested termination');
+                    $this->io()->caution('Exiting per user request.');
                     exit;
 
                 default:

@@ -104,7 +104,7 @@ class RenameOperation
         $this->smartOutputOverwrite = $smartOutputOverwrite;
 
         if (count($collection) === 0) {
-            $this->io()->warning('No output files selected during run');
+            $this->io()->caution('No input files gathered for output during latest run.');
 
             return;
         }
@@ -222,19 +222,19 @@ class RenameOperation
     {
         try {
             if ($this->smartOutputOverwrite === true && $input->getSize() > $output->getSize()) {
-                $this->io()->warning('Automatically overwriting smaller output filepath with larger input.');
+                $this->io()->info('Automatically overwriting smaller output filepath with larger input.');
 
                 return true;
             }
 
             if ($this->smartOutputOverwrite === true && $input->getSize() <= $output->getSize()) {
                 unlink($input->getPathname());
-                $this->io()->warning('Automatically removing input filepath of less than or equal size to existing output filepath.');
+                $this->io()->info('Automatically removing input file path of less than or equal size to existing output filepath.');
 
                 return false;
             }
         } catch (\RuntimeException $e) {
-            $this->io()->error('Could not use smart output mode! An error occured while processing file sizes.');
+            $this->io()->error('Could not use smart output mode! An error occurred while processing file sizes.');
         }
 
         while (true) {
@@ -248,17 +248,17 @@ class RenameOperation
 
             switch ($action) {
                 case 'o':
-                    $this->io()->comment('Overwriting output path.');
-                    $this->io()->newLine();
-
+                    $this->io()->info('Overwriting smaller output filepath with larger input.');
                     return true;
+
                 case 's':
                     return false;
-                case 'R':
-                    unlink($input->getPathname());
-                    $this->io()->warning('Removing input file.');
 
+                case 'R':
+                    $this->io()->info(sprintf('Removing input file: %s', $input->getPathname()));
+                    unlink($input->getPathname());
                     return false;
+
                 default:
                     $this->io()->error(sprintf('Invalid command shortcut "%s"', $action));
                     sleep(3);

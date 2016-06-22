@@ -1286,7 +1286,7 @@
             "dist": {
                 "type": "path",
                 "url": "/home/rmf/code/composer/vermicious-console-io-library",
-                "reference": "f5f5d7d3a7b0577f918eb475d5bc9c3472341469",
+                "reference": "7a6be6b5dbf2f2bb24a85f2c1dd261d29d254490",
                 "shasum": null
             },
             "require": {
