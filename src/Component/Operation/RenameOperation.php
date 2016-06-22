@@ -162,10 +162,16 @@ class RenameOperation
         $outputFileInfo = new FileInfo($outputFilePath, null, null, false);
         $inputFileInfo = new FileInfo($inputFilePath);
 
+        try {
+            $inputFileSize = $inputFileInfo->getSizeHuman();
+        } catch (\RuntimeException $e) {
+            $inputFileSize = null;
+        }
+
         $tableRows[] = [
             'Input File',
             sprintf('[...]%s', basename($inputFilePath)),
-            $inputFileInfo->getSizeHuman(),
+            $inputFileSize,
         ];
 
         try {
@@ -214,17 +220,21 @@ class RenameOperation
      */
     private function handleExistingFile(FileInfo $output, FileInfo $input)
     {
-        if ($this->smartOutputOverwrite === true && $input->getSize() > $output->getSize()) {
-            $this->io()->warning('Automatically overwriting smaller output filepath with larger input.');
+        try {
+            if ($this->smartOutputOverwrite === true && $input->getSize() > $output->getSize()) {
+                $this->io()->warning('Automatically overwriting smaller output filepath with larger input.');
 
-            return true;
-        }
+                return true;
+            }
 
-        if ($this->smartOutputOverwrite === true && $input->getSize() <= $output->getSize()) {
-            unlink($input->getPathname());
-            $this->io()->warning('Automatically removing input filepath of less than or equal size to existing output filepath.');
+            if ($this->smartOutputOverwrite === true && $input->getSize() <= $output->getSize()) {
+                unlink($input->getPathname());
+                $this->io()->warning('Automatically removing input filepath of less than or equal size to existing output filepath.');
 
-            return false;
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            $this->io()->error('Could not use smart output mode! An error occured while processing file sizes.');
         }
 
         while (true) {

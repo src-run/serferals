@@ -144,7 +144,7 @@ class ApiLookupOperation
                 if ($f instanceof FixtureMovieData) {
                     $f = $this->fileResolver->parseFileAsEpisode($f->getFile());
                 }
-                
+
                 $results = $this->episodeResolver->resolve($f)->getResults();
                 $resultSelected = $this->getResultSelection($results, $lookupSelection);
                 $item = $this->episodeResolver->resolveSingle($f, $resultSelected);
@@ -164,11 +164,15 @@ class ApiLookupOperation
             $this->ioVerbose(function () use ($mode, &$showFullHelp) {
                 $this->writeHelp($mode, $showFullHelp);
             });
-
-            if ($f->getFile()->getSize() < 10000000) {
-                $this->io()->warning('File is less than 10Mb (likely a ancillary file) - marking for removal');
-                $actionDefault = 'r';
-            } else {
+            
+            try {
+                if ($f->getFile()->getSize() < 40000000) {
+                    $this->io()->warning('File is likely a ancillary file (sample, trailer, etc). Marking for removal!');
+                    $actionDefault = 'r';
+                } else {
+                    $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
+                }
+            } catch (\RuntimeException $e) {
                 $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
             }
 
@@ -607,22 +611,19 @@ class ApiLookupOperation
      */
     private function writeLookupSuccessMovie(FixtureMovieData $f, Movie $m)
     {
-        /*$this->io()->success(
-            sprintf(
-                'Match Found: %s (%d) [%d%s]',
-                $m->getTitle(),
-                $m->getReleaseDate()->format('Y'),
-                $m->getId(),
-                empty($m->getImdbId()) ? '' : '/'.$m->getImdbId()
-            )
-        );*/
+        try {
+            $fileSize = $f->getFile()->getSizeHuman();
+        } catch (\RuntimeException $e) {
+            $fileSize = 'UNKNOWN';
+            $this->io()->warning(sprintf('An error occured while retrieving the file size for %s', $f->getFile()->getPathname()));
+        }
 
         $rows = [
             ['Tvdb Id', $m->getId().($m->getImdbId() === null ? '' : '/'.$m->getImdbId())],
             ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $m->getTitle()],
             ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
-            ['Size', $f->getFile()->getSizeHuman()],
+            ['Size', $fileSize],
             ['API Match', sprintf('<fg=green>OKAY: %d</>', $m->getId())],
         ];
 
@@ -636,13 +637,13 @@ class ApiLookupOperation
             ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $m->getTitle()],
             ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
-            ['Size', $f->getFile()->getSizeHuman()],
+            ['Size', $fileSize],
             ['API Match', sprintf('<fg=green>OKAY: %d</>', $m->getId())],
         ];
 
         $this->ioNotVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table($rows);
+                $style->table($rows, []);
             }
         );
     }
@@ -654,17 +655,12 @@ class ApiLookupOperation
      */
     private function writeLookupSuccessEpisode(FixtureEpisodeData $f, Tv\Episode $e, Tv $s)
     {
-        /*$this->io()->success(
-            sprintf(
-                'Match Found: %s S%02dE%02d "%s" [%d/%d]',
-                $s->getName(),
-                $e->getSeasonNumber(),
-                $e->getEpisodeNumber(),
-                $e->getName(),
-                $s->getId(),
-                $e->getId()
-            )
-        );*/
+        try {
+            $fileSize = $f->getFile()->getSizeHuman();
+        } catch (\RuntimeException $e) {
+            $fileSize = 'UNKNOWN';
+            $this->io()->warning(sprintf('An error occured while retrieving the file size for %s', $f->getFile()->getPathname()));
+        }
 
         $country = '';
         $countrySet = $s->getOriginCountry();
@@ -683,13 +679,13 @@ class ApiLookupOperation
             ['Episode Title', $e->getName()],
             ['Origin Country', $country],
             ['Air Date', $e->getAirDate()->format('Y\-m\-d')],
-            ['Size', $f->getFile()->getSizeHuman()],
+            ['Size', $fileSize],
             ['API Match', sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
         ];
 
         $this->ioVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table($rows);
+                $style->table($rows, []);
             }
         );
 
@@ -698,13 +694,13 @@ class ApiLookupOperation
             ['Show Name', $s->getName()],
             ['Season/Episode', sprintf('%d/%d', $e->getSeasonNumber(), $e->getEpisodeNumber())],
             ['Episode Title', $e->getName()],
-            ['Size', $f->getFile()->getSizeHuman()],
+            ['Size', $fileSize],
             ['API Match', sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
         ];
 
         $this->ioNotVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table($rows);
+                $style->table($rows, []);
             }
         );
     }
@@ -714,30 +710,36 @@ class ApiLookupOperation
      */
     private function writeLookupFailureMovie(FixtureMovieData $f)
     {
+        try {
+            $fileSize = $f->getFile()->getSizeHuman();
+        } catch (\RuntimeException $e) {
+            $fileSize = 'UNKNOWN';
+        }
+
         $rows = [
             ['Tvdb Id', ''],
             ['File Path', $f->getFile()->getPathname()],
             ['Movie Title', $f->getName()],
             ['Release Year', $f->getYear()],
-            ['Size', $f->getFile()->getSizeHuman()],
+            ['Size', $fileSize],
             ['API Match', '<fg=red>FAIL</>'],
         ];
 
         $this->ioVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table($rows);
+                $style->table($rows, []);
             }
         );
 
         $rows = [
             ['File Path', $f->getFile()->getPathname()],
-            ['Size', $f->getFile()->getSizeHuman()],
+            ['Size', $fileSize],
             ['API Match', '<fg=red>Failure</>'],
         ];
 
         $this->ioNotVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table($rows);
+                $style->table($rows, []);
             }
         );
     }
@@ -747,14 +749,11 @@ class ApiLookupOperation
      */
     private function writeLookupFailureEpisode(FixtureEpisodeData $f)
     {
-        /*$this->io()->error(
-            sprintf(
-                'Match failure: %s S%02dE%02d',
-                $f->getName(),
-                $f->getSeasonNumber(),
-                $f->getEpisodeNumberStart()
-            )
-        );*/
+        try {
+            $fileSize = $f->getFile()->getSizeHuman();
+        } catch (\RuntimeException $e) {
+            $fileSize = 'UNKNOWN';
+        }
 
         $rows = [
             ['File Path', $f->getFile()->getPathname()],
@@ -763,25 +762,25 @@ class ApiLookupOperation
             ['Episode Number', $f->getEpisodeNumberStart()],
             ['Episode Title', $f->getTitle()],
             ['Air Year', $f->getYear()],
-            ['Size', $f->getFile()->getSizeHuman()],
+            ['Size', $fileSize],
             ['API Match', '<fg=red>FAIL</>'],
         ];
 
         $this->ioVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table($rows);
+                $style->table($rows, []);
             }
         );
 
         $rows = [
             ['File Path', $f->getFile()->getPathname()],
-            ['Size', $f->getFile()->getSizeHuman()],
+            ['Size', $fileSize],
             ['API Match', '<fg=red>FAIL</>'],
         ];
 
         $this->ioNotVerbose(
             function (StyleInterface $style) use ($rows) {
-                $style->table($rows);
+                $style->table($rows, []);
             }
         );
     }
