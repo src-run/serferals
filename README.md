@@ -1,11 +1,12 @@
 # [src-run] serferals
 
-## Overview
 
 [Welcome](https://src.run/go/readme_welcome)!
-The `src-run/serferals` package provides a CLI application for looking-up and organizing media files, with support for movies and tv shows.
+The `src-run/serferals` package provides a CLI application for looking-up and
+organizing media files, with support for movies and tv shows.
 
-### JTT
+
+## JTT
 
 This package represents a single project within a
 [large collection](https://src.run/go/explore) of open-source code released
@@ -14,76 +15,87 @@ and a number of Symfony bundles. These projects are authored and maintained
 by [Rob Frawley 2nd](https://src.run/rmf) and 
 [collaborators](https://src.run/serferals/github_collaborators).
 
+
 ## Demo
 
 [![Serferals basic usage example](https://src.run/get/images/serferals-console-help-video.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
+
 
 ## Quick Start
 
 ### Installation
 
-For API lookups to operate correctly, you must first request a free API key from [The Movie DB](https://www.themoviedb.org/). This API key must be entered into the `parameters.yml` config file.
+Before beginning, ensure you have created an account and requested a free API key 
+from [The Movie DB](https://www.themoviedb.org/) website. Once you have an API key,
+take note of it and enter it when prompted by the `make` script.
 
-To install, clone the repository, copy and edit the `parameters.yml` file, and use the `make` script to build the executable (which runs composer to get the latest dependencies, grabs [Box](https://github.com/box-project/box2), and uses it to compile the Symfony console app into a single-file PHAR executable).
+> **Note**: For the installation to complete successfully, **PHAR archive writing 
+> must not be disabled**. To find the location of your configuration file, run
+> `php -i | grep "Loaded Configuration File"`. Edit your `php.ini` file, ensuring 
+> the variable `phar.readonly` is uncommented and assigned the value `Off`.
 
 ```bash
-git clone https://github.com/robfrawley/serferals.git
-cp app/config/parameters.yml.dist app/config/parameters.yml
-nano app/config/parameters.yml
+git clone https://github.com/robfrawley/serferals.git && cd serferals
 ./make
 ```
 
-**Note:** If the build fails, you likely need to edit your php.ini file to enable PHAR creation by changing `phar.readonly = On` to `phar.readonly = Off`.
+If installation completes without error, the final line of output will be the 
+version string of the serferals command.
+
+```txt
+src-run/serferals version 2.1.3 by Rob Frawley 2nd <rmf@src.run> (69975c3)
+```
 
 ## Reference
 
-My prefered CLI usage include the `-vvv` and `-s` options to enable verbose output and smart overwrite
+My prefered CLI usage includes the `-vvv` and `-s` options, enabling verbose output 
+and the "smart overwrite" feature.
 
 ```bash
-serferals -vvv -s -o /path/to/output /paths/to/scan [...]
+serferals -vvv -s -o /output/path /input/path/foo [...] /input/path/bar
+```
+
+The only required option is the output path (`-o|--output-path`). At least one 
+input path must be provided as an argument, though you can specify multiple input 
+paths if required.
+
+```bash
+serferals --output-path=/output/path /input/path [...]
 ```
 
 ## Contributing
 
 ### Discussion
 
-For general inquiries or to discuss a broad topic or idea, you can find
-*robfrawley* on Freenode. There is also a *#scribe* channel, which can
-be joined using the following link
-[irc.choopa.net:6669/scribe](irc://irc.choopa.net:6669/scribe).
+For general inquiries or to discuss a broad topic or idea, find "robfrawley" on Freenode. He is always happy to 
+discuss language-level ideas, possible new directions for a project, emerging technologies, as well as the weather.
 
 ### Issues
 
-To report issues or request a new feature use
-[GitHub](https://src.run/serferals/github_issues)
-or [GitLab](https://src.run/serferals/gitlab_issues)
-to start a discussion. Include as much information as possible to aid in
-a quick resolution. Feel free to "ping" the topic if you don't get a
-response within a few days.
+To report issues or request a new feature, use the [project issue tracker](https://src.run/serferals/github_issues).
+Include as much information as possible in any bug reports. Feel free to "ping" the topic if you don't get a response
+within a few days (sometimes Github notification e-mails fall through the cracks).
 
 ### Code
 
-You created additional functionality during the use of this package? Send
-it back upstream! *Don't hesitate to submit a pull request!* Beyond the
-brief requirements outlined in the
-[contibuting guide](https://src.run/serferals/contributing),
-your [imagination](https://src.run/go/readme_imagination)
-represents the only limitation.
+You created additional functionality while utilizing this package? Wonderful: send it back upstream! *Don't hesitate to
+submit a pull request!* Your [imagination](https://src.run/go/readme_imagination) and the requirements outlined within
+our [CONTRIBUTING.md](https://src.run/serferals/contributing) file are the only limitations.
+
 
 ## License
 
-This project is licensed under the
-[MIT License](https://src.run/go/mit), an
-[FSF](https://src.run/go/fsf)-/[OSI](https://src.run/go/osi)-approved
-and [GPL](https://src.run/go/gpl)-compatible, permissive free software
-license. Review the
-[LICENSE](https://src.run/serferals/license)
-file distributed with this source code for additional information.
+This project is licensed under the [MIT License](https://src.run/go/mit), an [FSF](https://src.run/go/fsf)- and 
+[OSI](https://src.run/go/osi)-approved, [GPL](https://src.run/go/gpl)-compatible, permissive free software license.
+Review the [LICENSE](https://src.run/serferals/license) file distributed with this source code for additional
+information.
+
 
 ## Additional Links
 
-|       Purpose | Status        |
-|--------------:|:--------------|
-| *Stable Release*    | [![Packagist](https://src.run/serferals/packagist_shield)](https://src.run/serferals/packagist) |
-| *Dev Release*    | [![Packagist](https://src.run/serferals/packagist_pre_shield)](https://src.run/serferals/packagist) |
-| *License*    | [![License](https://src.run/serferals/license_shield)](https://src.run/serferals/license) |
+| Item               | Result/Status                                                                                                      |
+|-------------------:|:-------------------------------------------------------------------------------------------------------------------|
+| __Stable Release__ | [![Packagist](https://src.run/serferals/packagist.svg)](https://src.run/serferals/packagist)     |
+| __Dev Release__    | [![Packagist](https://src.run/serferals/packagist_pre.svg)](https://src.run/serferals/packagist) |
+| __License__        | [![License](https://src.run/serferals/license.svg)](https://src.run/serferals/license)           |
+| __Reference__      | [![License](https://src.run/serferals/api.svg)](https://src.run/serferals/api)                   |

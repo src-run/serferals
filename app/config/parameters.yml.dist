@@ -1,19 +1,6 @@
----
-
-##
-# This file is part of the `src-run/serferals` project.
-#
-# (c) Rob Frawley 2nd <rmf@src.run>
-#
-# For the full copyright and license information, view the LICENSE.md
-# file distributed with this source code.
-##
-
-parameters :
-    api_tmdb_key     : api-key
-    api_tmdb_log     : /tmp/api-serferals.log
-    ext_media        : ['mov', 'mkv', 'mp4', 'avi']
-    ext_remove_pre   : ['nfo', 'txt']
-    ext_remove_post  : ['srt', 'nfo', 'txt', 'jpg', 'png']
-
-...
+parameters:
+    api_tmdb_key   : tmdb-api-key
+    api_tmdb_log   : /tmp/serferals.log
+    ext_media      : ['mov', 'mkv', 'mp4', 'avi']
+    ext_remove_pre : ['nfo', 'txt']
+    ext_remove_post: ['srt', 'nfo', 'txt', 'jpg', 'png']
