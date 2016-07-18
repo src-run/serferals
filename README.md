@@ -1,74 +1,41 @@
-# [rmf] serferals-media-organizer
-
-| Continuous Integration |   Code Quality Review   |    UnitTest Coverage    |
-|:----------------------:|:-----------------------:|:-----------------------:|
-| [![Travis](https://get.src.run/serferals-media-organizer/travis_shield)](https://get.src.run/serferals-media-organizer/travis) | [![Codacy](https://get.src.run/serferals-media-organizer/codacy_shield)](https://get.src.run/serferals-media-organizer/codacy) | [![Coveralls](https://get.src.run/serferals-media-organizer/coveralls_shield)](https://get.src.run/serferals-media-organizer/coveralls) |
+# [src-run] serferals
 
 ## Overview
 
-[Welcome](https://get.src.run/go/readme_welcome)!
-The `src-run/serferals-media-organizer` package provides
-a CLI application for looking-up and organizing media files, with support
-for movies and tv shows.
-
-### Grouping
-
-This package is part of the [teavee](https://get.src.run/serferals-media-organizer/group)
-group ([explanation](https://get.src.run/serferals-media-organizer/group_explanation)),
-comprised of other releases with a concentration in 
-*core reflection base classes*,
-and related functionality.
+[Welcome](https://src.run/go/readme_welcome)!
+The `src-run/serferals` package provides a CLI application for looking-up and organizing media files, with support for movies and tv shows.
 
 ### JTT
 
 This package represents a single project within a
-[large collection](https://get.src.run/go/explore) of open-source code released
+[large collection](https://src.run/go/explore) of open-source code released
 under the *SR* namespace, comprised of framework-agnostic libraries,
 and a number of Symfony bundles. These projects are authored and maintained
-by [Rob Frawley 2nd](https://get.src.run/rmf) and 
-[collaborators](https://get.src.run/serferals-media-organizer/github_collaborators).
+by [Rob Frawley 2nd](https://src.run/rmf) and 
+[collaborators](https://src.run/serferals/github_collaborators).
 
 ## Quick Start
 
 ### Installation
 
-Get the code by requiring it explicitly via the [Composer](https://getcomposer.com)
-CLI, or by editing your *composer.json* to reflect the dependency and updating
-your project requirements. For example, to explicitly require this project using
-the CLI, use the following command.
+Clone the repository and use the `make` script to build the executable (runs composer to get the latest dependencies, grabs [Box](https://github.com/box-project/box2) and uses it to compile the executable).
 
 ```bash
-$ composer require src-run/serferals-media-organizer
+git clone https://github.com/robfrawley/serferals.git
+./make
 ```
+
+**Note:** If the build fails, you likely need to edit your php.ini file to enable PHAR creation by changing `phar.readonly = On` to `phar.readonly = Off`.
 
 ## Reference
 
-### API Docs
+My prefered CLI usage include the `-vvv` and `-s` options to enable verbose output and smart overwrite
 
-This package's API-documentation is available at [get.src.run/serferals-media-organizer/api](https://get.src.run/serferals-media-organizer/api),
-(as well as linked below via the *Reference* badge found under the *Additional Links*
-header). All API-reference is build against the *master* Git branch and updated
-automatically on each Git push---api-reference for *specific releases* will
-be provided once this package has matured.
+```bash
+serferals -vvv -s -o /path/to/output/to /path/to/search/for/media/files/at [.../more/input/paths...]
+```
 
-> The entire API-reference website is auto-generated using a quick,
-> reliable, and well-developed CLI tool called [Sami](https://get.src.run/go/sami).
-> It is rigerously and regularly tested through its use in large, complex projects,
-> such as the [Symfony Full-Stack Framework](https://get.src.run/go/symfony) 
-> <see: [get.src.run/go/api-ref-symfony](https://get.src.run/go/symfony-api)>, as well
-> as its use in smaller projects such
-> [Twig](https://get.src.run/go/sami-twig)
-> <see: [get.src.run/go/api-ref-twig](https://get.src.run/go/twig-api)>.
-> Reference Sami's [GitHub page](https://get.src.run/go/sami) to learn how to use
-> it with your own projects!
-
-### Examples/Tutorials
-
-Currently, there is no *"human-written"* documentation---outside of this README.
-Pending package stability and available resources, a
-[RTD (Read the Docs)](https://get.src.run/go/rtd) page will be published with
-additional information and tutorials, including real use-cases within the Symfony
-Framework.
+[![Serferals basic usage example](https://src.run/get/serferals-console-help.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
 
 ## Contributing
 
@@ -82,8 +49,8 @@ be joined using the following link
 ### Issues
 
 To report issues or request a new feature use
-[GitHub](https://get.src.run/serferals-media-organizer/github_issues)
-or [GitLab](https://get.src.run/serferals-media-organizer/gitlab_issues)
+[GitHub](https://src.run/serferals/github_issues)
+or [GitLab](https://src.run/serferals/gitlab_issues)
 to start a discussion. Include as much information as possible to aid in
 a quick resolution. Feel free to "ping" the topic if you don't get a
 response within a few days.
@@ -93,26 +60,24 @@ response within a few days.
 You created additional functionality during the use of this package? Send
 it back upstream! *Don't hesitate to submit a pull request!* Beyond the
 brief requirements outlined in the
-[contibuting guide](https://get.src.run/serferals-media-organizer/contributing),
-your [imagination](https://get.src.run/go/readme_imagination)
+[contibuting guide](https://src.run/serferals/contributing),
+your [imagination](https://src.run/go/readme_imagination)
 represents the only limitation.
 
 ## License
 
 This project is licensed under the
-[MIT License](https://get.src.run/go/mit), an
-[FSF](https://get.src.run/go/fsf)-/[OSI](https://get.src.run/go/osi)-approved
-and [GPL](https://get.src.run/go/gpl)-compatible, permissive free software
+[MIT License](https://src.run/go/mit), an
+[FSF](https://src.run/go/fsf)-/[OSI](https://src.run/go/osi)-approved
+and [GPL](https://src.run/go/gpl)-compatible, permissive free software
 license. Review the
-[LICENSE](https://get.src.run/serferals-media-organizer/license)
+[LICENSE](https://src.run/serferals/license)
 file distributed with this source code for additional information.
 
 ## Additional Links
 
 |       Purpose | Status        |
 |--------------:|:--------------|
-| *Stable Release*    | [![Packagist](https://get.src.run/serferals-media-organizer/packagist_shield)](https://get.src.run/serferals-media-organizer/packagist) |
-| *Dev Release*    | [![Packagist](https://get.src.run/serferals-media-organizer/packagist_pre_shield)](https://get.src.run/serferals-media-organizer/packagist) |
-| *License*    | [![License](https://get.src.run/serferals-media-organizer/license_shield)](https://get.src.run/serferals-media-organizer/license) |
-| *Reference*  | [![License](https://get.src.run/serferals-media-organizer/api_shield)](https://get.src.run/serferals-media-organizer/api) |
-
+| *Stable Release*    | [![Packagist](https://src.run/serferals/packagist_shield)](https://src.run/serferals/packagist) |
+| *Dev Release*    | [![Packagist](https://src.run/serferals/packagist_pre_shield)](https://src.run/serferals/packagist) |
+| *License*    | [![License](https://src.run/serferals/license_shield)](https://src.run/serferals/license) |
