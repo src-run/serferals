@@ -32,7 +32,7 @@ git clone https://github.com/robfrawley/serferals.git
 My prefered CLI usage include the `-vvv` and `-s` options to enable verbose output and smart overwrite
 
 ```bash
-serferals -vvv -s -o /path/to/output/to /path/to/search/for/media/files/at [.../more/input/paths...]
+serferals -vvv -s -o /path/to/output /paths/to/scan [...]
 ```
 
 [![Serferals basic usage example](https://src.run/get/images/serferals-console-help-video.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
