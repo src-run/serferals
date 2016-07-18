@@ -35,7 +35,7 @@ My prefered CLI usage include the `-vvv` and `-s` options to enable verbose outp
 serferals -vvv -s -o /path/to/output/to /path/to/search/for/media/files/at [.../more/input/paths...]
 ```
 
-[![Serferals basic usage example](https://src.run/get/serferals-console-help.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
+[![Serferals basic usage example](https://src.run/get/images/serferals-console-help-video.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
 
 ## Contributing
 
