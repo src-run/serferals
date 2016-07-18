@@ -22,10 +22,14 @@ by [Rob Frawley 2nd](https://src.run/rmf) and
 
 ### Installation
 
-Clone the repository and use the `make` script to build the executable (runs composer to get the latest dependencies, grabs [Box](https://github.com/box-project/box2) and uses it to compile the executable).
+For API lookups to operate correctly, you must first request a free API key from [The Movie DB](https://www.themoviedb.org/). This API key must be entered into the `parameters.yml` config file.
+
+To install, clone the repository, copy and edit the `parameters.yml` file, and use the `make` script to build the executable (which runs composer to get the latest dependencies, grabs [Box](https://github.com/box-project/box2), and uses it to compile the Symfony console app into a single-file PHAR executable).
 
 ```bash
 git clone https://github.com/robfrawley/serferals.git
+cp app/config/parameters.yml.dist app/config/parameters.yml
+nano app/config/parameters.yml
 ./make
 ```
 

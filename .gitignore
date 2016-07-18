@@ -1,1 +1,4 @@
-.run/builders/build-skel/.build-skel-tpls/gitignore.txt
+/vendor/
+/app/config/parameters.yml
+/.idea/
+/.php_cs.cache

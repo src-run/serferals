@@ -1,7 +1,7 @@
 ---
 
 ##
-# This file is part of the `src-run/serferals-media-organizer` project.
+# This file is part of the `src-run/serferals` project.
 #
 # (c) Rob Frawley 2nd <rmf@src.run>
 #
@@ -10,7 +10,7 @@
 ##
 
 parameters :
-    api_tmdb_key     : 2fa18e1164ac656c8305a1d3b074b776
+    api_tmdb_key     : api-key
     api_tmdb_log     : /tmp/api-serferals.log
     ext_media        : ['mov', 'mkv', 'mp4', 'avi']
     ext_remove_pre   : ['nfo', 'txt']
