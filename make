@@ -44,6 +44,15 @@ function out() {
 }
 
 #
+# ACTION: We should NOT be root
+#
+
+if [[ $EUID -eq 0 ]]; then
+    >&2 echo "This script should not be run using sudo or as the root user!"
+    exit 1
+fi
+
+#
 # ACTION: Output script info
 #
 
