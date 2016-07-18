@@ -83,7 +83,7 @@ fi
 #
 
 out "Updating source"
-git pull -q
+git pull -q &> /dev/null || out "Updating git failed (are you in a detached head or similar state?)"
 
 #
 # ACTION: Add configuration file
