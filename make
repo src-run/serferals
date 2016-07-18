@@ -7,7 +7,7 @@ php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php
 php -r "unlink('composer-setup.php');"
 
-php composer.phar update --no-dev
+php composer.phar install --no-dev || php composer.phar update --no-dev
 
 curl -LSs https://box-project.github.io/box2/installer.php | php
 
