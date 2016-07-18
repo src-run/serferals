@@ -14,11 +14,11 @@ and a number of Symfony bundles. These projects are authored and maintained
 by [Rob Frawley 2nd](https://src.run/rmf) and 
 [collaborators](https://src.run/serferals/github_collaborators).
 
-## Quick Start
-
 ## Demo
 
 [![Serferals basic usage example](https://src.run/get/images/serferals-console-help-video.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
+
+## Quick Start
 
 ### Installation
 
