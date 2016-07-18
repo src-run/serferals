@@ -1,3 +1,0 @@
-[submodule ".run"]
-	path = .run
-	url = https://github.com/src-run/usr-src-runner.git
