@@ -1352,11 +1352,12 @@
         },
         {
             "name": "src-run/wonka-library",
-            "version": "0.6.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/src-run/wonka-library.git",
-                "reference": "190a40bc26094381a3f2629d22ffd0e69c6b9f6a"
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "/home/rmf/code/composer/wonka-library",
+                "reference": "ee8d9922779535af9d47adc6f98f96020193b820",
+                "shasum": null
             },
             "require": {
                 "php": "^5.6||^7.0",
@@ -1413,7 +1414,9 @@
                 "source": "https://src.run/wonka-library/git",
                 "issues": "https://src.run/wonka-library/issues"
             },
-            "time": "2016-05-20 03:31:08"
+            "transport-options": {
+                "symlink": false
+            }
         },
         {
             "name": "symfony/config",
@@ -2885,6 +2888,7 @@
                 "rest",
                 "web service"
             ],
+            "abandoned": "guzzlehttp/guzzle",
             "time": "2014-01-28 22:29:15"
         },
         {
