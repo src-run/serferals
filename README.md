@@ -16,6 +16,10 @@ by [Rob Frawley 2nd](https://src.run/rmf) and
 
 ## Quick Start
 
+## Demo
+
+[![Serferals basic usage example](https://src.run/get/images/serferals-console-help-video.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
+
 ### Installation
 
 Clone the repository and use the `make` script to build the executable (runs composer to get the latest dependencies, grabs [Box](https://github.com/box-project/box2) and uses it to compile the executable).
@@ -34,8 +38,6 @@ My prefered CLI usage include the `-vvv` and `-s` options to enable verbose outp
 ```bash
 serferals -vvv -s -o /path/to/output /paths/to/scan [...]
 ```
-
-[![Serferals basic usage example](https://src.run/get/images/serferals-console-help-video.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
 
 ## Contributing
 
