@@ -132,7 +132,7 @@ fi
 
 if [[ ! -d vendor ]]; then
   out "Fetching dependencies"
-  php ${BIN_COMPOSER} install --no-dev -q || php ${BIN_COMPOSER} update --no-dev -q
+  php ${BIN_COMPOSER} install --no-dev -q &> /dev/null || php ${BIN_COMPOSER} update --no-dev -q
 else
   out "Updating dependencies"
   php ${BIN_COMPOSER} update --no-dev -q
