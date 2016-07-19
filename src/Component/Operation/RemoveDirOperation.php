@@ -50,7 +50,7 @@ class RemoveDirOperation
         }
 
         $this->ioVerbose(function (StyleInterface $io) use ($deletions, $extensions) {
-            $io->info(sprintf('Removed <em>%d</em> files matching <em>*.(%s)</em> pattern.', $deletions, implode('|', $extensions)));
+            $io->info(sprintf('Removed "%d" files matching "*.(%s)" pattern.', $deletions, implode('|', $extensions)));
         });
    }
 

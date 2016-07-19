@@ -64,7 +64,7 @@ class RemoveExtOperation
         }
 
         $this->ioVerbose(function (StyleInterface $io) use ($count, $extensions) {
-            $io->info(sprintf('Removed <em>%d</em> files matching <em>*.(%s)</em> pattern.', $count, implode('|', $extensions)));
+            $io->info(sprintf('Removed "%d" files matching "*.(%s)" pattern.', $count, implode('|', $extensions)));
         });
     }
 
