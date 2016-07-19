@@ -5,7 +5,6 @@
 The `src-run/serferals` package provides a CLI application for looking-up and
 organizing media files, with support for movies and tv shows.
 
-
 ## JTT
 
 This package represents a single project within a
@@ -16,12 +15,13 @@ by [Rob Frawley 2nd](https://src.run/rmf) and
 [collaborators](https://src.run/serferals/github_collaborators).
 
 
-## Demo
-
-[![Serferals basic usage example](https://src.run/get/images/serferals-console-help-video.png)](https://www.youtube.com/watch?v=8S1q_pZVDgs)
-
-
 ## Quick Start
+
+
+### Basic Usage Video
+
+[![Serferals basic usage example](https://src.run/get/images/serferals-thumb-usage.png)](src.run/go/serferals-video-usage)
+
 
 ### Installation
 
@@ -45,6 +45,10 @@ version string of the serferals command.
 ```txt
 src-run/serferals version 2.1.3 by Rob Frawley 2nd <rmf@src.run> (69975c3)
 ```
+
+#### Installation Video
+
+[![Serferals installation video](https://src.run/get/images/serferals-thumb-install.png)](src.run/go/serferals-video-install)
 
 ## Reference
 
@@ -99,3 +103,11 @@ information.
 | __Dev Release__    | [![Packagist](https://src.run/serferals/packagist_pre.svg)](https://src.run/serferals/packagist) |
 | __License__        | [![License](https://src.run/serferals/license.svg)](https://src.run/serferals/license)           |
 | __Reference__      | [![License](https://src.run/serferals/api.svg)](https://src.run/serferals/api)                   |
+
+
+## API Usage
+
+[![PThe Movie Database](https://src.run/get/images/tmdb-logo-91x81.png)](https://src.run/serferals/packagist)
+
+Serferals episode and movie lookup powered by [The Movie Database](https://www.themoviedb.org/) [API](http://docs.themoviedb.apiary.io/).
+
