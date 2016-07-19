@@ -31,6 +31,8 @@ BIN_SERFERALS_PHAR="${DIR_SELF}/serferals.phar"
 GET_COMPOSER="${DIR_SELF}/composer.setup"
 GET_BOX="${DIR_SELF}/box.setup"
 
+VER="1.0.1"
+
 #
 # Function definitions
 #
@@ -57,7 +59,7 @@ fi
 #
 
 echo -en "\n"
-echo -en ">>> [INFO] Serferals Installer v1.0.0\n"
+echo -en ">>> [INFO] Serferals Installer v${VER}\n"
 echo -en "\n"
 
 #
