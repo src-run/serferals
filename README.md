@@ -20,7 +20,7 @@ by [Rob Frawley 2nd](https://src.run/rmf) and
 
 ### Basic Usage Video
 
-[![Serferals basic usage example](https://src.run/get/images/serferals-thumb-usage.png)](src.run/go/serferals-video-usage)
+[![Serferals basic usage example](https://src.run/get/images/serferals-thumb-usage.png)](https://src.run/go/serferals-video-usage)
 
 
 ### Installation
@@ -48,7 +48,7 @@ src-run/serferals version 2.1.3 by Rob Frawley 2nd <rmf@src.run> (69975c3)
 
 #### Installation Video
 
-[![Serferals installation video](https://src.run/get/images/serferals-thumb-install.png)](src.run/go/serferals-video-install)
+[![Serferals installation video](https://src.run/get/images/serferals-thumb-install.png)](https://src.run/go/serferals-video-install)
 
 ## Reference
 
