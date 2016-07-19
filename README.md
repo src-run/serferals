@@ -46,6 +46,33 @@ version string of the serferals command.
 src-run/serferals version 2.1.3 by Rob Frawley 2nd <rmf@src.run> (69975c3)
 ```
 
+### Troubleshooting
+
+If you experience issues with the installer script, debug mode can be enabled by defining a bash variable when calling `make`.
+
+```bash
+SERFERALS_DEBUG=true ./make
+```
+
+Additionally, you can enable "clean installation" mode, which ensures all dependencies and helper PHARs (Composer, Box) are forceably re-fetched.
+
+```bash
+SERFERALS_CLEAN=true ./make
+```
+
+Moreover, you can enable "prestine installation" mode, which forces removal and re-creation of configuration files as well as enables everything from "clean installation" mode.
+
+```bash
+SERFERALS_PRESTINE=true ./make
+```
+
+Lastly, all the above mentioned environment variables can be passed in any combination.
+
+```bash
+SERFERALS_DEBUG=true SERFERALS_PRESTINE=true ./make
+```
+
+
 #### Installation Video
 
 [![Serferals installation video](https://src.run/get/images/serferals-thumb-install.png)](https://src.run/go/serferals-video-install)
@@ -100,4 +127,3 @@ information.
 [![PThe Movie Database](https://src.run/get/images/tmdb-logo-91x81.png)](https://src.run/serferals/packagist)
 
 Serferals episode and movie lookup powered by [The Movie Database](https://www.themoviedb.org/) [API](http://docs.themoviedb.apiary.io/).
-
