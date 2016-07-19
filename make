@@ -29,7 +29,7 @@ GET_COMPOSER="${DIR_SELF}/composer.setup"
 GET_BOX="${DIR_SELF}/box.setup"
 
 MOD_CLEAN=0
-MOD_PRESTINE=0
+MOD_PRISTINE=0
 
 VER="1.1.0"
 
@@ -42,8 +42,8 @@ if [[ -n ${SERFERALS_DEBUG} ]]; then
   set -x
 fi
 
-if [[ -n ${SERFERALS_PRESTINE} ]]; then
-  MOD_PRESTINE=1
+if [[ -n ${SERFERALS_PRISTINE} ]]; then
+  MOD_PRISTINE=1
 fi
 
 if [[ -n ${SERFERALS_CLEAN} ]]; then
@@ -94,7 +94,7 @@ echo -en "\n>>> Serferals Install Script v${VER}\n\n"
 # ACTION: Require prestine or clean install if requested
 #
 
-if [[ ${MOD_PRESTINE} -eq 1 ]]; then
+if [[ ${MOD_PRISTINE} -eq 1 ]]; then
   out "Ensuring prestine installation"
 
   for f in ${YML_CONFIG} ${GET_COMPOSER} ${GET_BOX} ${BIN_COMPOSER} ${BIN_BOX} vendor; do

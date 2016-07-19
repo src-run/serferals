@@ -5,72 +5,60 @@
 [Welcome](https://src.run/go/readme_welcome)! The `src-run/serferals` package provides a CLI application for looking-up
 and organizing media files, with support for movies and TV episodes.
 
-For example, take an input folder containing the following set of files.
+The following list shows the name of the input files to the left of the output paths this script would move them to on
+the right.
 
 ```txt
-1. Stranger Things S01E01.mkv
-2. stranger_things_201e02_hdtv.mkv
-3. 3:10-To-Yuma-720p-2007.mkv
+Stranger Things S01E01.mkv -> tv/Stranger Things (2016)/Season 01/Stranger Things (2016) [S01E01] Chapter One: The Vanishing Of Will Byers.mkv
+stranger_things_s01e02.mkv -> tv/Stranger Things (2016)/Season 01/Stranger Things (2016) [S01E02] Chapter Two: The Weirdo on Maple Street.mkv
+3:10-To-Yuma-720p-2007.mkv -> movie/3:10 to Yuma (2007)/3:10 to Yuma (2007) [5176].mkv
 ```
 
-After scanning, parsing, and performing lookups against the above files, Serferals will move them to the following file
-paths.
-
-```txt
-1. tv/Stranger Things (2016)/Season 01/Stranger Things (2016) [S01E01] Chapter One: The Vanishing Of Will Byers.mkv
-2. tv/Stranger Things (2016)/Season 01/Stranger Things (2016) [S01E02] Chapter Two: The Weirdo on Maple Street.mkv
-3. movie/3:10 to Yuma (2007)/3:10 to Yuma (2007) [5176].mkv
-```
-
-This behavior is especially useful for media servers such as [Plex](https://www.plex.tv/downloads/) that require files
-follow specific naming conventions. It can also be useful for those with OCD who simply require their files are named
-consistently for archival.
+This behavior is especially useful for media servers such as [Plex](https://www.plex.tv/downloads/) that require their
+library files follow specific naming conventions. It is also useful for those with OCD-tendencies who require their
+archive of media to be properly and consistently named.
 
 ### Customization
 
-The output paths can be configured easily by adding custom templates to the `parameters.yml` configuration file. For
-example, the default templates output file paths unsupported by Windows file systems (NTFS) due to character restrictions,
-requiring custom configuration on non-Linux and non-OSX operating systems.
-
-The templates for the output paths are easy to edit as they use [Twig](http://twig.sensiolabs.org/) syntax. For example,
-the following is the template used for TV episodes.
+The output file path formats can be easily customized by overwriting the default templates in the `parameters.yml`
+configuration file. The default template for TV episodes is the following.
 
 ```twig
 tv/{{ name|raw }}{% if year is defined %} ({{ year }}){% endif %}/Season {{ season }}/{{ name|raw }}{% if year is defined %} ({{ year }}){% endif %} [S{{ season }}E{{ start }}{% if end is defined %}-{{ end }}{% endif %}]{% if title is defined %} {{ title|raw }}{% endif %}.{{ ext }}
 ```
 
-The above template may at first appear complex, but breaking it down shows the true simplicity.
+You may recognize the template syntax as [Twig](http://twig.sensiolabs.org/), a widely used template engine in many
+web frameworks (such as [Symfony](http://symfony.com/), [Drupal](https://www.drupal.org/), and others). While its use
+in this project may be a bit of a "sledge hammer approach", it also means that customizing the output file paths is easy
+and straightforward to anyone who's worked with any modern web template language. To further exemplify the simplicity
+of this approach, take a look at the same template as above, but re-formatted with newlines for clarity and displaying
+the output of each statement in the right-hand side comments, given the following input file
+`Stranger Things (2016) [S01E01] Chapter One: The Vanishing Of Will Byers.mkv`.
 
 ```twig
 tv/                           # tv/
   {{ name|raw }}              # Stranger Things
-  {% if year is defined %}    # <boolean:true>
+  {% if year is defined %}    # <true>
     ({{ year }})              # (2016)
   {% endif %}
   /Season {{ season }}/       # Season 01/
   {{ name|raw }}              # Stranger Things
-  {% if year is defined %}    # <boolean:true>
+  {% if year is defined %}    # <true>
     ({{ year }})              # (2016)
   {% endif %}
   [                           # [
     S{{ season }}             # S01
     E{{ start }}              # E01
-    {% if end is defined %}   # <boolean:false>
+    {% if end is defined %}   # <false>
       -{{ end }}
     {% endif %}
   ]                           # ]
-  {% if title is defined %}   # <boolean:true>
+  {% if title is defined %}   # <true>
     {{ title|raw }}           # Chapter One: The Vanishing Of Will Byers
   {% endif %}
   .{{ ext }}                  # .mkv
 ```
 
-This shows how the script arrives at the final file path for season 1, episode 1 of Netflix's new series
-[Stranger Things](https://en.wikipedia.org/wiki/Stranger_Things_(TV_series)).
-
-```txt
-tv/Stranger Things (2016)/Season 01/Stranger Things (2016) [S01E01] Chapter One: The Vanishing Of Will Byers.mkv
-```
 
 ## JTT
 
