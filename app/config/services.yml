@@ -15,7 +15,7 @@ imports :
 parameters :
 
     sr.serferals.name             : "src-run/serferals"
-    sr.serferals.version          : "2.2.2"
+    sr.serferals.version          : "2.2.3"
     sr.serferals.author           : "Rob Frawley 2nd"
     sr.serferals.email            : "rmf@src.run"
     sr.serferals.license          : "MIT License"

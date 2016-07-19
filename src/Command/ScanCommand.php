@@ -101,8 +101,6 @@ class ScanCommand extends AbstractCommand
             ]
         );
 
-        $cleanPreTask = $input->getOption('pre-task');
-        $cleanPostTask = $input->getOption('post-task');
         $cleanExtensionsPre = $input->getOption('pre-ext');
         $cleanExtensionsPost = $input->getOption('post-ext');
         $modeEpisode = $input->getOption('mode-episode');
@@ -143,10 +141,7 @@ class ScanCommand extends AbstractCommand
         }
 
         $this->showRuntimeConfiguration($outputPath, $inputPaths, array_unique(array_merge($cleanExtensionsPre, $cleanExtensionsPost)), $inputExtensions);
-
-        if ($cleanPreTask) {
-            $this->doPreRunTasks($inputPaths, $cleanExtensionsPre);
-        }
+        $this->doPreRunTasks($inputPaths, $cleanExtensionsPre);
 
         $scanner = $this->operationPathScan();
 
@@ -168,9 +163,7 @@ class ScanCommand extends AbstractCommand
         $rename = $this->getServiceRename();
         $rename->run($outputPath, $itemCollection, $input->getOption('overwrite'), $input->getOption('smart-overwrite'));
 
-        if ($cleanPostTask) {
-            $this->doPostRunTasks($inputPaths, $cleanExtensionsPost);
-        }
+        $this->doPostRunTasks($inputPaths, $cleanExtensionsPost);
 
         $this->io()->smallSuccess('OK', 'Done');
 
