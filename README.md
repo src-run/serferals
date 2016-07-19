@@ -30,7 +30,7 @@ consistently for archival.
 
 The output paths can be configured easily by adding custom templates to the `parameters.yml` configuration file. For
 example, the default templates output file paths unsupported by Windows file systems (NTFS) due to character restrictions,
-requiring custom configuration on non-Linux and -OSX operating systems.
+requiring custom configuration on non-Linux and non-OSX operating systems.
 
 The templates for the output paths are easy to edit as they use [Twig](http://twig.sensiolabs.org/) syntax. For example,
 the following is the template used for TV episodes.
