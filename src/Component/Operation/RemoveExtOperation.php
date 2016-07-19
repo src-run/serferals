@@ -54,7 +54,7 @@ class RemoveExtOperation
         }
 
         $this->ioVerbose(function (StyleInterface $io) {
-            $io->subSection('Pre-Task Operations');
+            $io->subSection('Cleanup Operations');
         });
 
         $count = $finder->count();
