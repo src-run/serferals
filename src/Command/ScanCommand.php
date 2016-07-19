@@ -70,8 +70,6 @@ class ScanCommand extends AbstractCommand
                 new InputOption('overwrite', ['f'], InputOption::VALUE_NONE, 'Force media path overwrite if output already exists.'),
                 new InputOption('smart-overwrite', ['s'], InputOption::VALUE_NONE, 'Force media path overwrite if output already exists and input is larger.'),
                 new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Output directory to write organized media to.'),
-                new InputOption('pre-task', ['t'], InputOption::VALUE_NONE, 'Enable pre-scan file/dir cleaning and other tasks.'),
-                new InputOption('post-task', ['T'], InputOption::VALUE_NONE, 'Enable post-scan file/dir cleaning and other tasks.'),
                 new InputOption('skip-lookup-failure', ['S'], InputOption::VALUE_NONE, 'Skip all files that fail API lookup.'),
                 new InputOption('mode-episode', ['E'], InputOption::VALUE_NONE, 'Set mode explicitly to TV eisodes; skip movie matches.'),
                 new InputOption('mode-movie', ['M'], InputOption::VALUE_NONE, 'Set mode explicitly to movies; skip TV episode matches.'),
