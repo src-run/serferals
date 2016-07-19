@@ -95,16 +95,6 @@ Review the [LICENSE](https://src.run/serferals/license) file distributed with th
 information.
 
 
-## Additional Links
-
-| Item               | Result/Status                                                                                                      |
-|-------------------:|:-------------------------------------------------------------------------------------------------------------------|
-| __Stable Release__ | [![Packagist](https://src.run/serferals/packagist.svg)](https://src.run/serferals/packagist)     |
-| __Dev Release__    | [![Packagist](https://src.run/serferals/packagist_pre.svg)](https://src.run/serferals/packagist) |
-| __License__        | [![License](https://src.run/serferals/license.svg)](https://src.run/serferals/license)           |
-| __Reference__      | [![License](https://src.run/serferals/api.svg)](https://src.run/serferals/api)                   |
-
-
 ## API Usage
 
 [![PThe Movie Database](https://src.run/get/images/tmdb-logo-91x81.png)](https://src.run/serferals/packagist)
