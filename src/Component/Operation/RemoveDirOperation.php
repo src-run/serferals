@@ -39,16 +39,20 @@ class RemoveDirOperation
      */
     public function run(array $ins, ...$extensions)
     {
+        $this->ioVerbose(function (StyleInterface $io) {
+            $io->subSection('Post-Task Operations');
+        });
+
         $deletions = 0;
 
         foreach ($ins as $in) {
             $this->removePath($in, $extensions, $deletions, true);
         }
 
-        $this->ioVerbose(function (StyleInterface $io) use ($in, $deletions) {
-            $io->comment(sprintf('Found <info>%d</info> files/paths for cleanup in input path(s)', $deletions));
+        $this->ioVerbose(function (StyleInterface $io) use ($deletions, $extensions) {
+            $io->info(sprintf('Removed <em>%d</em> files matching <em>*.(%s)</em> pattern.', $deletions, implode('|', $extensions)));
         });
-    }
+   }
 
     /**
      * @param string $folder

@@ -53,20 +53,19 @@ class RemoveExtOperation
             $finder->name('*.'.$e);
         }
 
-        $this->ioVerbose(function (StyleInterface $io) use ($finder, $extensions) {
-            $io->comment(sprintf(
-                'Found <info>%d</info> files matching <info>*.(%s)</info> for removal',
-                $finder->count(), implode('|', $extensions)), false);
+        $this->ioVerbose(function (StyleInterface $io) {
+            $io->subSection('Pre-Task Operations');
         });
 
+        $count = $finder->count();
+
         foreach ($finder as $file) {
-            $this->ioVeryVerbose(function (StyleInterface $io) use ($file) {
-                $io->comment(sprintf(
-                    'Removing <comment>%s</comment>',
-                    $file->getPathname()), false);
-            });
             $this->delete($file);
         }
+
+        $this->ioVerbose(function (StyleInterface $io) use ($count, $extensions) {
+            $io->info(sprintf('Removed <em>%d</em> files matching <em>*.(%s)</em> pattern.', $count, implode('|', $extensions)));
+        });
     }
 
     /**
