@@ -159,7 +159,7 @@ class RenameOperation
             }
         }
 
-        $outputFileInfo = new FileInfo($outputFilePath, null, null, false);
+        $outputFileInfo = new FileInfo($outputFilePath);
         $inputFileInfo = new FileInfo($inputFilePath);
 
         try {
