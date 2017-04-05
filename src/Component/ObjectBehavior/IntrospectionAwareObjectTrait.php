@@ -12,9 +12,8 @@
 namespace SR\Serferals\Component\ObjectBehavior;
 
 use SR\Reflection\Inspect;
-use SR\Reflection\Introspection\ObjectIntrospection;
-use SR\Wonka\Serializer\AbstractSerializer;
-use SR\Wonka\Serializer\SerializerFactory;
+use SR\Serializer\Serializer;
+use SR\Serializer\SerializerInterface;
 
 /**
  * Class IntrospectionAwareObjectTrait.
@@ -22,28 +21,28 @@ use SR\Wonka\Serializer\SerializerFactory;
 trait IntrospectionAwareObjectTrait
 {
     /**
-     * @return AbstractSerializer
+     * @return null|SerializerInterface
      */
     final protected function serializer()
     {
         static $serializer = null;
 
         if ($serializer === null) {
-            $serializer = SerializerFactory::create(SerializerFactory::SERIALIZER_IGBINARY);
+            $serializer = Serializer::create(SerializerInterface::TYPE_IGBINARY);
         }
 
         return $serializer;
     }
 
     /**
-     * @return ObjectIntrospection
+     * @return null|\SR\Reflection\Inspector\ObjectInspector
      */
     final protected function inspector()
     {
         static $inspector = null;
 
         if ($inspector === null) {
-            $inspector = Inspect::thisInstance($this);
+            $inspector = Inspect::useInstance($this);
         }
 
         return $inspector;

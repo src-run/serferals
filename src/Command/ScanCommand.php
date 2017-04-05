@@ -188,7 +188,7 @@ class ScanCommand extends AbstractCommand
 
         $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
             $io->subSection('Runtime Configuration');
-            $io->table($tableRows);
+            $io->table([], $tableRows);
         });
 
         $this->ioDebug(function () {

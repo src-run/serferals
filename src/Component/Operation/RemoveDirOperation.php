@@ -59,6 +59,8 @@ class RemoveDirOperation
      * @param array  $extensions
      * @param int    $deletions
      * @param bool   $root
+     *
+     * @return bool
      */
     private function removePath($folder, array $extensions, &$deletions, $root = false)
     {
@@ -81,12 +83,14 @@ class RemoveDirOperation
             }
 
             if (false === @unlink($i)) {
-                $this->io->comment(sprintf('<em>Error removing</em> <comment>%s</comment>', $i), false);
+                $this->io(function (StyleInterface $io) use ($i) {
+                    $io->comment(sprintf('<em>Error removing</em> <comment>%s</comment>', $i));
+                });
             } else {
                 ++$deletions;
                 --$count;
-                $this->ioVeryVerbose(function (StyleInterface $io) use ($f) {
-                    $io->comment(sprintf('Removing <comment>%s</comment>', $i), false);
+                $this->ioVeryVerbose(function (StyleInterface $io) use ($i) {
+                    $io->comment(sprintf('Removing <comment>%s</comment>', $i));
                 });
             }
         }
@@ -97,7 +101,7 @@ class RemoveDirOperation
 
         if (false === @rmdir($folder)) {
             $this->ioVerbose(function (StyleInterface $io) use ($folder) {
-                $io->comment(sprintf('Error removing <comment>%s</comment>', $folder), false);
+                $io->comment(sprintf('Error removing <comment>%s</comment>', $folder));
             });
 
             return false;
@@ -106,7 +110,7 @@ class RemoveDirOperation
         ++$deletions;
 
         $this->ioVeryVerbose(function (StyleInterface $io) use ($folder) {
-            $io->comment(sprintf('Removing <comment>%s</comment>', $folder), false);
+            $io->comment(sprintf('Removing <comment>%s</comment>', $folder));
         });
 
         return true;

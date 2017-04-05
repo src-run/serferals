@@ -12,10 +12,10 @@
 namespace SR\Serferals\Component\Operation;
 
 use SR\Console\Style\StyleAwareTrait;
-use SR\Primitive\FileInfo;
 use SR\Serferals\Component\Fixture\FixtureData;
 use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
+use SR\Spl\File\SplFileInfo as FileInfo;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
@@ -106,8 +106,6 @@ class FileResolverOperation
     }
 
     /**
-     * @param bool $modeEpisode
-     *
      * @return FixtureData[]
      */
     public function getItems()
@@ -140,7 +138,7 @@ class FileResolverOperation
      */
     public function parseFile(SplFileInfo $file)
     {
-        $file = FileInfo::createFromSplFileInfo($file);
+        $file = new FileInfo($file);
 
         $episode = $this->parseFileAsEpisode($file);
 

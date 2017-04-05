@@ -11,9 +11,9 @@
 
 namespace SR\Serferals\Component\ObjectBehavior;
 
-use SR\Reflection\Introspection\ObjectIntrospection;
-use SR\Reflection\Introspection\PropertyIntrospection;
-use SR\Wonka\Serializer\AbstractSerializer;
+use SR\Reflection\Inspector\ObjectInspector;
+use SR\Reflection\Inspector\PropertyInspector;
+use SR\Serializer\SerializerInterface;
 
 /**
  * Class SerializableObjectTrait.
@@ -25,7 +25,7 @@ trait SerializableObjectTrait
      */
     final public function serialize()
     {
-        return static::serializer()->serializeData(
+        return static::serializer()->serialize(
             $this->dataHibernate()
         );
     }
@@ -36,7 +36,7 @@ trait SerializableObjectTrait
     final public function unSerialize($data)
     {
         $this->dataHydrate(
-            static::serializer()->unSerializeData($data)
+            static::serializer()->unserialize($data)
         );
     }
 
@@ -47,10 +47,10 @@ trait SerializableObjectTrait
     {
         $data = [];
 
-        $this->inspector()->visitProperties(function (PropertyIntrospection $p) use (&$data) {
+        $this->inspector()->visitProperties(function (PropertyInspector $p) use (&$data) {
             $data[$p->nameUnqualified()] = method_exists($this, 'dataHibernateVisitor') ?
-                $this->dataHibernateVisitor($p->getValue($this), $p->nameUnqualified()) :
-                $p->getValue($this);
+                $this->dataHibernateVisitor($p->value($this), $p->nameUnqualified()) :
+                $p->value($this);
         });
 
         return $data;
@@ -69,12 +69,12 @@ trait SerializableObjectTrait
     }
 
     /**
-     * @return AbstractSerializer
+     * @return SerializerInterface
      */
     abstract protected function serializer();
 
     /**
-     * @return ObjectIntrospection
+     * @return ObjectInspector
      */
     abstract protected function inspector();
 }

@@ -11,7 +11,7 @@
 
 namespace SR\Serferals\Component\Fixture;
 
-use SR\Primitive\FileInfo;
+use SR\Spl\File\SplFileInfo as FileInfo;
 use SR\Serferals\Component\ObjectBehavior\FactoryAwareObjectTrait;
 use SR\Serferals\Component\ObjectBehavior\IntrospectionAwareObjectTrait;
 use SR\Serferals\Component\ObjectBehavior\PropertiesResettableObjectTrait;

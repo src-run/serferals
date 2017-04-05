@@ -12,7 +12,7 @@
 namespace SR\Serferals\Component\Operation;
 
 use SR\Console\Style\StyleAwareTrait;
-use SR\Primitive\FileInfo;
+use SR\Spl\File\SplFileInfo as FileInfo;
 use SR\Serferals\Component\Fixture\FixtureData;
 use SR\Serferals\Component\Fixture\FixtureEpisodeData;
 use SR\Serferals\Component\Fixture\FixtureMovieData;
@@ -163,7 +163,7 @@ class RenameOperation
         $inputFileInfo = new FileInfo($inputFilePath);
 
         try {
-            $inputFileSize = $inputFileInfo->getSizeHuman();
+            $inputFileSize = $inputFileInfo->getSizeReadable();
         } catch (\RuntimeException $e) {
             $inputFileSize = null;
         }
@@ -175,7 +175,7 @@ class RenameOperation
         ];
 
         try {
-            $outputFileSize = $outputFileInfo->getSizeHuman();
+            $outputFileSize = $outputFileInfo->getSizeReadable();
         } catch (\RuntimeException $e) {
             $outputFileSize = null;
         }
@@ -202,7 +202,7 @@ class RenameOperation
         }
 
         if (!$this->io()->isVeryVerbose()) {
-            $this->io()->comment(sprintf('Writing "%s"', $outputFilePath), false);
+            $this->io()->comment(sprintf('Writing "%s"', $outputFilePath));
         }
 
         if (false === @copy($inputFilePath, $outputFilePath)) {
@@ -213,10 +213,10 @@ class RenameOperation
     }
 
     /**
-     * @param string $output
-     * @param string $input
+     * @param FileInfo $output
+     * @param FileInfo $input
      *
-     * @return bool
+     * @return bool|null
      */
     private function handleExistingFile(FileInfo $output, FileInfo $input)
     {
@@ -264,6 +264,8 @@ class RenameOperation
                     sleep(3);
             }
         }
+
+        return null;
     }
 
     /**
@@ -282,7 +284,7 @@ class RenameOperation
             'name' => $f->getName(),
             'season' => str_pad($f->getSeasonNumber(), 2, 0, STR_PAD_LEFT),
             'start' => str_pad($f->getEpisodeNumberStart(), 2, 0, STR_PAD_LEFT),
-            'ext' => strtolower(pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION)),
+            'ext' => strtolower(pathinfo($f->getFile()->getRealPath(), PATHINFO_EXTENSION)),
         ];
 
         if ($f->hasTitle()) {
@@ -310,7 +312,7 @@ class RenameOperation
 
         $opts = [
             'name' => $f->getName(),
-            'ext' => strtolower(pathinfo($f->getFile()->getRelativePathname(), PATHINFO_EXTENSION)),
+            'ext' => strtolower(pathinfo($f->getFile()->getRealPath(), PATHINFO_EXTENSION)),
         ];
 
         if ($f->hasId()) {
@@ -329,7 +331,7 @@ class RenameOperation
      */
     private function getTwig()
     {
-        $twig = new \Twig_Environment();
+        $twig = new \Twig_Environment(new \Twig_Loader_Array([]));
         $twig->setCache(false);
 
         return $twig;

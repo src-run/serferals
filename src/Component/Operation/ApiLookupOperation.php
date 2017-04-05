@@ -72,6 +72,7 @@ class ApiLookupOperation
 
     /**
      * @param FixtureData[] $fixtureSet
+     * @param bool          $skipLookupFailure
      * @param bool          $modeAuto
      *
      * @return FixtureData[]|FixtureEpisodeData[]|FixtureMovieData[]
@@ -128,7 +129,7 @@ class ApiLookupOperation
             $this->io()->section(sprintf('%03d of %03d', $i, $count));
 
             if (!file_exists($f->getFile()->getPathname())) {
-                $this->io()->error(sprintf('File no longer exists: %s', $f->getFile()->getRelativePathname()));
+                $this->io()->error(sprintf('File no longer exists: %s', $f->getFile()->getPathname()));
                 break;
             }
 
@@ -414,7 +415,7 @@ class ApiLookupOperation
      */
     private function remove(FixtureData $f)
     {
-        $relativePathName = $f->getFile()->getRelativePathname();
+        $relativePathName = $f->getFile()->getRealPath();
         $relativePath = pathinfo($relativePathName, PATHINFO_DIRNAME);
         $absolutePathName = $f->getFile()->getRealPath();
         $absolutePath = pathinfo($absolutePathName, PATHINFO_DIRNAME);
@@ -450,14 +451,13 @@ class ApiLookupOperation
     /**
      * @param FixtureData $f
      * @param string      $path
-     * @param bool        $newLine
      *
      * @return int
      */
-    private function removeFileItem(FixtureData $f, $path, $newLine = false)
+    private function removeFileItem(FixtureData $f, $path)
     {
-        $this->ioVerbose(function (StyleInterface $io) use ($path, $newLine) {
-            $io->comment(sprintf('Removing "%s"', $path), $newLine);
+        $this->ioVerbose(function (StyleInterface $io) use ($path) {
+            $io->comment(sprintf('Removing "%s"', $path));
         });
 
         if (false === @unlink($path)) {
@@ -485,12 +485,12 @@ class ApiLookupOperation
             if (is_dir($path.DIRECTORY_SEPARATOR.$file)) {
                 $resultSet[] = $this->removeFilePath($f, $path.DIRECTORY_SEPARATOR.$file);
             } else {
-                $resultSet[] = $this->removeFileItem($f, $path.DIRECTORY_SEPARATOR.$file, false);
+                $resultSet[] = $this->removeFileItem($f, $path.DIRECTORY_SEPARATOR.$file);
             }
         }
 
         $this->ioVerbose(function (StyleInterface $io) use ($path) {
-            $io->comment(sprintf('Removing "%s"', $path), false);
+            $io->comment(sprintf('Removing "%s"', $path));
         });
 
         $resultsSet[] = @rmdir($path) === false ? 1 : 2;
@@ -612,7 +612,7 @@ class ApiLookupOperation
     private function writeLookupSuccessMovie(FixtureMovieData $f, Movie $m)
     {
         try {
-            $fileSize = $f->getFile()->getSizeHuman();
+            $fileSize = $f->getFile()->getSizeReadable();
         } catch (\RuntimeException $e) {
             $fileSize = 'UNKNOWN';
             $this->io()->warning(sprintf('An error occured while retrieving the file size for %s', $f->getFile()->getPathname()));
@@ -656,7 +656,7 @@ class ApiLookupOperation
     private function writeLookupSuccessEpisode(FixtureEpisodeData $f, Tv\Episode $e, Tv $s)
     {
         try {
-            $fileSize = $f->getFile()->getSizeHuman();
+            $fileSize = $f->getFile()->getSizeReadable();
         } catch (\RuntimeException $e) {
             $fileSize = 'UNKNOWN';
             $this->io()->warning(sprintf('An error occured while retrieving the file size for %s', $f->getFile()->getPathname()));
@@ -711,7 +711,7 @@ class ApiLookupOperation
     private function writeLookupFailureMovie(FixtureMovieData $f)
     {
         try {
-            $fileSize = $f->getFile()->getSizeHuman();
+            $fileSize = $f->getFile()->getSizeReadable();
         } catch (\RuntimeException $e) {
             $fileSize = 'UNKNOWN';
         }
@@ -750,7 +750,7 @@ class ApiLookupOperation
     private function writeLookupFailureEpisode(FixtureEpisodeData $f)
     {
         try {
-            $fileSize = $f->getFile()->getSizeHuman();
+            $fileSize = $f->getFile()->getSizeReadable();
         } catch (\RuntimeException $e) {
             $fileSize = 'UNKNOWN';
         }

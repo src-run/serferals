@@ -11,9 +11,9 @@
 
 namespace SR\Serferals\Component\ObjectBehavior;
 
-use SR\Reflection\Introspection\ObjectIntrospection;
-use SR\Reflection\Introspection\PropertyIntrospection;
-use SR\Utility\ArrayUtil;
+use SR\Reflection\Inspector\ObjectInspector;
+use SR\Reflection\Inspector\PropertyInspector;
+use SR\Util\Info\ArrayInfo;
 
 /**
  * Class PropertiesResettableObjectTrait.
@@ -26,12 +26,12 @@ trait PropertiesResettableObjectTrait
      */
     protected function propertiesToMapping(array $mapping, $default = null)
     {
-        if (ArrayUtil::isHash($mapping)) {
-            $_ = function (PropertyIntrospection $p) use ($mapping, $default) {
-                $p->setValue($this, array_key_exists($p->getName(), $mapping) ? $mapping[$p->getName()] : $default);
+        if (ArrayInfo::isAssociative($mapping)) {
+            $_ = function (PropertyInspector $p) use ($mapping, $default) {
+                $p->setValue($this, array_key_exists($p->name(), $mapping) ? $mapping[$p->name()] : $default);
             };
         } else {
-            $_ = function (PropertyIntrospection $p) use ($mapping, $default) {
+            $_ = function (PropertyInspector $p) use ($mapping, $default) {
                 static $i = 0;
                 $p->setValue($this, array_key_exists($i, $mapping) ? $mapping[$i] : $default);
                 ++$i;
@@ -56,7 +56,7 @@ trait PropertiesResettableObjectTrait
      */
     protected function propertiesTo($value)
     {
-        $this->inspector()->visitProperties(function (PropertyIntrospection $p) use ($value) {
+        $this->inspector()->visitProperties(function (PropertyInspector $p) use ($value) {
             $p->setValue($this, $value);
         });
 
@@ -64,7 +64,7 @@ trait PropertiesResettableObjectTrait
     }
 
     /**
-     * @return ObjectIntrospection
+     * @return ObjectInspector
      */
     abstract protected function inspector();
 }

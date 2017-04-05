@@ -137,7 +137,7 @@ abstract class AbstractResolver
      * @param FixtureData $fixture
      * @param string      $method
      *
-     * @return $this
+     * @return AbstractResolver
      */
     public function resolve(FixtureData $fixture, $method)
     {
