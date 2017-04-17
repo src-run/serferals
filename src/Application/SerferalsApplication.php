@@ -44,6 +44,9 @@ class SerferalsApplication extends Application
     /**
      * @param string $name
      * @param string $version
+     * @param string $author
+     * @param string $email
+     * @param string $license
      */
     public function __construct($name, $version, $author, $email, $license)
     {

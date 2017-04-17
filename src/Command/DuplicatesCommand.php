@@ -82,7 +82,7 @@ class DuplicatesCommand extends AbstractCommand
 
         $parser = $lookup->getFileResolver();
         $itemCollection = $parser
-            ->using($finder)
+            ->setFinder($finder)
             ->getItems();
     }
 

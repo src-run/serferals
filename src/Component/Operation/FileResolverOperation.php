@@ -29,6 +29,16 @@ class FileResolverOperation
     use StyleAwareTrait;
 
     /**
+     * @var string
+     */
+    const TYPE_MOVIE = 'movie';
+
+    /**
+     * @var string
+     */
+    const TYPE_EPISODE = 'episode';
+
+    /**
      * @var Finder
      */
     protected $finder;
@@ -36,19 +46,19 @@ class FileResolverOperation
     /**
      * @var bool
      */
-    protected $modeMovie = false;
+    protected $forcedMovie = false;
 
     /**
      * @var bool
      */
-    protected $modeEpisode = false;
+    protected $forcedEpisode = false;
 
     /**
      * @return bool
      */
-    public function isModeMovie()
+    public function isForcedMovie()
     {
-        return $this->modeMovie;
+        return $this->forcedMovie;
     }
 
     /**
@@ -56,9 +66,9 @@ class FileResolverOperation
      *
      * @return FileResolverOperation
      */
-    public function setModeMovie($modeMovie)
+    public function setForcedMovie($modeMovie)
     {
-        $this->modeMovie = $modeMovie;
+        $this->forcedMovie = $modeMovie;
 
         return $this;
     }
@@ -66,19 +76,19 @@ class FileResolverOperation
     /**
      * @return bool
      */
-    public function isModeEpisode()
+    public function isForcedEpisode()
     {
-        return $this->modeEpisode;
+        return $this->forcedEpisode;
     }
 
     /**
-     * @param bool $modeEpisode
+     * @param bool $forcedEpisode
      *
      * @return FileResolverOperation
      */
-    public function setModeEpisode($modeEpisode)
+    public function setForcedEpisode($forcedEpisode)
     {
-        $this->modeEpisode = $modeEpisode;
+        $this->forcedEpisode = $forcedEpisode;
 
         return $this;
     }
@@ -98,7 +108,7 @@ class FileResolverOperation
      *
      * @return $this
      */
-    public function using(Finder $finder)
+    public function setFinder(Finder $finder)
     {
         $this->finder = $finder;
 
@@ -116,13 +126,13 @@ class FileResolverOperation
             $fixtureCollection[] = $this->parseFile($file);
         }
 
-        if ($this->isModeEpisode()) {
+        if ($this->isForcedEpisode()) {
             return array_filter($fixtureCollection, function ($item) {
                 return $item instanceof FixtureEpisodeData;
             });
         }
 
-        if ($this->isModeMovie()) {
+        if ($this->isForcedMovie()) {
             return array_filter($fixtureCollection, function ($item) {
                 return $item instanceof FixtureMovieData;
             });

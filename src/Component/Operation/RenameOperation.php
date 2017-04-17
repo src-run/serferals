@@ -12,6 +12,7 @@
 namespace SR\Serferals\Component\Operation;
 
 use SR\Console\Style\StyleAwareTrait;
+use SR\Exception\Logic\InvalidArgumentException;
 use SR\Spl\File\SplFileInfo as FileInfo;
 use SR\Serferals\Component\Fixture\FixtureData;
 use SR\Serferals\Component\Fixture\FixtureEpisodeData;
@@ -29,17 +30,32 @@ class RenameOperation
     /**
      * @var string
      */
+    const MODE_CP = 'cp';
+
+    /**
+     * @var string
+     */
+    const MODE_MV = 'mv';
+
+    /**
+     * @var string
+     */
     protected $outputPath;
 
     /**
      * @var bool
      */
-    protected $outputOverwrite;
+    protected $blindOverwrite;
 
     /**
      * @var bool
      */
-    protected $smartOutputOverwrite;
+    protected $smartOverwrite;
+
+    /**
+     * @var string
+     */
+    protected $mode = self::MODE_MV;
 
     /**
      * @var string
@@ -92,32 +108,76 @@ class RenameOperation
     }
 
     /**
-     * @param string                                  $outputPath
-     * @param FixtureMovieData[]|FixtureEpisodeData[] $collection
-     * @param bool                                    $outputOverwrite
-     * @param bool                                    $smartOutputOverwrite
+     * @param string $outputPath
+     *
+     * @return $this
      */
-    public function run($outputPath, array $collection, $outputOverwrite = false, $smartOutputOverwrite = false)
+    public function setOutputPath(string $outputPath)
     {
         $this->outputPath = $outputPath;
-        $this->outputOverwrite = $outputOverwrite;
-        $this->smartOutputOverwrite = $smartOutputOverwrite;
 
+        return $this;
+    }
+
+    /**
+     * @param bool $blindOverwrite
+     *
+     * @return $this
+     */
+    public function setBlindOverwrite(bool $blindOverwrite)
+    {
+        $this->blindOverwrite = $blindOverwrite;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $smartOverwrite
+     *
+     * @return $this
+     */
+    public function setSmartOverwrite(bool $smartOverwrite)
+    {
+        $this->smartOverwrite = $smartOverwrite;
+
+        return $this;
+    }
+
+    /**
+     * @param string $mode
+     *
+     * @return $this
+     */
+    public function setMode(string $mode)
+    {
+        if (in_array($mode, [self::MODE_CP, self::MODE_MV])) {
+            throw new InvalidArgumentException('Invalid option provided for mode: %s', $mode);
+        }
+
+        $this->mode = $mode;
+
+        return $this;
+    }
+
+    /**
+     * @param FixtureMovieData[]|FixtureEpisodeData[] $collection
+     */
+    public function run(array $collection)
+    {
         if (count($collection) === 0) {
             $this->io()->caution('No input files gathered for output during latest run.');
-
             return;
         }
 
         $this->io()->subSection('Writing Output Files');
-        $count = count($collection);
-        $i = 1;
+
+        $itemCount = count($collection);
+        $iteration = 1;
 
         foreach ($collection as $item) {
-            $this->ioVerbose(function () use (&$i, $count) {
-                $this->io()->section(sprintf('%03d of %03d', $i++, $count));
+            $this->ioVerbose(function () use (&$iteration, $itemCount) {
+                $this->io()->section(sprintf('%03d of %03d', $iteration++, $itemCount));
             });
-
             $this->move($item);
         }
 
@@ -140,7 +200,6 @@ class RenameOperation
             list($e, $opts) = $this->moveEpisode($f, $this->getTwig(), $tplPathName, $tplFileName);
         } else {
             $this->io()->error('Invalid fixture type!');
-
             return;
         }
 
@@ -189,7 +248,7 @@ class RenameOperation
         $this->io()->table($tableRows, [null, 'Path', 'Size']);
 
         if (file_exists($outputFilePath) &&
-            false === $this->outputOverwrite &&
+            false === $this->blindOverwrite &&
             false === $this->handleExistingFile($outputFileInfo, $inputFileInfo)
         ) {
             return;
@@ -197,7 +256,6 @@ class RenameOperation
 
         if (!is_dir($outputPath) && false === @mkdir($outputPath, 0777, true)) {
             $this->io()->error(sprintf('Could not create directory "%s"', $outputPath));
-
             return;
         }
 
@@ -207,7 +265,7 @@ class RenameOperation
 
         if (false === @copy($inputFilePath, $outputFilePath)) {
             $this->io()->error(sprintf('Could not write file "%s"', $outputFilePath));
-        } else {
+        } elseif ($this->mode === self::MODE_MV) {
             unlink($inputFilePath);
         }
     }
@@ -221,16 +279,14 @@ class RenameOperation
     private function handleExistingFile(FileInfo $output, FileInfo $input)
     {
         try {
-            if ($this->smartOutputOverwrite === true && $input->getSize() > $output->getSize()) {
+            if ($this->smartOverwrite === true && $input->getSize() > $output->getSize()) {
                 $this->io()->info('Automatically overwriting smaller output filepath with larger input.');
-
                 return true;
             }
 
-            if ($this->smartOutputOverwrite === true && $input->getSize() <= $output->getSize()) {
+            if ($this->smartOverwrite === true && $input->getSize() <= $output->getSize()) {
                 unlink($input->getPathname());
                 $this->io()->info('Automatically removing input file path of less than or equal size to existing output filepath.');
-
                 return false;
             }
         } catch (\RuntimeException $e) {

@@ -35,23 +35,23 @@ class ScanCommand extends AbstractCommand
     /**
      * @var string[]
      */
-    private $extToRemovePre;
+    private $removeExtsFirst;
 
     /**
      * @var string[]
      */
-    private $extToRemovePost;
+    private $removeExtsAfter;
 
     /**
      * @param string[]      $extMedia
-     * @param null|string[] $extRemovePre
-     * @param null|string[] $extRemovePost
+     * @param null|string[] $removeExtsFirst
+     * @param null|string[] $removeExtsAfter
      */
-    public function __construct($extMedia, $extRemovePre = null, $extRemovePost = null)
+    public function __construct($extMedia, $removeExtsFirst = null, $removeExtsAfter = null)
     {
         $this->extAsMedia = $extMedia;
-        $this->extToRemovePre = $extRemovePre;
-        $this->extToRemovePost = $extRemovePost;
+        $this->removeExtsFirst = $removeExtsFirst;
+        $this->removeExtsAfter = $removeExtsAfter;
 
         parent::__construct();
     }
@@ -66,17 +66,17 @@ class ScanCommand extends AbstractCommand
             ->setDescription('Scan media file queue and organize.')
             ->setHelp('Scan input directory for media files, resolve episode/movie metadata, rename and output using proper directory structure and file names.')
             ->setDefinition([
-                new InputOption('ext', ['e'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions understood to be media files.', $this->extAsMedia),
-                new InputOption('overwrite', ['f'], InputOption::VALUE_NONE, 'Force media path overwrite if output already exists.'),
-                new InputOption('smart-overwrite', ['s'], InputOption::VALUE_NONE, 'Force media path overwrite if output already exists and input is larger.'),
-                new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Output directory to write organized media to.'),
-                new InputOption('skip-lookup-failure', ['S'], InputOption::VALUE_NONE, 'Skip all files that fail API lookup.'),
-                new InputOption('mode-episode', ['E'], InputOption::VALUE_NONE, 'Set mode explicitly to TV eisodes; skip movie matches.'),
-                new InputOption('mode-movie', ['M'], InputOption::VALUE_NONE, 'Set mode explicitly to movies; skip TV episode matches.'),
-                new InputOption('auto', ['A'], InputOption::VALUE_NONE, 'Enable auto mode.'),
-                new InputOption('pre-ext', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions to remove during pre-scan task runs.', $this->extToRemovePre),
-                new InputOption('post-ext', ['X'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions to remove during post-scan task runs.', $this->extToRemovePost),
-                new InputArgument('input-path', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Input directory path(s) to read unorganized media from.', [getcwd()]),
+                new InputOption('search-exts', ['e'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extension(s) to be interpreted as media files.', $this->extAsMedia),
+                new InputOption('blind-overwrite', ['f'], InputOption::VALUE_NONE, 'Overwrite existing file paths blindly if already exists.'),
+                new InputOption('smart-overwrite', ['s'], InputOption::VALUE_NONE, 'Overwrite existing file paths if already exists and larger than existing file.'),
+                new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Base destination (output) path to write to.'),
+                new InputOption('skip-failures', ['S'], InputOption::VALUE_NONE, 'Automatically skip over any files that fail API lookups.'),
+                new InputOption('force-episode', ['E'], InputOption::VALUE_NONE, 'Only organize episodes; all other input types ignored.'),
+                new InputOption('force-movie', ['M'], InputOption::VALUE_NONE, 'Only organize movies; all other input types ignored.'),
+                new InputOption('remove-exts-first', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extensions to remove first (before) main organizational scan.', $this->removeExtsFirst),
+                new InputOption('remove-exts-after', ['X'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extensions to remove after main organizational scan.', $this->removeExtsAfter),
+                new InputOption('copy', ['c'], InputOption::VALUE_NONE, 'Copy the input file (instead of moving it) to the destination path.'),
+                new InputArgument('search-paths', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Input paths to search for media files.', [getcwd()]),
             ]);
     }
 
@@ -99,69 +99,35 @@ class ScanCommand extends AbstractCommand
             ]
         );
 
-        $cleanExtensionsPre = $input->getOption('pre-ext');
-        $cleanExtensionsPost = $input->getOption('post-ext');
-        $modeEpisode = $input->getOption('mode-episode');
-        $modeMovie = $input->getOption('mode-movie');
-        $modeAuto = $input->getOption('auto');
-
-        if ($modeEpisode === true && $modeMovie === true) {
-            $this->io()->error('Cannot set mode to both episodes and movies. Select one or the other.');
-            exit(255);
+        if ($input->getOption('force-episode') === true && $input->getOption('force-movie')) {
+            return $this->returnError(255, 'Cannot set mode to both episodes and movies. Select one or the other.');
         }
 
-        $inputExtensions = $input->getOption('ext');
-        list($inputPaths, $inputInvalidPaths) = $this->validatePaths(true, ...$input->getArgument('input-path'));
-        list($outputPath, $outputInvalidPath) = $this->validatePaths(false, $input->getOption('output-path'));
+        list($inputPaths, $inputInvalidPaths) = $this
+            ->validatePaths(true, ...$input->getArgument('search-paths'));
+        list($outputPath, $outputInvalidPath) = $this
+            ->validatePaths(false, $input->getOption('output-path'));
 
-        if (count($inputInvalidPaths) > 0 || !(count($inputPaths) > 0)) {
-            $this->io()->error('You must provide at least one valid input path.');
-
-            return 255;
+        if (true === (count($inputInvalidPaths) > 0) || true === (count($inputPaths) === 0)) {
+            return $this->returnError(255, 'You must provide at least one valid input path.');
         }
 
         if ($outputInvalidPath) {
-            $this->io()->error('You must provide a valid output path. (Invalid: '.$outputInvalidPath.')');
-
-            return 255;
+            return $this->returnError(255, 'You must provide a valid output path. (Invalid: %s)', $outputInvalidPath);
         }
 
         if (!$outputPath) {
-            $this->io()->error('You must provide a valid output path.');
-
-            return 255;
+            return $this->returnError(255, 'You must provide a valid output path.');
         }
 
         if (count($inputInvalidPaths) !== 0) {
-            $this->io()->error('Invalid input path(s): '.implode(', ', $inputInvalidPaths));
-
-            return 255;
+            return $this->returnError(255, 'Invalid input path(s): %s', implode(', ', $inputInvalidPaths));
         }
 
-        $this->showRuntimeConfiguration($outputPath, $inputPaths, array_unique(array_merge($cleanExtensionsPre, $cleanExtensionsPost)), $inputExtensions);
-        $this->doPreRunTasks($inputPaths, $cleanExtensionsPre);
-
-        $scanner = $this->operationPathScan();
-
-        $lookup = $this->operationApiLookup();
-        $finder = $scanner
-            ->paths(...$inputPaths)
-            ->extensions(...$inputExtensions)
-            ->find();
-
-        $parser = $lookup->getFileResolver();
-        $itemCollection = $parser
-            ->using($finder)
-            ->setModeEpisode($modeEpisode)
-            ->setModeMovie($modeMovie)
-            ->getItems();
-
-        $itemCollection = $lookup->resolve($itemCollection, $input->getOption('skip-lookup-failure'), $modeAuto);
-
-        $rename = $this->getServiceRename();
-        $rename->run($outputPath, $itemCollection, $input->getOption('overwrite'), $input->getOption('smart-overwrite'));
-
-        $this->doPostRunTasks($inputPaths, $cleanExtensionsPost);
+        $this->writeRuntime($inputPaths, $outputPath, $input);
+        $this->doFirstTasks($inputPaths, $input->getOption('remove-exts-first'));
+        $this->runCoreTasks($inputPaths, $input->getOption('search-exts'), $outputPath, $input);
+        $this->doAfterTasks($inputPaths, $input->getOption('remove-exts-after'));
 
         $this->io()->smallSuccess('OK', 'Done');
 
@@ -169,13 +135,68 @@ class ScanCommand extends AbstractCommand
     }
 
     /**
-     * @param string   $outputPath
-     * @param string[] $inputPaths
-     * @param string[] $cleanExtensions
-     * @param string[] $inputExtensions
+     * @param int     $code
+     * @param string  $message
+     * @param mixed[] ...$replacements
+     *
+     * @return int
      */
-    private function showRuntimeConfiguration($outputPath, array $inputPaths, array $cleanExtensions, array $inputExtensions)
+    private function returnError(int $code, string $message, ...$replacements)
     {
+        $this->io()->error(vsprintf($message, $replacements));
+
+        return $code;
+    }
+
+    /**
+     * @param string[]       $searchPaths
+     * @param string[]       $searchExts
+     * @param string         $destination
+     * @param InputInterface $input
+     */
+    private function runCoreTasks(array $searchPaths, array $searchExts, string $destination, InputInterface $input)
+    {
+        $lookup = $this->operationApiLookup();
+        $resolv = $lookup->getFileResolver();
+        $finder = $this
+            ->operationPathScan()
+            ->paths(...$searchPaths)
+            ->extensions(...$searchExts)
+            ->find();
+
+        $files = $resolv
+            ->setFinder($finder)
+            ->setForcedEpisode($input->getOption('force-episode'))
+            ->setForcedMovie($input->getOption('force-movie'))
+            ->getItems();
+
+        $files = $lookup
+            ->setSkipFailures($input->getOption('skip-failures'))
+            ->resolve($files);
+
+        $this
+            ->getServiceRename()
+            ->setOutputPath($destination)
+            ->setBlindOverwrite($input->getOption('overwrite'))
+            ->setSmartOverwrite($input->getOption('smart-overwrite'))
+            ->setMode($input->getOption('copy') ? RenameOperation::MODE_CP : RenameOperation::MODE_MV)
+            ->run($files);
+    }
+
+    /**
+     * @param string[]       $inputPaths
+     * @param string         $outputPath
+     * @param InputInterface $input
+     */
+    private function writeRuntime(array $inputPaths, string $outputPath, InputInterface $input)
+    {
+        //             array_unique(array_merge($removeExtsFirst, $removeExtsAfter)),
+//        $inputExtensions
+
+        $implodeList = function (array $list, $glue = ', ') {
+            return implode($glue, $list);
+        };
+
         $tableRows = [];
 
         foreach ($inputPaths as $i => $path) {
@@ -183,8 +204,14 @@ class ScanCommand extends AbstractCommand
         }
 
         $tableRows[] = ['Output Directory', $outputPath];
-        $tableRows[] = ['Search Extension List', implode(',', $inputExtensions)];
-        $tableRows[] = ['Remove Extension List', implode(',', $cleanExtensions)];
+        $tableRows[] = ['Search Extensions', $implodeList($input->getOption('search-exts'))];
+        $tableRows[] = ['Remove Extensions First', $implodeList($input->getOption('remove-exts-first'))];
+        $tableRows[] = ['Remove Extensions After', $implodeList($input->getOption('remove-exts-after'))];
+        $tableRows[] = ['Forced Mode', $input->getOption('force-episode') ? 'Episodes Only' :
+            $input->getOption('force-movie') ? 'Movies Only' : 'None'];
+        $tableRows[] = ['Skip Lookup Failures?', $input->getOption('skip-failures') ? 'Yes' : 'No'];
+        $tableRows[] = ['Smart Overwrite Enabled?', $input->getOption('smart-overwrite') ? 'Yes' : 'No'];
+        $tableRows[] = ['Blind Overwrite Enabled?', $input->getOption('blind-overwrite') ? 'Yes' : 'No'];
 
         $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
             $io->subSection('Runtime Configuration');
@@ -202,23 +229,19 @@ class ScanCommand extends AbstractCommand
      * @param string[] $inputPaths
      * @param string[] $extensions
      */
-    private function doPreRunTasks(array $inputPaths, $extensions)
+    private function doFirstTasks(array $inputPaths, $extensions)
     {
-        $deleteExtensions = $this->operationRemoveExts();
-        $deleteExtensions->run($inputPaths, ...$extensions);
+        $this->operationRemoveExts()->run($inputPaths, ...$extensions);
     }
 
     /**
      * @param string[] $inputPaths
      * @param string[] $extensions
      */
-    private function doPostRunTasks(array $inputPaths, $extensions)
+    private function doAfterTasks(array $inputPaths, $extensions)
     {
-        $deleteExtensions = $this->operationRemoveExts();
-        $deleteExtensions->run($inputPaths, ...$extensions);
-
-        $deleteDirectories = $this->operationRemoveDirs();
-        $deleteDirectories->run($inputPaths);
+        $this->operationRemoveExts()->run($inputPaths, ...$extensions);
+        $this->operationRemoveDirs()->run($inputPaths);
     }
 
     /**

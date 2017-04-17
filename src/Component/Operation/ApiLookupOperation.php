@@ -48,7 +48,7 @@ class ApiLookupOperation
     /**
      * @var bool
      */
-    protected $skipLookupFailure;
+    protected $skipFailures;
 
     /**
      * @param FileResolverOperation $fileResolver
@@ -71,15 +71,24 @@ class ApiLookupOperation
     }
 
     /**
+     * @param $skipFailures
+     *
+     * @return $this
+     */
+    public function setSkipFailures($skipFailures)
+    {
+        $this->skipFailures = $skipFailures;
+
+        return $this;
+    }
+
+    /**
      * @param FixtureData[] $fixtureSet
-     * @param bool          $skipLookupFailure
-     * @param bool          $modeAuto
      *
      * @return FixtureData[]|FixtureEpisodeData[]|FixtureMovieData[]
      */
-    public function resolve(array $fixtureSet, $skipLookupFailure = false, $modeAuto = false)
+    public function resolve(array $fixtureSet)
     {
-        $this->skipLookupFailure = $skipLookupFailure;
         $i = 0;
         $c = count($fixtureSet);
 
@@ -157,7 +166,7 @@ class ApiLookupOperation
                 $this->writeLookupSuccess($f, $item, $resultSelected);
             }
 
-            if ($this->skipLookupFailure === true && ($results->count() == 0 || !$item)) {
+            if ($this->skipFailures === true && ($results->count() == 0 || !$item)) {
                 $this->io()->caution('Skipping: Option enabled for API lookup failures to be auto-skip.');
                 break;
             }
