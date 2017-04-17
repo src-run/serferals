@@ -177,7 +177,7 @@ class ScanCommand extends AbstractCommand
         $this
             ->getServiceRename()
             ->setOutputPath($destination)
-            ->setBlindOverwrite($input->getOption('overwrite'))
+            ->setBlindOverwrite($input->getOption('blind-overwrite'))
             ->setSmartOverwrite($input->getOption('smart-overwrite'))
             ->setMode($input->getOption('copy') ? RenameOperation::MODE_CP : RenameOperation::MODE_MV)
             ->run($files);
