@@ -150,7 +150,7 @@ class RenameOperation
      */
     public function setMode(string $mode)
     {
-        if (in_array($mode, [self::MODE_CP, self::MODE_MV])) {
+        if (!in_array($mode, [self::MODE_CP, self::MODE_MV])) {
             throw new InvalidArgumentException('Invalid option provided for mode: %s', $mode);
         }
 
