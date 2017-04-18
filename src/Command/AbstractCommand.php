@@ -82,26 +82,6 @@ class AbstractCommand extends Command
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return $this
-     */
-    protected function ioSetup(InputInterface $input, OutputInterface $output)
-    {
-        $this->setInput($input);
-        $this->setOutput($output);
-
-        $style = $this->getService('sr.serferals.console_style');
-
-        if ($style instanceof StyleInterface) {
-            $this->setStyle($style);
-        }
-
-        return $this;
-    }
-
-    /**
      * @param bool                $returnMultiple
      * @param string|string[],... $paths
      *

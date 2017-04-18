@@ -1,0 +1,140 @@
+---
+
+containers:
+
+  # https://en.wikipedia.org/wiki/Comparison_of_video_container_formats
+  videos:
+    -
+      name:      Microsoft Advanced Systems Format
+      supported: true
+      exts:
+        - asf
+        - wma
+        - wmv
+    -
+      name:      DivX Media Format
+      supported: true
+      exts:
+        - divx
+    -
+      name:      Adobe Flash Video
+      supported: true
+      exts:
+        - flv
+        - f4v
+    -
+      name:      Matroska Multimedia Container
+      supported: true
+      exts:
+        - mkv
+        - mk3d
+        - webm
+    -
+      name:      MPEG-4 Part 14
+      supported: true
+      exts:
+        - mp4
+    -
+      name:      Moving Picture Experts Group
+      supported: true
+      exts:
+        - mpg
+        - mpeg
+    -
+      name:      Xiph Ogg
+      supported: true
+      exts:
+        - ogv
+    -
+      name:      Apple QuickTime
+      supported: true
+      exts:
+        - mov
+        - qt
+    -
+      name:      RealMedia Variable Bitrate
+      supported: true
+      exts:
+        - rmvb
+    -
+      name:      Video Object
+      supported: false
+      exts:
+        - vob
+        - ifo
+        - bup
+
+  # https://en.wikipedia.org/wiki/Subtitle_(captioning)#Subtitle_formats
+  subtitles:
+
+    -
+      name: AQTitle
+      exts:
+        - aqt
+    -
+      name: Gloss Subtitle
+      exts:
+        - gsub
+    -
+      name: JACOSub
+      exts:
+        - jss
+    -
+      name: MicroDVD
+      exts:
+        - sub
+    -
+      name: MPEG-4 Timed Text
+      exts:
+        - ttxt
+    -
+      name: MPSub
+      exts:
+        - sub
+    -
+      name: Phoenix Subtitle
+      exts:
+        - pjs
+    -
+      name: PowerDivX
+      exts:
+        - psb
+    -
+      name: RealText
+      exts:
+        - rt
+    -
+      name: SAMI
+      exts:
+        - smi
+    -
+      name: Spruce Subtitle Format
+      exts:
+        - sti
+    -
+      name: Structured Subtitle Format
+      exts:
+        - ssf
+    -
+      name: SubRip
+      exts:
+        - srt
+    -
+      name: SubStation Alpha
+      exts:
+        - ssa
+        - ass
+    -
+      name: SubViewer
+      exts:
+        - sub
+    -
+      name: Universal Subtitle Format
+      exts:
+        - usf
+    -
+      name: Matroska Multimedia Container
+      exts:
+        - mks
+
+...

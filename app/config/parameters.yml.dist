@@ -1,6 +1,8 @@
 parameters:
-    api_tmdb_key   : tmdb-api-key
-    api_tmdb_log   : /tmp/serferals.log
-    ext_media      : ['mov', 'mkv', 'mp4', 'avi']
-    ext_remove_pre : ['nfo', 'txt']
-    ext_remove_post: ['srt', 'nfo', 'txt', 'jpg', 'png']
+    tmdb_api_metadata_key:
+    tmdb_api_metadata_log:    /tmp/serferals.log
+    extensions_search:        ['mov', 'mkv', 'mp4', 'avi']
+    extensions_remove_first:  ['nfo', 'txt']
+    extensions_remove_after:  ['srt', 'nfo', 'txt', 'jpg', 'png']
+    default_destination_path: /pool/media/video
+    container_configurations: app/config/containers.yml

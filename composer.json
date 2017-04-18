@@ -32,6 +32,7 @@
         "twig/twig"                             : "~2.0",
         "php-tmdb/api"                          : "~2.0",
         "monolog/monolog"                       : "~1.18",
+        "src-run/augustus-dumper-library"       : "~0.7",
         "src-run/augustus-exception-library"    : "~0.7",
         "src-run/augustus-file-library"         : "~0.7",
         "src-run/augustus-primitive-library"    : "~0.6",

@@ -22,18 +22,18 @@ imports:
 #
 parameters:
 
-    sr.serferals.name:             "src-run/serferals"
-    sr.serferals.version:          "3.0.0"
-    sr.serferals.author:           "Rob Frawley 2nd"
-    sr.serferals.email:            "rmf@src.run"
-    sr.serferals.license:          "MIT License"
+    sr.serferals.name:                    src-run/serferals
+    sr.serferals.version:                 3.0.0
+    sr.serferals.author:                  Rob Frawley 2nd
+    sr.serferals.email:                   rmf@src.run
+    sr.serferals.license:                 MIT License
 
-    sr.serferals.api_tmdb_key:     %api_tmdb_key%
-    sr.serferals.api_tmdb_log:     %api_tmdb_log%
+    sr.serferals.tmdb_api_metadata_key:            %tmdb_api_metadata_key%
+    sr.serferals.tmdb_api_metadata_log:            %tmdb_api_metadata_log%
 
-    sr.serferals.ext_media:        %ext_media%
-    sr.serferals.ext_remove_pre:   %ext_remove_pre%
-    sr.serferals.ext_remove_post:  %ext_remove_post%
+    sr.serferals.extensions_search:       %extensions_search%
+    sr.serferals.extensions_remove_first: %extensions_remove_first%
+    sr.serferals.extensions_remove_after: %extensions_remove_after%
 
     sr.serferals.tpl_path_movie:   "movie/{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
     sr.serferals.tpl_file_movie:   "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if id is defined %%} [{{ id }}]{%% endif %%}.{{ ext }}"
@@ -64,10 +64,13 @@ services:
     sr.serferals.command.file_organizer:
         class: SR\Serferals\Command\FileOrganizerCommand
         arguments:
-            - %sr.serferals.ext_media%
-            - %sr.serferals.ext_remove_pre%
-            - %sr.serferals.ext_remove_post%
+            - %container_configurations%
+            - %default_destination_path%
         calls:
+            - [ setRemoveExtensions, [ %extensions_remove_first%, %extensions_remove_after% ]]
+            - [ setInput,            [ "@sr.serferals.console_input" ] ]
+            - [ setOutput,           [ "@sr.serferals.console_output" ] ]
+            - [ setStyle,            [ "@sr.serferals.console_style" ] ]
             - [ setFinderGenerator,  [ "@sr.serferals.tasks.finder_generator" ] ]
             - [ setFileMetadata,     [ "@sr.serferals.tasks.file_metadata" ] ]
             - [ setTmdbMetadata,     [ "@sr.serferals.tasks.tmdb_metadata" ] ]
@@ -173,8 +176,8 @@ services:
     sr.serferals.tmdb.episode:
         class: SR\Serferals\Component\Tmdb\EpisodeResolver
         arguments:
-            - %sr.serferals.api_tmdb_key%
-            - %sr.serferals.api_tmdb_log%
+            - %sr.serferals.tmdb_api_metadata_key%
+            - %sr.serferals.tmdb_api_metadata_log%
         calls:
             - [ setInput,  [ "@sr.serferals.console_input" ] ]
             - [ setOutput, [ "@sr.serferals.console_output" ] ]
@@ -184,8 +187,8 @@ services:
     sr.serferals.tmdb.movie:
         class: SR\Serferals\Component\Tmdb\MovieResolver
         arguments:
-            - %sr.serferals.api_tmdb_key%
-            - %sr.serferals.api_tmdb_log%
+            - %sr.serferals.tmdb_api_metadata_key%
+            - %sr.serferals.tmdb_api_metadata_log%
         calls:
             - [ setInput,  [ "@sr.serferals.console_input" ] ]
             - [ setOutput, [ "@sr.serferals.console_output" ] ]
