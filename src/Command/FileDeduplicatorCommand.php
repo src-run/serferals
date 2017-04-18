@@ -12,11 +12,11 @@
 namespace SR\Serferals\Command;
 
 use SR\Console\Style\StyleInterface;
-use SR\Serferals\Component\Operation\ApiLookupOperation;
-use SR\Serferals\Component\Operation\PathScanOperation;
-use SR\Serferals\Component\Operation\RemoveDirOperation;
-use SR\Serferals\Component\Operation\RemoveExtOperation;
-use SR\Serferals\Component\Operation\RenameOperation;
+use SR\Serferals\Component\Tasks\Filesystem\DirectoryRemoverTask;
+use SR\Serferals\Component\Tasks\Filesystem\ExtensionRemoverTask;
+use SR\Serferals\Component\Tasks\Filesystem\FileInstructionTask;
+use SR\Serferals\Component\Tasks\Filesystem\FinderGeneratorTask;
+use SR\Serferals\Component\Tasks\Metadata\TmdbMetadataTask;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,7 +25,7 @@ use Symfony\Component\Console\Input\InputOption;
 /**
  * Class DuplicatesCommand.
  */
-class DuplicatesCommand extends AbstractCommand
+class FileDeduplicatorCommand extends AbstractCommand
 {
     protected function configure()
     {
@@ -80,7 +80,7 @@ class DuplicatesCommand extends AbstractCommand
             ->extensions(...$inputExtensions)
             ->find();
 
-        $parser = $lookup->getFileResolver();
+        $parser = $lookup->getFileMetadata();
         $itemCollection = $parser
             ->setFinder($finder)
             ->getItems();
@@ -121,15 +121,15 @@ class DuplicatesCommand extends AbstractCommand
      */
     private function getServiceRename()
     {
-        return $this->getService('sr.serferals.operation_rename');
+        return $this->getService('sr.serferals.tasks.file_instruction');
     }
 
     /**
-     * @return ApiLookupOperation
+     * @return TmdbMetadataTask
      */
     private function operationApiLookup()
     {
-        return $this->getService('sr.serferals.operation_api_lookup');
+        return $this->getService('sr.serferals.tasks.tmdb_metadata');
     }
 
     /**
@@ -137,7 +137,7 @@ class DuplicatesCommand extends AbstractCommand
      */
     private function operationPathScan()
     {
-        return $this->getService('sr.serferals.operation_path_scan');
+        return $this->getService('sr.serferals.tasks.finder_generator');
     }
 
     /**
@@ -145,7 +145,7 @@ class DuplicatesCommand extends AbstractCommand
      */
     private function operationRemoveExts()
     {
-        return $this->getService('sr.serferals.operation_remove_ext');
+        return $this->getService('sr.serferals.tasks.extension_remover');
     }
 
     /**
@@ -153,7 +153,7 @@ class DuplicatesCommand extends AbstractCommand
      */
     private function operationRemoveDirs()
     {
-        return $this->getService('sr.serferals.operation_remove_dir');
+        return $this->getService('sr.serferals.tasks.directory_remover');
     }
 }
 

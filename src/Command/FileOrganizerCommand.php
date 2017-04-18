@@ -12,48 +12,138 @@
 namespace SR\Serferals\Command;
 
 use SR\Console\Style\StyleInterface;
-use SR\Serferals\Component\Operation\RemoveDirOperation;
-use SR\Serferals\Component\Operation\RemoveExtOperation;
-use SR\Serferals\Component\Operation\ApiLookupOperation;
-use SR\Serferals\Component\Operation\RenameOperation;
-use SR\Serferals\Component\Operation\PathScanOperation;
+use SR\Serferals\Component\Tasks\Filesystem\DirectoryRemoverTask;
+use SR\Serferals\Component\Tasks\Filesystem\ExtensionRemoverTask;
+use SR\Serferals\Component\Tasks\Filesystem\FileAtomicMoverTask;
+use SR\Serferals\Component\Tasks\Filesystem\FileInstructionTask;
+use SR\Serferals\Component\Tasks\Filesystem\FinderGeneratorTask;
+use SR\Serferals\Component\Tasks\Metadata\FileMetadataTask;
+use SR\Serferals\Component\Tasks\Metadata\TmdbMetadataTask;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-/**
- * Class ScanCommand.
- */
-class ScanCommand extends AbstractCommand
+class FileOrganizerCommand extends AbstractCommand
 {
     /**
      * @var string[]
      */
-    private $extAsMedia;
+    private $extensions;
 
     /**
      * @var string[]
      */
-    private $removeExtsFirst;
+    private $extensionsRemoveFirst;
 
     /**
      * @var string[]
      */
-    private $removeExtsAfter;
+    private $extensionsRemoveAfter;
 
     /**
-     * @param string[]      $extMedia
-     * @param null|string[] $removeExtsFirst
-     * @param null|string[] $removeExtsAfter
+     * @var FinderGeneratorTask
      */
-    public function __construct($extMedia, $removeExtsFirst = null, $removeExtsAfter = null)
+    private $finderGenerator;
+
+    /**
+     * @var FileMetadataTask
+     */
+    private $fileMetadata;
+
+    /**
+     * @var TmdbMetadataTask
+     */
+    private $tmdbMetadata;
+
+    /**
+     * @var ExtensionRemoverTask
+     */
+    private $extensionRemover;
+
+    /**
+     * @var DirectoryRemoverTask
+     */
+    private $directoryRemover;
+
+    /**
+     * @var FileInstructionTask
+     */
+    private $fileInstruction;
+
+    /**
+     * @var FileAtomicMoverTask
+     */
+    private $fileAtomicMover;
+
+    /**
+     * @param string[]      $extensions
+     * @param null|string[] $extensionsRemoveFirst
+     * @param null|string[] $extensionsRemoveAfter
+     */
+    public function __construct(array $extensions, $extensionsRemoveFirst = null, $extensionsRemoveAfter = null)
     {
-        $this->extAsMedia = $extMedia;
-        $this->removeExtsFirst = $removeExtsFirst;
-        $this->removeExtsAfter = $removeExtsAfter;
+        $this->extensions = $extensions;
+        $this->extensionsRemoveFirst = $extensionsRemoveFirst;
+        $this->extensionsRemoveAfter = $extensionsRemoveAfter;
 
         parent::__construct();
+    }
+
+    /**
+     * @param FinderGeneratorTask $finderGenerator
+     */
+    public function setFinderGenerator(FinderGeneratorTask $finderGenerator)
+    {
+        $this->finderGenerator = $finderGenerator;
+    }
+
+    /**
+     * @param FileMetadataTask $fileMetadata
+     */
+    public function setFileMetadata(FileMetadataTask $fileMetadata)
+    {
+        $this->fileMetadata = $fileMetadata;
+    }
+
+    /**
+     * @param TmdbMetadataTask $tmdbMetadata
+     */
+    public function setTmdbMetadata(TmdbMetadataTask $tmdbMetadata)
+    {
+        $this->tmdbMetadata = $tmdbMetadata;
+    }
+
+    /**
+     * @param ExtensionRemoverTask $extensionRemover
+     */
+    public function setExtensionRemover(ExtensionRemoverTask $extensionRemover)
+    {
+        $this->extensionRemover = $extensionRemover;
+    }
+
+    /**
+     * @param DirectoryRemoverTask $directoryRemover
+     */
+    public function setDirectoryRemover(DirectoryRemoverTask $directoryRemover)
+    {
+        $this->directoryRemover = $directoryRemover;
+    }
+
+    /**
+     * @param FileInstructionTask $fileInstruction
+     */
+    public function setFileInstruction(FileInstructionTask $fileInstruction)
+    {
+        $this->fileInstruction = $fileInstruction;
+    }
+
+    /**
+     * @param FileAtomicMoverTask $fileAtomicMover
+     */
+    public function setFileAtomicMover(FileAtomicMoverTask $fileAtomicMover)
+    {
+        $this->fileAtomicMover = $fileAtomicMover;
     }
 
     /**
@@ -66,15 +156,15 @@ class ScanCommand extends AbstractCommand
             ->setDescription('Scan media file queue and organize.')
             ->setHelp('Scan input directory for media files, resolve episode/movie metadata, rename and output using proper directory structure and file names.')
             ->setDefinition([
-                new InputOption('search-exts', ['e'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extension(s) to be interpreted as media files.', $this->extAsMedia),
+                new InputOption('search-exts', ['e'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extension(s) to be interpreted as media files.', $this->extensions),
                 new InputOption('blind-overwrite', ['f'], InputOption::VALUE_NONE, 'Overwrite existing file paths blindly if already exists.'),
                 new InputOption('smart-overwrite', ['s'], InputOption::VALUE_NONE, 'Overwrite existing file paths if already exists and larger than existing file.'),
                 new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED, 'Base destination (output) path to write to.'),
                 new InputOption('skip-failures', ['S'], InputOption::VALUE_NONE, 'Automatically skip over any files that fail API lookups.'),
                 new InputOption('force-episode', ['E'], InputOption::VALUE_NONE, 'Only organize episodes; all other input types ignored.'),
                 new InputOption('force-movie', ['M'], InputOption::VALUE_NONE, 'Only organize movies; all other input types ignored.'),
-                new InputOption('remove-exts-first', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extensions to remove first (before) main organizational scan.', $this->removeExtsFirst),
-                new InputOption('remove-exts-after', ['X'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extensions to remove after main organizational scan.', $this->removeExtsAfter),
+                new InputOption('remove-exts-first', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extensions to remove first (before) main organizational scan.', $this->extensionsRemoveFirst),
+                new InputOption('remove-exts-after', ['X'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Extensions to remove after main organizational scan.', $this->extensionsRemoveAfter),
                 new InputOption('copy', ['c'], InputOption::VALUE_NONE, 'Copy the input file (instead of moving it) to the destination path.'),
                 new InputArgument('search-paths', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Input paths to search for media files.', [getcwd()]),
             ]);
@@ -150,37 +240,32 @@ class ScanCommand extends AbstractCommand
 
     /**
      * @param string[]       $searchPaths
-     * @param string[]       $searchExts
+     * @param string[]       $searchExtensions
      * @param string         $destination
      * @param InputInterface $input
      */
-    private function runCoreTasks(array $searchPaths, array $searchExts, string $destination, InputInterface $input)
+    private function runCoreTasks(array $searchPaths, array $searchExtensions, string $destination, InputInterface $input)
     {
-        $lookup = $this->operationApiLookup();
-        $resolv = $lookup->getFileResolver();
-        $finder = $this
-            ->operationPathScan()
-            ->paths(...$searchPaths)
-            ->extensions(...$searchExts)
-            ->find();
-
-        $files = $resolv
-            ->setFinder($finder)
+        $files = $this->fileMetadata
+            ->setFinder($this->finderGenerator->paths(...$searchPaths)->extensions(...$searchExtensions)->find())
             ->setForcedEpisode($input->getOption('force-episode'))
             ->setForcedMovie($input->getOption('force-movie'))
-            ->getItems();
+            ->execute();
 
-        $files = $lookup
+        $files = $this->tmdbMetadata
             ->setSkipFailures($input->getOption('skip-failures'))
             ->resolve($files);
 
-        $this
-            ->getServiceRename()
+        $instructions = $this->fileInstruction
             ->setOutputPath($destination)
+            ->execute($files);
+
+        $this->fileAtomicMover
+            ->setMode($input->getOption('copy') ? FileAtomicMoverTask::MODE_CP : FileAtomicMoverTask::MODE_MV)
             ->setBlindOverwrite($input->getOption('blind-overwrite'))
             ->setSmartOverwrite($input->getOption('smart-overwrite'))
-            ->setMode($input->getOption('copy') ? RenameOperation::MODE_CP : RenameOperation::MODE_MV)
-            ->run($files);
+            ->setFileMoveInstructions(...$instructions)
+            ->execute();
     }
 
     /**
@@ -215,7 +300,7 @@ class ScanCommand extends AbstractCommand
 
         $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
             $io->subSection('Runtime Configuration');
-            $io->table([], $tableRows);
+            $io->table($tableRows);
         });
 
         $this->ioDebug(function () {
@@ -231,7 +316,7 @@ class ScanCommand extends AbstractCommand
      */
     private function doFirstTasks(array $inputPaths, $extensions)
     {
-        $this->operationRemoveExts()->run($inputPaths, ...$extensions);
+        $this->extensionRemover->run($inputPaths, ...$extensions);
     }
 
     /**
@@ -240,48 +325,8 @@ class ScanCommand extends AbstractCommand
      */
     private function doAfterTasks(array $inputPaths, $extensions)
     {
-        $this->operationRemoveExts()->run($inputPaths, ...$extensions);
-        $this->operationRemoveDirs()->run($inputPaths);
-    }
-
-    /**
-     * @return RenameOperation
-     */
-    private function getServiceRename()
-    {
-        return $this->getService('sr.serferals.operation_rename');
-    }
-
-    /**
-     * @return ApiLookupOperation
-     */
-    private function operationApiLookup()
-    {
-        return $this->getService('sr.serferals.operation_api_lookup');
-    }
-
-    /**
-     * @return PathScanOperation
-     */
-    private function operationPathScan()
-    {
-        return $this->getService('sr.serferals.operation_path_scan');
-    }
-
-    /**
-     * @return RemoveExtOperation
-     */
-    private function operationRemoveExts()
-    {
-        return $this->getService('sr.serferals.operation_remove_ext');
-    }
-
-    /**
-     * @return RemoveDirOperation
-     */
-    private function operationRemoveDirs()
-    {
-        return $this->getService('sr.serferals.operation_remove_dir');
+        $this->extensionRemover->run($inputPaths, ...$extensions);
+        $this->directoryRemover->run($inputPaths);
     }
 }
 

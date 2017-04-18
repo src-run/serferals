@@ -9,17 +9,14 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Operation;
+namespace SR\Serferals\Component\Tasks\Filesystem;
 
 use SR\Console\Style\StyleAwareTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 
-/**
- * Class ScanInputsOperation.
- */
-class PathScanOperation
+class FinderGeneratorTask
 {
     use StyleAwareTrait;
 

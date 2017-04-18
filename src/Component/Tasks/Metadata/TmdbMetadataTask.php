@@ -9,13 +9,13 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Operation;
+namespace SR\Serferals\Component\Tasks\Metadata;
 
 use SR\Console\Style\StyleAwareTrait;
 use SR\Console\Style\StyleInterface;
-use SR\Serferals\Component\Fixture\FixtureData;
-use SR\Serferals\Component\Fixture\FixtureEpisodeData;
-use SR\Serferals\Component\Fixture\FixtureMovieData;
+use SR\Serferals\Component\Model\MediaMetadataModel;
+use SR\Serferals\Component\Model\EpisodeMetadataModel;
+use SR\Serferals\Component\Model\MovieMetadataModel;
 use SR\Serferals\Component\Tmdb\EpisodeResolver;
 use SR\Serferals\Component\Tmdb\MovieResolver;
 use Tmdb\Model\AbstractModel;
@@ -23,17 +23,14 @@ use Tmdb\Model\Collection\ResultCollection;
 use Tmdb\Model\Movie;
 use Tmdb\Model\Tv;
 
-/**
- * Class LookupResolverOperation.
- */
-class ApiLookupOperation
+class TmdbMetadataTask
 {
     use StyleAwareTrait;
 
     /**
-     * @var FileResolverOperation
+     * @var FileMetadataTask
      */
-    protected $fileResolver;
+    protected $fileMetadata;
 
     /**
      * @var EpisodeResolver
@@ -51,23 +48,15 @@ class ApiLookupOperation
     protected $skipFailures;
 
     /**
-     * @param FileResolverOperation $fileResolver
+     * @param FileMetadataTask $fileMetadata
      * @param EpisodeResolver       $episodeResolver
      * @param MovieResolver         $movieResolver
      */
-    public function __construct(FileResolverOperation $fileResolver, EpisodeResolver $episodeResolver, MovieResolver $movieResolver)
+    public function __construct(FileMetadataTask $fileMetadata, EpisodeResolver $episodeResolver, MovieResolver $movieResolver)
     {
-        $this->fileResolver = $fileResolver;
+        $this->fileMetadata = $fileMetadata;
         $this->episodeResolver = $episodeResolver;
         $this->movieResolver = $movieResolver;
-    }
-
-    /**
-     * @return FileResolverOperation
-     */
-    public function getFileResolver()
-    {
-        return $this->fileResolver;
     }
 
     /**
@@ -83,9 +72,9 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData[] $fixtureSet
+     * @param MediaMetadataModel[] $fixtureSet
      *
-     * @return FixtureData[]|FixtureEpisodeData[]|FixtureMovieData[]
+     * @return MediaMetadataModel[]|EpisodeMetadataModel[]|MovieMetadataModel[]
      */
     public function resolve(array $fixtureSet)
     {
@@ -101,7 +90,7 @@ class ApiLookupOperation
         });
 
         $fixtureSet = array_map(
-            function (FixtureData $f) use ($c, &$i) {
+            function (MediaMetadataModel $f) use ($c, &$i) {
                 static $skip = null;
                 if ($skip === true) {
                     $f->setEnabled(false);
@@ -114,20 +103,20 @@ class ApiLookupOperation
             $fixtureSet
         );
 
-        return array_filter($fixtureSet, function (FixtureData $fixture) {
+        return array_filter($fixtureSet, function (MediaMetadataModel $fixture) {
             return $fixture->isEnabled();
         });
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      * @param int         $count
      * @param int         $i
      * @param bool        $skipRemaining
      *
-     * @return FixtureData|FixtureEpisodeData|FixtureMovieData
+     * @return MediaMetadataModel|EpisodeMetadataModel|MovieMetadataModel
      */
-    public function lookup(FixtureData $f, $count, &$i, &$skipRemaining)
+    public function lookup(MediaMetadataModel $f, $count, &$i, &$skipRemaining)
     {
         ++$i;
         $mode = $f::TYPE;
@@ -143,16 +132,16 @@ class ApiLookupOperation
             }
 
             if ($mode === MovieResolver::TYPE) {
-                if ($f instanceof FixtureEpisodeData) {
-                    $f = $this->fileResolver->parseFileAsMovie($f->getFile());
+                if ($f instanceof EpisodeMetadataModel) {
+                    $f = $this->fileMetadata->parseFileAsMovie($f->getFile());
                 }
 
                 $results = $this->movieResolver->resolve($f)->getResults();
                 $resultSelected = $this->getResultSelection($results, $lookupSelection);
                 $item = $this->getResultSelection($results, $lookupSelection);
             } else {
-                if ($f instanceof FixtureMovieData) {
-                    $f = $this->fileResolver->parseFileAsEpisode($f->getFile());
+                if ($f instanceof MovieMetadataModel) {
+                    $f = $this->fileMetadata->parseFileAsEpisode($f->getFile());
                 }
 
                 $results = $this->episodeResolver->resolve($f)->getResults();
@@ -305,11 +294,11 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      *
      * @return array
      */
-    private function getEditFixtureTable(FixtureData $f)
+    private function getEditFixtureTable(MediaMetadataModel $f)
     {
         $tableRows = [];
         $control = [];
@@ -332,7 +321,7 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      * @param string      $property
      * @param string      $name
      * @param int         $i
@@ -340,7 +329,7 @@ class ApiLookupOperation
      *
      * @return array
      */
-    private function getEditFixtureTableRow(FixtureData $f, $property, $name, &$i, $editable)
+    private function getEditFixtureTableRow(MediaMetadataModel $f, $property, $name, &$i, $editable)
     {
         $index = $editable === true ? sprintf('[%d] %s', ($i++), $name) : sprintf('[-] %s', $name);
         $method = 'get'.ucfirst($property);
@@ -359,9 +348,9 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      */
-    private function editFixture(FixtureData $f)
+    private function editFixture(MediaMetadataModel $f)
     {
         $this->ioVerbose(
             function (StyleInterface $io) use ($f) {
@@ -385,11 +374,11 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      * @param string      $act
      * @param array[]     $ctl
      */
-    private function editFixtureProperty(FixtureData $f, $act, $ctl)
+    private function editFixtureProperty(MediaMetadataModel $f, $act, $ctl)
     {
         if (!array_key_exists($act, $ctl)) {
             $this->io()->error('Invalid selection of '.$act);
@@ -418,11 +407,11 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      *
      * @return int
      */
-    private function remove(FixtureData $f)
+    private function remove(MediaMetadataModel $f)
     {
         $relativePathName = $f->getFile()->getRealPath();
         $relativePath = pathinfo($relativePathName, PATHINFO_DIRNAME);
@@ -458,12 +447,12 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      * @param string      $path
      *
      * @return int
      */
-    private function removeFileItem(FixtureData $f, $path)
+    private function removeFileItem(MediaMetadataModel $f, $path)
     {
         $this->ioVerbose(function (StyleInterface $io) use ($path) {
             $io->comment(sprintf('Removing "%s"', $path));
@@ -481,12 +470,12 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      * @param string      $path
      *
      * @return int
      */
-    private function removeFilePath(FixtureData $f, $path)
+    private function removeFilePath(MediaMetadataModel $f, $path)
     {
         $resultSet = [];
 
@@ -520,24 +509,24 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData     $f
+     * @param MediaMetadataModel     $f
      * @param object|object[] $parameters
      */
-    private function hydrateFixture(FixtureData $f, ...$parameters)
+    private function hydrateFixture(MediaMetadataModel $f, ...$parameters)
     {
-        if ($f instanceof FixtureEpisodeData) {
+        if ($f instanceof EpisodeMetadataModel) {
             $this->hydrateFixtureEpisode($f, ...$parameters);
-        } elseif ($f instanceof FixtureMovieData) {
+        } elseif ($f instanceof MovieMetadataModel) {
             $this->hydrateFixtureMovie($f, ...$parameters);
         }
     }
 
     /**
-     * @param FixtureEpisodeData $f
+     * @param EpisodeMetadataModel $f
      * @param Tv\Episode|null    $e
      * @param Tv|null            $s
      */
-    private function hydrateFixtureEpisode(FixtureEpisodeData $f, Tv\Episode $e = null, Tv $s = null)
+    private function hydrateFixtureEpisode(EpisodeMetadataModel $f, Tv\Episode $e = null, Tv $s = null)
     {
         if ($s === null || $e === null) {
             return;
@@ -553,10 +542,10 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureMovieData $f
+     * @param MovieMetadataModel $f
      * @param Movie|null       $m
      */
-    private function hydrateFixtureMovie(FixtureMovieData $f, Movie $m = null)
+    private function hydrateFixtureMovie(MovieMetadataModel $f, Movie $m = null)
     {
         if ($m === null) {
             return;
@@ -590,35 +579,35 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureData $f
+     * @param MediaMetadataModel $f
      */
-    private function writeLookupFailure(FixtureData $f)
+    private function writeLookupFailure(MediaMetadataModel $f)
     {
-        if ($f instanceof FixtureEpisodeData) {
+        if ($f instanceof EpisodeMetadataModel) {
             $this->writeLookupFailureEpisode($f);
-        } elseif ($f instanceof FixtureMovieData) {
+        } elseif ($f instanceof MovieMetadataModel) {
             $this->writeLookupFailureMovie($f);
         }
     }
 
     /**
-     * @param FixtureData|FixtureEpisodeData|FixtureMovieData $f
+     * @param MediaMetadataModel|EpisodeMetadataModel|MovieMetadataModel $f
      * @param Movie[]|Tv[]|Tv\Episode[]                       ...$parameters
      */
-    private function writeLookupSuccess(FixtureData $f, ...$parameters)
+    private function writeLookupSuccess(MediaMetadataModel $f, ...$parameters)
     {
-        if (count($parameters) > 1 && $f instanceof FixtureEpisodeData) {
+        if (count($parameters) > 1 && $f instanceof EpisodeMetadataModel) {
             $this->writeLookupSuccessEpisode($f, ...$parameters);
-        } elseif (count($parameters) > 1 && $f instanceof FixtureMovieData) {
+        } elseif (count($parameters) > 1 && $f instanceof MovieMetadataModel) {
             $this->writeLookupSuccessMovie($f, ...$parameters);
         }
     }
 
     /**
-     * @param FixtureMovieData $f
+     * @param MovieMetadataModel $f
      * @param Movie            $m
      */
-    private function writeLookupSuccessMovie(FixtureMovieData $f, Movie $m)
+    private function writeLookupSuccessMovie(MovieMetadataModel $f, Movie $m)
     {
         try {
             $fileSize = $f->getFile()->getSizeReadable();
@@ -658,11 +647,11 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureEpisodeData $f
+     * @param EpisodeMetadataModel $f
      * @param Tv\Episode         $e
      * @param Tv                 $s
      */
-    private function writeLookupSuccessEpisode(FixtureEpisodeData $f, Tv\Episode $e, Tv $s)
+    private function writeLookupSuccessEpisode(EpisodeMetadataModel $f, Tv\Episode $e, Tv $s)
     {
         try {
             $fileSize = $f->getFile()->getSizeReadable();
@@ -715,9 +704,9 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureMovieData $f
+     * @param MovieMetadataModel $f
      */
-    private function writeLookupFailureMovie(FixtureMovieData $f)
+    private function writeLookupFailureMovie(MovieMetadataModel $f)
     {
         try {
             $fileSize = $f->getFile()->getSizeReadable();
@@ -754,9 +743,9 @@ class ApiLookupOperation
     }
 
     /**
-     * @param FixtureEpisodeData $f
+     * @param EpisodeMetadataModel $f
      */
-    private function writeLookupFailureEpisode(FixtureEpisodeData $f)
+    private function writeLookupFailureEpisode(EpisodeMetadataModel $f)
     {
         try {
             $fileSize = $f->getFile()->getSizeReadable();

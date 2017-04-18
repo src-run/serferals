@@ -12,7 +12,7 @@
 namespace SR\Serferals\Component\Tmdb;
 
 use SR\Console\Style\StyleAwareTrait;
-use SR\Serferals\Component\Fixture\FixtureData;
+use SR\Serferals\Component\Model\MediaMetadataModel;
 use Tmdb\ApiToken;
 use Tmdb\Client;
 use Tmdb\Model\Collection\ResultCollection;
@@ -134,12 +134,12 @@ abstract class AbstractResolver
     }
 
     /**
-     * @param FixtureData $fixture
+     * @param MediaMetadataModel $fixture
      * @param string      $method
      *
      * @return AbstractResolver
      */
-    public function resolve(FixtureData $fixture, $method)
+    public function resolve(MediaMetadataModel $fixture, $method)
     {
         $r = $this->getSearchRepository();
         $q = $this->getQuery();

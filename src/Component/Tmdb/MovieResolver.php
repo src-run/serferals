@@ -11,7 +11,7 @@
 
 namespace SR\Serferals\Component\Tmdb;
 
-use SR\Serferals\Component\Fixture\FixtureData;
+use SR\Serferals\Component\Model\MediaMetadataModel;
 use Tmdb\Model\Movie;
 use Tmdb\Model\Search\SearchQuery\MovieSearchQuery;
 use Tmdb\Repository\MovieRepository;
@@ -43,12 +43,12 @@ class MovieResolver extends AbstractResolver
     }
 
     /**
-     * @param FixtureData $fixture
+     * @param MediaMetadataModel $fixture
      * @param string      $method
      *
      * @return $this
      */
-    public function resolve(FixtureData $fixture, $method = 'searchMovie')
+    public function resolve(MediaMetadataModel $fixture, $method = 'searchMovie')
     {
         return parent::resolve($fixture, $method);
     }

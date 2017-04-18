@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Fixture;
+namespace SR\Serferals\Component\Model;
 
 use SR\Spl\File\SplFileInfo as FileInfo;
 use SR\Serferals\Component\ObjectBehavior\FactoryAwareObjectTrait;
@@ -17,10 +17,7 @@ use SR\Serferals\Component\ObjectBehavior\IntrospectionAwareObjectTrait;
 use SR\Serferals\Component\ObjectBehavior\PropertiesResettableObjectTrait;
 use SR\Serferals\Component\ObjectBehavior\SerializableObjectTrait;
 
-/**
- * Class FixtureData.
- */
-class FixtureData implements \Serializable
+class MediaMetadataModel implements \Serializable
 {
     use FactoryAwareObjectTrait;
     use IntrospectionAwareObjectTrait;

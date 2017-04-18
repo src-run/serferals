@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Operation;
+namespace SR\Serferals\Component\Tasks\Filesystem;
 
 use SR\Console\Style\StyleAwareTrait;
 use SR\Console\Style\StyleInterface;
@@ -18,10 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
-/**
- * Class RemoveExtOperation.
- */
-class RemoveExtOperation
+class ExtensionRemoverTask
 {
     use StyleAwareTrait;
 

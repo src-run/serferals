@@ -9,14 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Fixture;
+namespace SR\Serferals\Component\Model;
 
 use SR\Serferals\Component\Tmdb\MovieResolver;
 
-/**
- * Class FixtureMovieData.
- */
-class FixtureMovieData extends FixtureData
+class MovieMetadataModel extends MediaMetadataModel
 {
     /**
      * @var string

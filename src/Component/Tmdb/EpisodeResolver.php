@@ -11,8 +11,8 @@
 
 namespace SR\Serferals\Component\Tmdb;
 
-use SR\Serferals\Component\Fixture\FixtureData;
-use SR\Serferals\Component\Fixture\FixtureEpisodeData;
+use SR\Serferals\Component\Model\MediaMetadataModel;
+use SR\Serferals\Component\Model\EpisodeMetadataModel;
 use Tmdb\Model\Search\SearchQuery\TvSearchQuery;
 use Tmdb\Model\Tv;
 use Tmdb\Repository\TvEpisodeRepository;
@@ -44,23 +44,23 @@ class EpisodeResolver extends AbstractResolver
     }
 
     /**
-     * @param FixtureData $fixture
+     * @param MediaMetadataModel $fixture
      * @param string      $method
      *
      * @return $this
      */
-    public function resolve(FixtureData $fixture, $method = 'searchTv')
+    public function resolve(MediaMetadataModel $fixture, $method = 'searchTv')
     {
         return parent::resolve($fixture, $method);
     }
 
     /**
-     * @param FixtureEpisodeData $fixture
+     * @param EpisodeMetadataModel $fixture
      * @param Tv|null            $result
      *
      * @return null|\Tmdb\Model\AbstractModel|Tv\Episode
      */
-    public function resolveSingle(FixtureEpisodeData $fixture, Tv $result = null)
+    public function resolveSingle(EpisodeMetadataModel $fixture, Tv $result = null)
     {
         if ($result === null) {
             return null;

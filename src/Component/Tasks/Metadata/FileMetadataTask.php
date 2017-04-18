@@ -9,22 +9,19 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Operation;
+namespace SR\Serferals\Component\Tasks\Metadata;
 
 use SR\Console\Style\StyleAwareTrait;
-use SR\Serferals\Component\Fixture\FixtureData;
-use SR\Serferals\Component\Fixture\FixtureEpisodeData;
-use SR\Serferals\Component\Fixture\FixtureMovieData;
+use SR\Serferals\Component\Model\MediaMetadataModel;
+use SR\Serferals\Component\Model\EpisodeMetadataModel;
+use SR\Serferals\Component\Model\MovieMetadataModel;
 use SR\Spl\File\SplFileInfo as FileInfo;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
-/**
- * Class FileResolverOperation.
- */
-class FileResolverOperation
+class FileMetadataTask
 {
     use StyleAwareTrait;
 
@@ -64,7 +61,7 @@ class FileResolverOperation
     /**
      * @param bool $modeMovie
      *
-     * @return FileResolverOperation
+     * @return FileMetadataTask
      */
     public function setForcedMovie($modeMovie)
     {
@@ -84,7 +81,7 @@ class FileResolverOperation
     /**
      * @param bool $forcedEpisode
      *
-     * @return FileResolverOperation
+     * @return FileMetadataTask
      */
     public function setForcedEpisode($forcedEpisode)
     {
@@ -116,9 +113,9 @@ class FileResolverOperation
     }
 
     /**
-     * @return FixtureData[]
+     * @return MediaMetadataModel[]
      */
-    public function getItems()
+    public function execute()
     {
         $fixtureCollection = [];
 
@@ -128,13 +125,13 @@ class FileResolverOperation
 
         if ($this->isForcedEpisode()) {
             return array_filter($fixtureCollection, function ($item) {
-                return $item instanceof FixtureEpisodeData;
+                return $item instanceof EpisodeMetadataModel;
             });
         }
 
         if ($this->isForcedMovie()) {
             return array_filter($fixtureCollection, function ($item) {
-                return $item instanceof FixtureMovieData;
+                return $item instanceof MovieMetadataModel;
             });
         }
 
@@ -144,7 +141,7 @@ class FileResolverOperation
     /**
      * @param SplFileInfo $file
      *
-     * @return FixtureEpisodeData|FixtureMovieData
+     * @return EpisodeMetadataModel|MovieMetadataModel
      */
     public function parseFile(SplFileInfo $file)
     {
@@ -164,11 +161,11 @@ class FileResolverOperation
     /**
      * @param FileInfo $file
      *
-     * @return FixtureEpisodeData
+     * @return EpisodeMetadataModel
      */
     public function parseFileAsEpisode(FileInfo $file)
     {
-        $fixture = FixtureEpisodeData::create($file);
+        $fixture = EpisodeMetadataModel::create($file);
         $baseName = $fixture->getFile()->getBasename();
 
         $this->cleanEpisodeFileName($baseName);
@@ -183,11 +180,11 @@ class FileResolverOperation
     /**
      * @param FileInfo $file
      *
-     * @return FixtureMovieData
+     * @return MovieMetadataModel
      */
     public function parseFileAsMovie(FileInfo $file)
     {
-        $fixture = FixtureMovieData::create($file);
+        $fixture = MovieMetadataModel::create($file);
         $baseName = $fixture->getFile()->getBasename();
 
         $this->cleanMovieFileName($baseName);
@@ -206,10 +203,10 @@ class FileResolverOperation
     }
 
     /**
-     * @param FixtureEpisodeData $fixture
+     * @param EpisodeMetadataModel $fixture
      * @param string             $baseName
      */
-    protected function parseEpisodeName(FixtureEpisodeData $fixture, &$baseName)
+    protected function parseEpisodeName(EpisodeMetadataModel $fixture, &$baseName)
     {
         $name = $baseName[0];
 
@@ -235,10 +232,10 @@ class FileResolverOperation
     }
 
     /**
-     * @param FixtureEpisodeData $fixture
+     * @param EpisodeMetadataModel $fixture
      * @param string             $baseName
      */
-    protected function parseEpisodeYear(FixtureEpisodeData $fixture, &$baseName)
+    protected function parseEpisodeYear(EpisodeMetadataModel $fixture, &$baseName)
     {
         if (1 !== preg_match('{\b(20[0-9][0-9])\b}', $baseName, $match)) {
             return;
@@ -250,10 +247,10 @@ class FileResolverOperation
     }
 
     /**
-     * @param FixtureEpisodeData $fixture
+     * @param EpisodeMetadataModel $fixture
      * @param string             $baseName
      */
-    protected function parseEpisodeNumbers(FixtureEpisodeData $fixture, &$baseName)
+    protected function parseEpisodeNumbers(EpisodeMetadataModel $fixture, &$baseName)
     {
         if (1 !== preg_match('{s([0-9]+)e([0-9]+)-?([0-9]+)?}i', $baseName, $match) &&
             1 !== preg_match('{([0-9]{1,2})x([0-9]{1,2})}i', $baseName, $match) &&
@@ -275,18 +272,18 @@ class FileResolverOperation
     }
 
     /**
-     * @param FixtureEpisodeData $fixture
+     * @param EpisodeMetadataModel $fixture
      * @param string             $baseName
      */
-    protected function parseEpisodeTitle(FixtureEpisodeData $fixture, &$baseName)
+    protected function parseEpisodeTitle(EpisodeMetadataModel $fixture, &$baseName)
     {
     }
 
     /**
-     * @param FixtureMovieData $fixture
+     * @param MovieMetadataModel $fixture
      * @param string           $baseName
      */
-    protected function parseMovieYear(FixtureMovieData $fixture, &$baseName)
+    protected function parseMovieYear(MovieMetadataModel $fixture, &$baseName)
     {
         if (1 !== preg_match('{\b([0-9]{4})\b}', $baseName, $match)) {
             return;
@@ -301,10 +298,10 @@ class FileResolverOperation
     }
 
     /**
-     * @param FixtureMovieData $fixture
+     * @param MovieMetadataModel $fixture
      * @param string           $baseName
      */
-    protected function parseMovieTitle(FixtureMovieData $fixture, &$baseName)
+    protected function parseMovieTitle(MovieMetadataModel $fixture, &$baseName)
     {
         $name = $baseName[0];
 
