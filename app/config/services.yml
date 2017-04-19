@@ -64,20 +64,24 @@ services:
     sr.serferals.command.file_organizer:
         class: SR\Serferals\Command\FileOrganizerCommand
         arguments:
-            - %container_configurations%
             - %default_destination_path%
         calls:
-            - [ setRemoveExtensions, [ %extensions_remove_first%, %extensions_remove_after% ]]
-            - [ setInput,            [ "@sr.serferals.console_input" ] ]
-            - [ setOutput,           [ "@sr.serferals.console_output" ] ]
-            - [ setStyle,            [ "@sr.serferals.console_style" ] ]
-            - [ setFinderGenerator,  [ "@sr.serferals.tasks.finder_generator" ] ]
-            - [ setFileMetadata,     [ "@sr.serferals.tasks.file_metadata" ] ]
-            - [ setTmdbMetadata,     [ "@sr.serferals.tasks.tmdb_metadata" ] ]
-            - [ setExtensionRemover, [ "@sr.serferals.tasks.extension_remover" ] ]
-            - [ setDirectoryRemover, [ "@sr.serferals.tasks.directory_remover" ] ]
-            - [ setFileInstruction,  [ "@sr.serferals.tasks.file_instruction" ] ]
-            - [ setFileAtomicMover,  [ "@sr.serferals.tasks.file_atomic_mover" ] ]
+            - [ setContainersManager, [ "@sr.serferals.manager.containers" ] ]
+            - [ setRemoveExtensions,  [ %extensions_remove_first%, %extensions_remove_after% ]]
+            - [ setInputOutput,       [ "@sr.serferals.console_io" ] ]
+            - [ setFinderGenerator,   [ "@sr.serferals.tasks.finder_generator" ] ]
+            - [ setFileMetadata,      [ "@sr.serferals.tasks.file_metadata" ] ]
+            - [ setTmdbMetadata,      [ "@sr.serferals.tasks.tmdb_metadata" ] ]
+            - [ setExtensionRemover,  [ "@sr.serferals.tasks.extension_remover" ] ]
+            - [ setDirectoryRemover,  [ "@sr.serferals.tasks.directory_remover" ] ]
+            - [ setFileInstruction,   [ "@sr.serferals.tasks.file_instruction" ] ]
+            - [ setFileAtomicMover,   [ "@sr.serferals.tasks.file_atomic_mover" ] ]
+
+    # file format containers manager
+    sr.serferals.manager.containers:
+        class: SR\Serferals\Component\Format\ContainersManager
+        arguments:
+            - %container_configurations%
 
     # deduplicator command
     sr.serferals.command.file_deduplicator:
@@ -101,12 +105,20 @@ services:
     sr.serferals.console_output:
         class: Symfony\Component\Console\Output\ConsoleOutput
 
-    # console style (input/output) instance
+    # console style instance
     sr.serferals.console_style:
         class: SR\Console\Style\Style
         arguments:
             - "@sr.serferals.console_input"
             - "@sr.serferals.console_output"
+
+    # console input/output instance
+    sr.serferals.console_io:
+        class: SR\Serferals\Component\Console\InputOutput
+        arguments:
+            - "@sr.serferals.console_input"
+            - "@sr.serferals.console_output"
+            - "@sr.serferals.console_style"
 
     # file finder generator task
     sr.serferals.tasks.finder_generator:

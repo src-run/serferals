@@ -22,6 +22,7 @@
         "serferals-media-organizer", "serferals", "media-organizer", "console", "application", "rmf", "src-run"
     ],
     "require" : {
+        "php"                                   : "~7.1",
         "symfony/console"                       : "~3.2",
         "symfony/finder"                        : "~3.2",
         "symfony/yaml"                          : "~3.2",
@@ -32,7 +33,7 @@
         "twig/twig"                             : "~2.0",
         "php-tmdb/api"                          : "~2.0",
         "monolog/monolog"                       : "~1.18",
-        "src-run/augustus-dumper-library"       : "~0.7",
+        "src-run/augustus-dumper-library"       : "~0.8",
         "src-run/augustus-exception-library"    : "~0.7",
         "src-run/augustus-file-library"         : "~0.7",
         "src-run/augustus-primitive-library"    : "~0.6",

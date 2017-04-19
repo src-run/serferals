@@ -12,7 +12,8 @@
 namespace SR\Serferals\Command;
 
 use SR\Console\Style\StyleInterface;
-use SR\Dumper\YamlDumper;
+use SR\Serferals\Component\Console\InputOutput;
+use SR\Serferals\Component\Format\ContainersManager;
 use SR\Serferals\Component\Tasks\Filesystem\DirectoryRemoverTask;
 use SR\Serferals\Component\Tasks\Filesystem\ExtensionRemoverTask;
 use SR\Serferals\Component\Tasks\Filesystem\FileAtomicMoverTask;
@@ -28,14 +29,9 @@ use Symfony\Component\Console\Input\InputOption;
 class FileOrganizerCommand extends AbstractCommand
 {
     /**
-     * @var
+     * @var ContainersManager
      */
-    private $containers;
-
-    /**
-     * @var string[]
-     */
-    private $extensions;
+    private $containersManager;
 
     /**
      * @var string[]
@@ -88,15 +84,21 @@ class FileOrganizerCommand extends AbstractCommand
     private $fileAtomicMover;
 
     /**
-     * @param string      $containerConfigurations
      * @param null|string $defaultDestinationPath
      */
-    public function __construct(string $containerConfigurations, string $defaultDestinationPath = null)
+    public function __construct(string $defaultDestinationPath = null)
     {
-        $this->containers = $this->compileContainerConfigurations($containerConfigurations);
         $this->defaultDestinationPath = $defaultDestinationPath;
 
         parent::__construct();
+    }
+
+    /**
+     * @param ContainersManager $containersManager
+     */
+    public function setContainersManager(ContainersManager $containersManager)
+    {
+        $this->containersManager = $containersManager;
     }
 
     /**
@@ -208,8 +210,8 @@ class FileOrganizerCommand extends AbstractCommand
                 new InputOption('use-move', ['m'], InputOption::VALUE_NONE,
                     'Use the <em>move</em> command to place media into output path <fg=yellow>[default: "enabled"]</>'),
 
-                new InputArgument('search-paths', InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
-                    'Input paths to search for media files', [getcwd()]),
+                new InputArgument('search-paths', InputArgument::IS_ARRAY,
+                    'Input paths to search for media files'),
             ]);
     }
 
@@ -221,67 +223,42 @@ class FileOrganizerCommand extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        //$this->ioSetup($input, $output);
+        $this->io->writeTitle($this->getApplication());
 
-        $this->io()->applicationTitle(
-            strtoupper($this->getApplication()->getName()),
-            $this->getApplication()->getVersion(),
-            $this->getApplication()->getGitHash(), [
-                'Author' => sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail()),
-                'License' => $this->getApplication()->getLicense(),
-            ]
-        );
+        list($originPaths, $outputPath) = $this->parseOptions($input);
 
-        if ($input->getOption('force-episode') === true && $input->getOption('force-movie')) {
-            return $this->returnError(255, 'Cannot set mode to both episodes and movies. Select one or the other.');
-        }
+        $this->writeRuntime($originPaths, $outputPath);
+        //$this->doFirstTasks($originPaths, $input->getOption('extension-rm-first'));
+        //$this->runCoreTasks($originPaths, $input->getOption('extension-add'), $outputPath, $input);
+        //$this->doAfterTasks($originPaths, $input->getOption('extension-rm-after'));
 
-        list($inputPaths, $inputInvalidPaths) = $this
-            ->validatePaths(true, ...$input->getArgument('search-paths'));
-        list($outputPath, $outputInvalidPath) = $this
-            ->validatePaths(false, $input->getOption('output-path'));
-
-        if (true === (count($inputInvalidPaths) > 0) || true === (count($inputPaths) === 0)) {
-            return $this->returnError(255, 'You must provide at least one valid input path.');
-        }
-
-        if ($outputInvalidPath) {
-            return $this->returnError(255, 'You must provide a valid output path. (Invalid: %s)', $outputInvalidPath);
-        }
-
-        if (!$outputPath) {
-            return $this->returnError(255, 'You must provide a valid output path.');
-        }
-
-        if (count($inputInvalidPaths) !== 0) {
-            return $this->returnError(255, 'Invalid input path(s): %s', implode(', ', $inputInvalidPaths));
-        }
-
-        $this->writeRuntime($inputPaths, $outputPath, $input);
-        $this->doFirstTasks($inputPaths, $input->getOption('extension-rm-first'));
-        $this->runCoreTasks($inputPaths, $input->getOption('extension-add'), $outputPath, $input);
-        $this->doAfterTasks($inputPaths, $input->getOption('extension-rm-after'));
-
-        $this->io()->smallSuccess('OK', 'Done');
-
-        return 0;
+        return $this->io->writeExit('All operations completed successfully');
     }
 
-    private function compileContainerConfigurations(string $containerConfigurations)
+    /**
+     * @param InputInterface $in
+     *
+     * @return array
+     */
+    private function parseOptions(InputInterface $in): array
     {
-        $phar = 'phar://serferals.phar/'.$containerConfigurations;
-        $file = vsprintf('%s%s..%s..%s%s', [
-            __DIR__,
-            DIRECTORY_SEPARATOR,
-            DIRECTORY_SEPARATOR,
-            DIRECTORY_SEPARATOR,
-            $containerConfigurations,
-        ]);
+        if ($in->getOption('force-episode') && $in->getOption('force-movie')) {
+            $this->io
+                ->enterState(OutputInterface::VERBOSITY_VERY_VERBOSE)
+                ->writeNotice('Ignoring forced "episode" and "move" mode as enabling both cancels the other out');
 
-        $dumper = new YamlDumper(file_exists($phar) ? $phar : $file, new \DateInterval('P1M'));
+            $in->setOption('force-episode', false);
+            $in->setOption('force-movie', false);
+        }
 
-        var_dump($dumper->dump());
-        die('DONE');
+        $origin = $this->sanitizePaths($in->getArgument('search-paths'));
+        $output = $this->sanitizePath($in->getOption('output-path'));
+
+        if (0 === count($origin)) {
+            $this->io->writeCritical('At least one search path must be specified');
+        }
+
+        return [$origin, $output];
     }
 
     /**
@@ -329,45 +306,97 @@ class FileOrganizerCommand extends AbstractCommand
     }
 
     /**
-     * @param string[]       $inputPaths
-     * @param string         $outputPath
-     * @param InputInterface $input
+     * @param string[] $origin
+     * @param string   $output
      */
-    private function writeRuntime(array $inputPaths, string $outputPath, InputInterface $input)
+    private function writeRuntime(array $origin, string $output)
     {
-        //             array_unique(array_merge($removeExtsFirst, $removeExtsAfter)),
-//        $inputExtensions
+        $in = $this->io->getInput();
+        $ar = [];
 
-        $implodeList = function (array $list, $glue = ', ') {
-            return implode($glue, $list);
-        };
-
-        $tableRows = [];
-
-        foreach ($inputPaths as $i => $path) {
-            $tableRows[] = ['Search Directory (#'.($i + 1).')', $path];
+        foreach ($origin as $i => $path) {
+            $ar[] = ['Search Directory (#'.($i + 1).')', $path];
+        }
+        $ar[] = ['Output Directory',        $output];
+        $ar[] = ['Skip Lookup Failure',     $this->markupStateToggle($in->getOption('skip-failures')) ];
+        $ar[] = ['Smart Overwrite',         $this->markupStateToggle($in->getOption('overwrite-smart'))];
+        $ar[] = ['Blind Overwrite',         $this->markupStateToggle($in->getOption('overwrite-blind'))];
+        $ar[] = ['Search Extensions',       $this->arrayToString($this->getSearchExtensions())];
+        $ar[] = ['Remove Extensions First', $this->arrayToString($this->getRmFirstExtensions())];
+        $ar[] = ['Remove Extensions After', $this->arrayToString($this->getRmAfterExtensions())];
+        if ($in->getOption('force-episode')) {
+            $ar[] = ['Forced Mode', 'Episodes'];
+        } else if ($in->getOption('force-movie')) {
+            $ar[] = ['Forced Mode', 'Movies'];
         }
 
-        $tableRows[] = ['Output Directory', $outputPath];
-        $tableRows[] = ['Search Extensions', $implodeList($input->getOption('extension-add'))];
-        $tableRows[] = ['Remove Extensions First', $implodeList($input->getOption('extension-rm-first'))];
-        $tableRows[] = ['Remove Extensions After', $implodeList($input->getOption('extension-rm-after'))];
-        $tableRows[] = ['Forced Mode', $input->getOption('force-episode') ? 'Episodes Only' :
-            $input->getOption('force-movie') ? 'Movies Only' : 'None'];
-        $tableRows[] = ['Skip Lookup Failures?', $input->getOption('skip-failures') ? 'Yes' : 'No'];
-        $tableRows[] = ['Smart Overwrite Enabled?', $input->getOption('overwrite-smart') ? 'Yes' : 'No'];
-        $tableRows[] = ['Blind Overwrite Enabled?', $input->getOption('overwrite-blind') ? 'Yes' : 'No'];
+        $this->io
+            ->enterState(OutputInterface::VERBOSITY_VERBOSE)
+            ->writeSectionHeader('Runtime Configuration')
+            ->writeTableRows($ar);
 
-        $this->ioVerbose(function (StyleInterface $io) use ($tableRows) {
-            $io->subSection('Runtime Configuration');
-            $io->table($tableRows);
-        });
+        $this->io
+            ->enterState(OutputInterface::VERBOSITY_DEBUG)
+            ->askConfirm('Continue using this configuration?', true, function() {
+                exit($this->io->writeExitWarn('Exiting due to user requested termination'));
+            });
+    }
 
-        $this->ioDebug(function () {
-            if (false === $this->io()->confirm('Continue using these values?', true)) {
-                exit(1);
-            }
-        });
+    /**s
+     * @param bool   $state
+     * @param string $stateTrue
+     * @param string $stateFalse
+     *
+     * @return string
+     */
+    private function markupStateToggle(bool $state, string $stateTrue = 'Enabled', string $stateFalse = 'Disabled'): string
+    {
+        return $state ? sprintf('<fg=green>%s</>', $stateTrue) :
+            sprintf('<fg=red>%s</>', $stateFalse);
+    }
+
+    /**
+     * @param array  $array
+     * @param string $separator
+     *
+     * @return string
+     */
+    private function arrayToString(array $array, string $separator = ':'): string
+    {
+        return implode($separator, $array);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getSearchExtensions(): array
+    {
+        return array_merge(
+            $this->io->getInput()->getOption('extension-add'),
+            $this->containersManager->getVideos()->getExtensions()
+        );
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getRmFirstExtensions(): array
+    {
+        return array_merge(
+            $this->io->getInput()->getOption('extension-rm-first'),
+            $this->extensionsRemoveFirst
+        );
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getRmAfterExtensions(): array
+    {
+        return array_merge(
+            $this->io->getInput()->getOption('extension-rm-after'),
+            $this->extensionsRemoveAfter
+        );
     }
 
     /**

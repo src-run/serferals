@@ -11,19 +11,25 @@
 
 namespace SR\Serferals\Command;
 
-use SR\Console\Style\StyleAwareTrait;
 use SR\Console\Style\StyleInterface;
+use SR\Serferals\Component\Console\InputOutput;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/**
- * Class AbstractCommand.
- */
 class AbstractCommand extends Command
 {
-    use StyleAwareTrait;
+    /**
+     * @var InputOutput
+     */
+    protected $io;
+
+    /**
+     * @param InputOutput $inputOutput
+     */
+    public function setInputOutput(InputOutput $inputOutput)
+    {
+        $this->io = $inputOutput;
+    }
 
     protected function checkRequirements()
     {
@@ -106,6 +112,38 @@ class AbstractCommand extends Command
         }
 
         return [$valid, $invalid];
+    }
+
+    /**
+     * @param array $paths
+     *
+     * @return array
+     */
+    protected function sanitizePaths(array $paths): array
+    {
+        return array_map([$this, 'sanitizePath'], $paths);
+    }
+
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
+    protected function sanitizePath(string $path): string
+    {
+        if (false === ($real = realpath($path))) {
+            $this->io->writeCritical('Provided path "%s" does not exist', $path);
+        }
+
+        if (false === is_readable($real)) {
+            $this->io->writeCritical('Provided path "%s" is not readable', $real);
+        }
+
+        if (false === is_writable($real)) {
+            $this->io->writeCritical('Provided path "%s" is not writable', $real);
+        }
+
+        return $real;
     }
 
     /**

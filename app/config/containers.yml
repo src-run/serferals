@@ -7,6 +7,7 @@ containers:
     -
       name:      Microsoft Advanced Systems Format
       supported: true
+      transcode: mkv
       exts:
         - asf
         - wma
@@ -14,17 +15,20 @@ containers:
     -
       name:      DivX Media Format
       supported: true
+      transcode: mkv
       exts:
         - divx
     -
       name:      Adobe Flash Video
       supported: true
+      transcode: mkv
       exts:
         - flv
         - f4v
     -
       name:      Matroska Multimedia Container
       supported: true
+      transcode: null
       exts:
         - mkv
         - mk3d
@@ -32,33 +36,39 @@ containers:
     -
       name:      MPEG-4 Part 14
       supported: true
+      transcode: mkv
       exts:
         - mp4
     -
       name:      Moving Picture Experts Group
       supported: true
+      transcode: mkv
       exts:
         - mpg
         - mpeg
     -
       name:      Xiph Ogg
       supported: true
+      transcode: mkv
       exts:
         - ogv
     -
       name:      Apple QuickTime
       supported: true
+      transcode: mkv
       exts:
         - mov
         - qt
     -
       name:      RealMedia Variable Bitrate
       supported: true
+      transcode: mkv
       exts:
         - rmvb
     -
       name:      Video Object
       supported: false
+      transcode: mkv
       exts:
         - vob
         - ifo
@@ -68,72 +78,89 @@ containers:
   subtitles:
 
     -
-      name: AQTitle
+      name     : AQTitle
+      supported: true
       exts:
         - aqt
     -
-      name: Gloss Subtitle
+      name     : Gloss Subtitle
+      supported: true
       exts:
         - gsub
     -
-      name: JACOSub
+      name     : JACOSub
+      supported: true
       exts:
         - jss
     -
-      name: MicroDVD
+      name     : MicroDVD
+      supported: true
       exts:
         - sub
     -
-      name: MPEG-4 Timed Text
+      name     : MPEG-4 Timed Text
+      supported: true
       exts:
         - ttxt
     -
-      name: MPSub
+      name     : MPSub
+      supported: true
       exts:
         - sub
     -
-      name: Phoenix Subtitle
+      name     : Phoenix Subtitle
+      supported: true
       exts:
         - pjs
     -
-      name: PowerDivX
+      name     : PowerDivX
+      supported: true
       exts:
         - psb
     -
-      name: RealText
+      name     : RealText
+      supported: true
       exts:
         - rt
     -
-      name: SAMI
+      name     : SAMI
+      supported: true
       exts:
         - smi
     -
-      name: Spruce Subtitle Format
+      name     : Spruce Subtitle Format
+      supported: true
       exts:
         - sti
     -
-      name: Structured Subtitle Format
+      name     : Structured Subtitle Format
+      supported: true
       exts:
         - ssf
     -
-      name: SubRip
+      name     : SubRip
+      supported: true
       exts:
         - srt
     -
-      name: SubStation Alpha
+      name     : SubStation Alpha
+      supported: true
       exts:
         - ssa
         - ass
     -
-      name: SubViewer
+      name     : SubViewer
+      supported: true
       exts:
         - sub
     -
-      name: Universal Subtitle Format
+      name     : Universal Subtitle Format
+      supported: true
       exts:
         - usf
     -
-      name: Matroska Multimedia Container
+      name     : Matroska Multimedia Container
+      supported: true
       exts:
         - mks
 

@@ -6,7 +6,8 @@
     ],
     "extract": false,
     "files": [
-        "LICENSE.md"
+        "LICENSE.md",
+        "app/config/containers.yml"
     ],
     "finder": [
        {
