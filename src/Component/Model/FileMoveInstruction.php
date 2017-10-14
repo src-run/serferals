@@ -26,13 +26,19 @@ class FileMoveInstruction
     private $output;
 
     /**
+     * @var FileMoveInstruction|null
+     */
+    private $subtitle;
+
+    /**
      * @param SplFileInfo        $origin
      * @param SplFileInfo        $output
      */
-    public function __construct(SplFileInfo $origin, SplFileInfo $output)
+    public function __construct(SplFileInfo $origin, SplFileInfo $output, FileMoveInstruction $subtitle = null)
     {
         $this->origin = $origin;
         $this->output = $output;
+        $this->subtitle = $subtitle;
     }
 
     /**
@@ -49,5 +55,21 @@ class FileMoveInstruction
     public function getOutput()
     {
         return $this->output;
+    }
+
+    /**
+     * @return null|FileMoveInstruction
+     */
+    public function getSubtitle(): ?FileMoveInstruction
+    {
+        return $this->subtitle;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasSubtitle(): bool
+    {
+        return null !== $this->subtitle;
     }
 }

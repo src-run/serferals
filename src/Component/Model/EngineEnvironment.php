@@ -74,6 +74,19 @@ class EngineEnvironment
     }
 
     /**
+     * @param string $parameter
+     * @param        $value
+     *
+     * @return EngineEnvironment
+     */
+    public function setParameter(string $parameter, $value): self
+    {
+        $this->parameters[$parameter] = $value;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getPathName()

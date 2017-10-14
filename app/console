@@ -20,10 +20,10 @@ $container = new ContainerBuilder();
 $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/config'));
 $loader->load('services.yml');
 
-$input = $container->get('sr.serferals.console_input');
-$output = $container->get('sr.serferals.console_output');
+$input = $container->get('app.console_input');
+$output = $container->get('app.console_output');
 
-$application = $container->get('sr.serferals.application');
+$application = $container->get('app.application');
 $application->run($input, $output);
 
 # EOF

@@ -79,4 +79,3 @@ trait SerializableObjectTrait
     abstract protected function inspector();
 }
 
-/* EOF */

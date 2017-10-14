@@ -2,166 +2,263 @@
 
 containers:
 
+  targets:
+
+    -
+      # ffmpeg -i input -f matroska -c:v libx264 -crf 18 -profile:v high -level 4.2 -preset slow -c:a aac -threads 8
+      audio_codec           : libfdk_aac
+      audio_vbr             : 5
+      extensions            :
+        - mkv
+      featured              : true
+      file_format           : matroska
+      name                  : Matroska High Quality (AAC)
+      supported             : true
+      transcoder_exec       : ffmpeg
+      transcoder_hw_accel   : false
+      transcoder_threads    : 8
+      video_codec           : libx264
+      video_codec_preset    : slow
+      video_profile_title   : high
+      video_profile_level   : 4.2
+      video_quantizer_scale : 18
+
   # https://en.wikipedia.org/wiki/Comparison_of_video_container_formats
   videos:
+
     -
-      name:      Microsoft Advanced Systems Format
-      supported: true
-      transcode: mkv
-      exts:
+      extensions:
+        - avi
+      featured  : true
+      name      : Audio Video Interleaved
+      supported : true
+      transcode : mkv
+
+    -
+      extensions:
         - asf
-        - wma
+      featured  : false
+      name      : Microsoft Advanced Systems Format
+      supported : true
+      transcode : mkv
+
+    -
+      extensions:
         - wmv
+      featured  : true
+      name      : Windows Media Video
+      supported : true
+      transcode : mkv
+
     -
-      name:      DivX Media Format
-      supported: true
-      transcode: mkv
-      exts:
+      extensions:
         - divx
+      featured  : false
+      name      : DivX Media Format
+      supported : true
+      transcode : mkv
+
     -
-      name:      Adobe Flash Video
-      supported: true
-      transcode: mkv
-      exts:
+      extensions:
         - flv
         - f4v
+      featured  : false
+      name      : Adobe Flash Video
+      supported : true
+      transcode : mkv
+
     -
-      name:      Matroska Multimedia Container
-      supported: true
-      transcode: null
-      exts:
+      extensions:
         - mkv
-        - mk3d
         - webm
+      featured  : true
+      name      : Matroska Multimedia Container
+      supported : true
+      transcode : null
+
     -
-      name:      MPEG-4 Part 14
-      supported: true
-      transcode: mkv
-      exts:
+      extensions:
         - mp4
+        - m4v
+      featured  : true
+      name      : MPEG-4 Part 14
+      supported : true
+      transcode : mkv
+
     -
-      name:      Moving Picture Experts Group
-      supported: true
-      transcode: mkv
-      exts:
+      extensions:
         - mpg
         - mpeg
+        - mpv
+      featured  : true
+      name      : Moving Picture Experts Group (Phase 1 or 2)
+      supported : true
+      transcode : mkv
+
     -
-      name:      Xiph Ogg
-      supported: true
-      transcode: mkv
-      exts:
+      extensions:
         - ogv
+      featured  : false
+      name      : Xiph Ogg
+      supported : true
+      transcode : mkv
+
     -
-      name:      Apple QuickTime
-      supported: true
-      transcode: mkv
-      exts:
+      extensions:
         - mov
-        - qt
+      featured  : true
+      name      : Apple QuickTime
+      supported : true
+      transcode : mkv
+
     -
-      name:      RealMedia Variable Bitrate
-      supported: true
-      transcode: mkv
-      exts:
+      extensions:
+        - rm
         - rmvb
+      featured  : false
+      name      : RealMedia Variable Bitrate
+      supported : true
+      transcode : mkv
+
     -
-      name:      Video Object
-      supported: false
-      transcode: mkv
-      exts:
+      extensions:
         - vob
         - ifo
         - bup
+      featured  : false
+      name      : Video Object
+      supported : false
+      transcode : mkv
 
   # https://en.wikipedia.org/wiki/Subtitle_(captioning)#Subtitle_formats
   subtitles:
 
     -
-      name     : AQTitle
-      supported: true
-      exts:
+      extensions:
         - aqt
+      featured  : false
+      name      : AQTitle
+      supported : true
+
     -
-      name     : Gloss Subtitle
-      supported: true
-      exts:
+      extensions:
         - gsub
+      featured  : false
+      name      : Gloss Subtitle
+      supported : true
+
     -
-      name     : JACOSub
-      supported: true
-      exts:
+      extensions:
         - jss
+      featured  : false
+      name      : JACOSub
+      supported : true
+
     -
-      name     : MicroDVD
-      supported: true
-      exts:
+      extensions:
+        - mks
+      featured  : false
+      name      : Matroska Multimedia Container
+      supported : true
+
+    -
+      extensions:
         - sub
+      featured  : true
+      name      : MicroDVD
+      supported : true
+
     -
-      name     : MPEG-4 Timed Text
-      supported: true
-      exts:
+      extensions:
         - ttxt
+      featured  : true
+      name      : MPEG-4 Timed Text
+      supported : true
+
     -
-      name     : MPSub
-      supported: true
-      exts:
+      extensions:
         - sub
+      featured  : true
+      name      : MPSub
+      supported : true
+
     -
-      name     : Phoenix Subtitle
-      supported: true
-      exts:
+      extensions:
         - pjs
+      featured  : false
+      name      : Phoenix Subtitle
+      supported : true
+
     -
-      name     : PowerDivX
-      supported: true
-      exts:
+      extensions:
         - psb
+      featured  : false
+      name      : PowerDivX
+      supported : true
+
     -
-      name     : RealText
-      supported: true
-      exts:
+      extensions:
         - rt
+      featured  : false
+      name      : RealText
+      supported : true
+
     -
-      name     : SAMI
-      supported: true
-      exts:
+      extensions:
         - smi
+      featured  : false
+      name      : SAMI (Synchronized Accessible Media Interchange)
+      supported : true
+
     -
-      name     : Spruce Subtitle Format
-      supported: true
-      exts:
+      extensions:
         - sti
+      featured  : false
+      name      : Spruce Subtitle Format
+      supported : true
+
     -
-      name     : Structured Subtitle Format
-      supported: true
-      exts:
+      extensions:
         - ssf
+      featured  : false
+      name      : Structured Subtitle Format
+      supported : true
+
     -
-      name     : SubRip
-      supported: true
-      exts:
+      extensions:
         - srt
+      featured  : true
+      name      : SubRip
+      supported : true
+
     -
-      name     : SubStation Alpha
-      supported: true
-      exts:
+      extensions:
         - ssa
         - ass
+      featured  : false
+      name      : Sub Station Alpha
+      supported : true
+
     -
-      name     : SubViewer
-      supported: true
-      exts:
+      extensions:
         - sub
+      featured  : true
+      name      : SubViewer
+      supported : true
+
     -
-      name     : Universal Subtitle Format
-      supported: true
-      exts:
+      extensions:
         - usf
+      featured  : false
+      name      : Universal Subtitle Format
+      supported : true
+
     -
-      name     : Matroska Multimedia Container
-      supported: true
-      exts:
-        - mks
+      extensions:
+        - sub
+        - idx
+      featured  : true
+      name      : Vob Sub
+      supported : true
 
 ...

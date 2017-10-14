@@ -25,4 +25,3 @@ trait FactoryAwareObjectTrait
     }
 }
 
-/* EOF */

@@ -11,11 +11,13 @@
 
 namespace SR\Serferals\Component\Tasks\Metadata;
 
-use SR\Console\Style\StyleAwareTrait;
-use SR\Console\Style\StyleInterface;
+use SR\Console\Output\Style\StyleAwareTrait;
+use SR\Console\Output\Style\StyleInterface;
+use SR\Serferals\Component\Console\Helper\MetadataActionHelper;
 use SR\Serferals\Component\Model\MediaMetadataModel;
 use SR\Serferals\Component\Model\EpisodeMetadataModel;
 use SR\Serferals\Component\Model\MovieMetadataModel;
+use SR\Serferals\Component\Model\SubtitleMetadataModel;
 use SR\Serferals\Component\Tmdb\EpisodeResolver;
 use SR\Serferals\Component\Tmdb\MovieResolver;
 use Tmdb\Model\AbstractModel;
@@ -33,6 +35,11 @@ class TmdbMetadataTask
     protected $fileMetadata;
 
     /**
+     * @var MetadataActionHelper
+     */
+    protected $metadataActionHelper;
+
+    /**
      * @var EpisodeResolver
      */
     protected $episodeResolver;
@@ -48,13 +55,15 @@ class TmdbMetadataTask
     protected $skipFailures;
 
     /**
-     * @param FileMetadataTask $fileMetadata
-     * @param EpisodeResolver       $episodeResolver
-     * @param MovieResolver         $movieResolver
+     * @param FileMetadataTask     $fileMetadata
+     * @param MetadataActionHelper $metadataActionHelper
+     * @param EpisodeResolver      $episodeResolver
+     * @param MovieResolver        $movieResolver
      */
-    public function __construct(FileMetadataTask $fileMetadata, EpisodeResolver $episodeResolver, MovieResolver $movieResolver)
+    public function __construct(FileMetadataTask $fileMetadata, MetadataActionHelper $metadataActionHelper, EpisodeResolver $episodeResolver, MovieResolver $movieResolver)
     {
         $this->fileMetadata = $fileMetadata;
+        $this->metadataActionHelper = $metadataActionHelper;
         $this->episodeResolver = $episodeResolver;
         $this->movieResolver = $movieResolver;
     }
@@ -81,13 +90,11 @@ class TmdbMetadataTask
         $i = 0;
         $c = count($fixtureSet);
 
-        $this->ioVerbose(function (StyleInterface $io) use ($c) {
-            if ($c === 0) {
-                return;
-            }
-
-            $io->subSection('File API Resolutions');
-        });
+        if (0 === $c) {
+            $this->io
+                ->environment(StyleInterface::VERBOSITY_VERBOSE)
+                ->subSection('File API Resolutions');
+        }
 
         $fixtureSet = array_map(
             function (MediaMetadataModel $f) use ($c, &$i) {
@@ -124,10 +131,10 @@ class TmdbMetadataTask
         $showFullHelp = false;
 
         while (true) {
-            $this->io()->section(sprintf('%03d of %03d', $i, $count));
+            $this->io->section(sprintf('%03d of %03d', $i, $count));
 
             if (!file_exists($f->getFile()->getPathname())) {
-                $this->io()->error(sprintf('File no longer exists: %s', $f->getFile()->getPathname()));
+                $this->io->error(sprintf('File no longer exists: %s', $f->getFile()->getPathname()));
                 break;
             }
 
@@ -156,33 +163,20 @@ class TmdbMetadataTask
             }
 
             if ($this->skipFailures === true && ($results->count() == 0 || !$item)) {
-                $this->io()->caution('Skipping: Option enabled for API lookup failures to be auto-skip.');
+                $this->io->warning('Skipping: Option enabled for API lookup failures to be auto-skip.');
                 break;
             }
 
-            $this->ioVerbose(function () use ($mode, &$showFullHelp) {
-                $this->writeHelp($mode, $showFullHelp);
-            });
-            
-            try {
-                if ($f->getFile()->getSize() < 40000000) {
-                    $this->io()->warning('File is likely a ancillary file (sample, trailer, etc). Marking for removal!');
-                    $actionDefault = 'r';
-                } else {
-                    $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
-                }
-            } catch (\RuntimeException $e) {
-                $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
-            }
+            $a = $this->metadataActionHelper->writeActionsAndGetResult($this->getDefaultItemAction($f, $results, $item));
 
-            $action = $this->io()->ask('Enter action command shortcut name', $actionDefault);
-
-            switch ($action) {
+            switch ($a->getChar()) {
                 case 'c':
+                    $this->io->comment('Adding item to queue and continuing...');
                     $this->hydrateFixture($f, $item, $this->getResultSelection($results, $lookupSelection));
                     break 2;
 
                 case 'C':
+                    $this->io->comment('Adding forced item to queue and continuing...');
                     $f->setEnabled(true);
                     break 2;
 
@@ -196,13 +190,13 @@ class TmdbMetadataTask
 
                 case 's':
                     $f->setEnabled(false);
-                    $this->io()->comment('Skipping...');
+                    $this->io->comment('Skipping...');
                     break 2;
 
                 case 'r':
                     $f->setEnabled(false);
                     $removeResult = $this->remove($f);
-                    $this->io()->newLine();
+                    $this->io->newLine();
 
                     if ($removeResult === 1) {
                         break 1;
@@ -212,35 +206,52 @@ class TmdbMetadataTask
 
                 case 'm':
                     $mode = ($mode === EpisodeResolver::TYPE ? MovieResolver::TYPE : EpisodeResolver::TYPE);
-                    $this->io()->comment(sprintf(
+                    $this->io->comment(sprintf(
                         'Lookup mode switched to "%s"',
                         $mode
                     ));
-                    break;
-
-                case '?':
-                    $showFullHelp = true;
-                    break;
-
-                case 'h':
-                    $showFullHelp = true;
                     break;
 
                 case 'D':
                     $skipRemaining = true;
                     break 2;
 
-                case 'Q':
-                    $this->io()->caution('Exiting per user request.');
-                    exit;
+                case 't':
+                    if ($f->hasSubtitles()) {
+                        $f->getSubtitles()[0]->setEnabled(!$f->getSubtitles()[0]->getEnabled());
+                    }
+                    continue;
 
-                default:
-                    $this->io()->error(sprintf('Invalid command shortcut "%s"', $action));
-                    sleep(1);
+                case 'T':
+                    $this->editFixtureSubtitle($f);
+                    continue;
             }
         }
 
         return $f;
+    }
+
+    /**
+     * @param MediaMetadataModel $file
+     * @param ResultCollection   $results
+     * @param \Tmdb\Model\AbstractModel|Tv\Episode
+     *
+     * @return string
+     */
+    private function getDefaultItemAction(MediaMetadataModel $file, ResultCollection $results, $item): string
+    {
+        try {
+            if ($file->getFile()->getSize() < 40000000) {
+                $this->io->warning('File is likely a ancillary file (sample, trailer, etc). Marking for removal!');
+                $actionDefault = 'r';
+            } else {
+                $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
+            }
+        } catch (\RuntimeException $e) {
+            $actionDefault = $results->count() == 0 || !$item ? 's' : 'c';
+        }
+
+        return $actionDefault;
     }
 
     /**
@@ -279,18 +290,41 @@ class TmdbMetadataTask
             return $row !== null;
         });
 
-        $this->ioVerbose(
-            function (StyleInterface $io) {
-                $io->comment('Listing Tvdb lookup search results');
-            }
-        );
+        $this->io
+            ->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->comment('Listing Tvdb lookup search results');
 
-        $this->io()->table($tableRows, ['[#] Tvdb Id', 'Title', 'Release Year', 'Extra']);
-        $selection = $this->io()->ask('Enter result item number', 1, null, function ($value) {
+        $this->io->table(['[#] Tvdb Id', 'Title', 'Release Year', 'Extra'], $tableRows);
+        $selection = $this->io->ask('Enter result item number', 1, null, function ($value) {
             return (int) $value;
         });
 
         return (int) $selection;
+    }
+
+    /**
+     * @param MediaMetadataModel $f
+     */
+    private function editFixture(MediaMetadataModel $f)
+    {
+        $this->io
+            ->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->comment('Listing fixture property values');
+
+        while (true) {
+            list($tableHeads, $tableRows, $control) = $this->getEditFixtureTable($f);
+            $this->io->table($tableHeads, ...$tableRows);
+            $action = strtolower($this->io->ask('Enter value number or no value to exit editor', 'exit'));
+
+            switch ($action) {
+                case 'done':
+                case 'exit':
+                    break 2;
+
+                default:
+                    $this->editFixtureProperty($f, $action, $control);
+            }
+        }
     }
 
     /**
@@ -349,39 +383,13 @@ class TmdbMetadataTask
 
     /**
      * @param MediaMetadataModel $f
-     */
-    private function editFixture(MediaMetadataModel $f)
-    {
-        $this->ioVerbose(
-            function (StyleInterface $io) use ($f) {
-                $io->comment('Listing fixture property values');
-            }
-        );
-
-        while (true) {
-            list($tableHeads, $tableRows, $control) = $this->getEditFixtureTable($f);
-            $this->io()->table($tableRows, $tableHeads);
-            $action = strtolower($this->io()->ask('Enter value number or no value to exit editor', 'done'));
-
-            switch ($action) {
-                case 'done':
-                    break 2;
-
-                default:
-                    $this->editFixtureProperty($f, $action, $control);
-            }
-        }
-    }
-
-    /**
-     * @param MediaMetadataModel $f
      * @param string      $act
      * @param array[]     $ctl
      */
     private function editFixtureProperty(MediaMetadataModel $f, $act, $ctl)
     {
         if (!array_key_exists($act, $ctl)) {
-            $this->io()->error('Invalid selection of '.$act);
+            $this->io->error('Invalid selection of '.$act);
 
             return;
         }
@@ -397,13 +405,94 @@ class TmdbMetadataTask
             $oldValue = $oldValue === true ? 'true' : 'false';
         }
 
-        $value = $this->io()->ask(sprintf('EDITOR: Enter new value for "%s"', $name), $oldValue);
+        $value = $this->io->ask(sprintf('EDITOR: Enter new value for "%s"', $name), $oldValue);
 
         if ($property === 'enabled' && strtolower($value) === 'false') {
             $value = false;
         }
 
         call_user_func([$f, $setMethod], $value);
+    }
+
+    /**
+     * @param MediaMetadataModel $f
+     */
+    private function editFixtureSubtitle(MediaMetadataModel $f)
+    {
+        $this->io
+            ->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->comment('Listing fixture subtitles');
+
+        while (true) {
+            $this->io->table(...$this->getEditFixtureSubtitleTable($f));
+            $action = trim(strtolower($this->io->ask('Enter value number or no value to exit editor', 'exit')));
+
+            switch ($action) {
+                case 'done':
+                case 'exit':
+                    break 2;
+
+                default:
+                    $this->editFixtureSubtitleProperty($f, $action);
+            }
+        }
+    }
+
+    /**
+     * @param MediaMetadataModel $f
+     *
+     * @return array
+     */
+    private function getEditFixtureSubtitleTable(MediaMetadataModel $f)
+    {
+        $i = 0;
+        $tableRows = array_map(function (SubtitleMetadataModel $subtitle) use ($f, &$i) {
+            return $this->getEditFixtureSubtitleTableRow($subtitle, $f, $i);
+        }, $f->getSubtitles());
+
+        return array_merge([['[#] (Active)', 'Subtitle', 'Size', 'Language', 'Similarity']], $tableRows);
+    }
+
+    /**
+     * @param SubtitleMetadataModel $subtitle
+     * @param MediaMetadataModel    $media
+     * @param int                   $i
+     *
+     * @return array
+     */
+    private function getEditFixtureSubtitleTableRow(SubtitleMetadataModel $subtitle, MediaMetadataModel $media, int &$i)
+    {
+        $active = $media->getActiveSubtitleIndex() === $i;
+
+        return [
+            sprintf('[%d] (%s)', $i++, $active ? '*' : '-'),
+            $subtitle->getFile()->getBasename(),
+            $subtitle->getFileSize(),
+            $subtitle->hasLanguage() ? $subtitle->getLanguage() : 'n/a',
+            $subtitle->getSimilarity(),
+        ];
+    }
+
+    /**
+     * @param MediaMetadataModel $media
+     * @param string             $act
+     * @param array[]            $ctl
+     */
+    private function editFixtureSubtitleProperty(MediaMetadataModel $media, $action)
+    {
+        $oldSelection = $media->hasActiveSubtitle() ? $media->getActiveSubtitle() : null;
+
+        if (!$media->setActiveSubtitle($action)) {
+            $this->io->error(sprintf('Invalid subtitle selection of %s!', $action));
+
+            return;
+        }
+
+        $media->getActiveSubtitle()->setEnabled(true);
+
+        if ($oldSelection) {
+            $oldSelection->setEnabled(false);
+        }
     }
 
     /**
@@ -418,10 +507,10 @@ class TmdbMetadataTask
         $absolutePathName = $f->getFile()->getRealPath();
         $absolutePath = pathinfo($absolutePathName, PATHINFO_DIRNAME);
 
-        $removeDirectory = $this->io()->confirm('Remove directory path and all its contents?', false);
+        $removeDirectory = $this->io->confirm('Remove directory path and all its contents?', false);
         $removeItem = $removeDirectory === true ? $absolutePath : $absolutePathName;
 
-        $this->io()->caution(
+        $this->io->warning(
             sprintf(
                 'Remove %s %s',
                 $removeDirectory === true ? 'directory' : 'file',
@@ -429,12 +518,12 @@ class TmdbMetadataTask
             )
         );
 
-        if ($this->io()->confirm('Continue with deletion', true) === false) {
+        if ($this->io->confirm('Continue with deletion', true) === false) {
             return 1;
         }
 
         if (!is_writable($removeItem)) {
-            $this->io()->error(sprintf('Could not delete "%s"', $relativePathName));
+            $this->io->error(sprintf('Could not delete "%s"', $relativePathName));
 
             return 1;
         }
@@ -454,12 +543,13 @@ class TmdbMetadataTask
      */
     private function removeFileItem(MediaMetadataModel $f, $path)
     {
-        $this->ioVerbose(function (StyleInterface $io) use ($path) {
-            $io->comment(sprintf('Removing "%s"', $path));
-        });
+
+        $this->io
+            ->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->comment(sprintf('Removing "%s"', $path));
 
         if (false === @unlink($path)) {
-            $this->io()->error(sprintf('Could not remove "%s"', $path));
+            $this->io->error(sprintf('Could not remove "%s"', $path));
 
             return 1;
         }
@@ -487,9 +577,9 @@ class TmdbMetadataTask
             }
         }
 
-        $this->ioVerbose(function (StyleInterface $io) use ($path) {
-            $io->comment(sprintf('Removing "%s"', $path));
-        });
+        $this->io
+            ->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->comment(sprintf('Removing "%s"', $path));
 
         $resultsSet[] = @rmdir($path) === false ? 1 : 2;
 
@@ -498,7 +588,7 @@ class TmdbMetadataTask
         });
 
         if (count($resultSet) !== 0) {
-            $this->io()->error(sprintf('Could not remove "%s"', $path));
+            $this->io->error(sprintf('Could not remove "%s"', $path));
 
             return 1;
         }
@@ -613,37 +703,31 @@ class TmdbMetadataTask
             $fileSize = $f->getFile()->getSizeReadable();
         } catch (\RuntimeException $e) {
             $fileSize = 'UNKNOWN';
-            $this->io()->warning(sprintf('An error occured while retrieving the file size for %s', $f->getFile()->getPathname()));
+            $this->io->warning(sprintf('An error occured while retrieving the file size for %s', $f->getFile()->getPathname()));
         }
 
-        $rows = [
-            ['Tvdb Id', $m->getId().($m->getImdbId() === null ? '' : '/'.$m->getImdbId())],
-            ['File Path', $f->getFile()->getPathname()],
-            ['Movie Title', $m->getTitle()],
-            ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
-            ['Size', $fileSize],
-            ['API Match', sprintf('<fg=green>OKAY: %d</>', $m->getId())],
+        $headers = [
+            'File Path',
+            'Movie Title',
+            'Release Date',
+            'Size',
+            'API Match',
         ];
 
-        $this->ioVerbose(
-            function (StyleInterface $style) use ($rows) {
-                $style->table($rows, []);
-            }
-        );
-
         $rows = [
-            ['File Path', $f->getFile()->getPathname()],
-            ['Movie Title', $m->getTitle()],
-            ['Release Date', $m->getReleaseDate()->format('Y\-m\-d')],
-            ['Size', $fileSize],
-            ['API Match', sprintf('<fg=green>OKAY: %d</>', $m->getId())],
+            [$f->getFile()->getPathname()],
+            [$m->getTitle()],
+            [$m->getReleaseDate()->format('Y\-m\-d')],
+            [$fileSize],
+            [sprintf('<fg=green>OKAY: %d</>', $m->getId())],
         ];
 
-        $this->ioNotVerbose(
-            function (StyleInterface $style) use ($rows) {
-                $style->table($rows, []);
-            }
-        );
+        if ($this->io->isVerbose()) {
+            array_unshift($headers, 'Tvdb Id');
+            array_unshift($rows, [$m->getId().($m->getImdbId() === null ? '' : '/'.$m->getImdbId())]);
+        }
+
+        $this->io->tableVertical($headers, ...$rows);
     }
 
     /**
@@ -668,39 +752,55 @@ class TmdbMetadataTask
             $country = $countrySet->get($countryKey)->getIso31661();
         }
 
-        $rows = [
-            ['Tvdb Id', $s->getId().'/'.$e->getId()],
-            ['File Path', $f->getFile()->getPathname()],
-            ['Show Name', $s->getName()],
-            ['Season', $e->getSeasonNumber()],
-            ['Episode Number', $e->getEpisodeNumber()],
-            ['Episode Title', $e->getName()],
-            ['Origin Country', $country],
-            ['Air Date', $e->getAirDate()->format('Y\-m\-d')],
-            ['Size', $fileSize],
-            ['API Match', sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
-        ];
+        if ($this->io->isVerbose()) {
+            $headers = [
+                'Tvdb Id',
+                'File Path',
+                'Show Name',
+                'Season Number',
+                'Episode Number',
+                'Episode Title',
+                'Origin Country',
+                'Air Date',
+                'Subtitle',
+                'Size',
+                'API Match',
+            ];
 
-        $this->ioVerbose(
-            function (StyleInterface $style) use ($rows) {
-                $style->table($rows, []);
-            }
-        );
+            $rows = [
+                [$s->getId()],
+                [$f->getFile()->getPathname()],
+                [$this->getHighlightedMarkup($s->getName())],
+                [$this->getStrongMarkup($e->getSeasonNumber())],
+                [$this->getStrongMarkup($e->getEpisodeNumber())],
+                [$e->getName()],
+                [$country],
+                [$e->getAirDate()->format('Y\-m\-d')],
+                [$this->getMediaSubtitleTableRowMarkup($f)],
+                [$fileSize],
+                [sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
+            ];
+        } else {
+            $headers = [
+                'File Path',
+                'Show Name',
+                'Season/Episode',
+                'Episode Title',
+                'Size',
+                'API Match',
+            ];
 
-        $rows = [
-            ['File Path', $f->getFile()->getPathname()],
-            ['Show Name', $s->getName()],
-            ['Season/Episode', sprintf('%d/%d', $e->getSeasonNumber(), $e->getEpisodeNumber())],
-            ['Episode Title', $e->getName()],
-            ['Size', $fileSize],
-            ['API Match', sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
-        ];
+            $rows = [
+                [$f->getFile()->getPathname()],
+                [$this->getHighlightedMarkup($s->getName())],
+                [sprintf('%s/%s', $this->getStrongMarkup($e->getSeasonNumber()), $this->getStrongMarkup($e->getEpisodeNumber()))],
+                [$e->getName()],
+                [$fileSize],
+                [sprintf('<fg=green>OKAY: %d/%d</>', $s->getId(), $e->getId())],
+            ];
+        }
 
-        $this->ioNotVerbose(
-            function (StyleInterface $style) use ($rows) {
-                $style->table($rows, []);
-            }
-        );
+        $this->io->tableVertical($headers, ...$rows);
     }
 
     /**
@@ -712,34 +812,31 @@ class TmdbMetadataTask
             $fileSize = $f->getFile()->getSizeReadable();
         } catch (\RuntimeException $e) {
             $fileSize = 'UNKNOWN';
+            $this->io->warning(sprintf('An error occured while retrieving the file size for %s', $f->getFile()->getPathname()));
         }
 
-        $rows = [
-            ['Tvdb Id', ''],
-            ['File Path', $f->getFile()->getPathname()],
-            ['Movie Title', $f->getName()],
-            ['Release Year', $f->getYear()],
-            ['Size', $fileSize],
-            ['API Match', '<fg=red>FAIL</>'],
+        $headers = [
+            'File Path',
+            'Movie Title',
+            'Release Date',
+            'Size',
+            'API Match',
         ];
 
-        $this->ioVerbose(
-            function (StyleInterface $style) use ($rows) {
-                $style->table($rows, []);
-            }
-        );
-
         $rows = [
-            ['File Path', $f->getFile()->getPathname()],
-            ['Size', $fileSize],
-            ['API Match', '<fg=red>Failure</>'],
+            [$f->getFile()->getPathname()],
+            [$this->getHighlightedMarkup($f->getName())],
+            [$f->getYear()],
+            [$fileSize],
+            ['<fg=red>FAIL</>'],
         ];
 
-        $this->ioNotVerbose(
-            function (StyleInterface $style) use ($rows) {
-                $style->table($rows, []);
-            }
-        );
+        if ($this->io->isVerbose()) {
+            array_unshift($headers, 'Tvdb Id');
+            array_unshift($rows, ['']);
+        }
+
+        $this->io->tableVertical($headers, ...$rows);
     }
 
     /**
@@ -755,100 +852,78 @@ class TmdbMetadataTask
 
         $rows = [
             ['File Path', $f->getFile()->getPathname()],
-            ['Show Name', $f->getName()],
-            ['Season', $f->getSeasonNumber()],
-            ['Episode Number', $f->getEpisodeNumberStart()],
+            ['Show Name', $this->getHighlightedMarkup($f->getName())],
+            ['Season', $this->getStrongMarkup($f->getSeasonNumber())],
+            ['Episode Number', $this->getStrongMarkup($f->getEpisodeNumberStart())],
             ['Episode Title', $f->getTitle()],
             ['Air Year', $f->getYear()],
+            ['Subtitle', $this->getMediaSubtitleTableRowMarkup($f)],
             ['Size', $fileSize],
             ['API Match', '<fg=red>FAIL</>'],
         ];
 
-        $this->ioVerbose(
-            function (StyleInterface $style) use ($rows) {
-                $style->table($rows, []);
-            }
-        );
-
-        $rows = [
+        $rowsN = [
             ['File Path', $f->getFile()->getPathname()],
             ['Size', $fileSize],
             ['API Match', '<fg=red>FAIL</>'],
         ];
 
-        $this->ioNotVerbose(
-            function (StyleInterface $style) use ($rows) {
-                $style->table($rows, []);
-            }
-        );
+        if ($this->io->isVerbose()) {
+            $this->io->table([], ...$rows);
+        } else {
+            $this->io->table([], ...$rowsN);
+        }
     }
 
     /**
-     * @param string $mode
-     * @param bool   $showFullHelp
+     * @param int $string
+     *
+     * @return string
      */
-    private function writeHelp($mode, &$showFullHelp = false)
+    private function getHighlightedMarkup($string): string
     {
-        $help = [
-            'c' => ['Continue',         'Accept entry details and move to next',                   false],
-            'C' => ['Forced Continue',  'Enable manually described entry',                         true],
-            's' => ['Skip',             'Ignore/skip over entry and move to next',                 false],
-            'm' => ['Mode',             sprintf('Change API lookup mode to "%s"', ucwords(EpisodeResolver::TYPE ? MovieResolver::TYPE : EpisodeResolver::TYPE)), true],
-            'e' => ['Edit Fixture',     'Manually edit all entry details',                         true],
-            'l' => ['List API Results', 'Show listing of API search results',                      true],
-            'r' => ['Remove',           'Remove entry\'s file or path',                            true],
-            'D' => ['Done/Write',       'Write out enabled entries and skip remaining',            true],
-            'Q' => ['Quit',             'Quit without writing anything',                           true],
-        ];
-
-        $maxActionLength = 0;
-        foreach ($help as $h) {
-            if ($h[2] === true && $showFullHelp !== true) {
-                continue;
-            }
-
-            if (strlen($h[0]) > $maxActionLength) {
-                $maxActionLength = strlen($h[0]);
-            }
-        }
-
-        $this->ioVerbose(function () {
-            $this->io()->comment('Listing available actions');
-            $this->io()->newLine();
-        });
-
-        foreach ($help as $key => $h) {
-            list($action, $description, $full) = $h;
-
-            if ($full === true && $showFullHelp !== true) {
-                continue;
-            }
-
-            $this->writeHelpLine($key, $action, $description, $showFullHelp, $maxActionLength);
-        }
-
-        $this->writeHelpLine('?', 'Help', 'Display listing of all available actions with help text', $showFullHelp, $maxActionLength);
-
-        $showFullHelp = false;
+        return sprintf('<fg=yellow;options=bold>%s</>', $string);
     }
 
     /**
-     * @param string $key
-     * @param string $action
-     * @param string $description
-     * @param bool   $showFullHelp
-     * @param int    $padding
+     * @param int $string
+     *
+     * @return string
      */
-    protected function writeHelpLine($key, $action, $description, $showFullHelp, $padding)
+    private function getStrongMarkup($string): string
     {
-        $this->io()->writeln(sprintf(
-            ' [ <em>%s</em> ] %s%s<comment>%s</comment>',
-            $key,
-            $action,
-            $showFullHelp ? str_repeat(' ', $padding - strlen($action) + 1) : '',
-            $showFullHelp ? strtolower($description) : ''
-        ));
+        if (is_int($string)) {
+            $string = sprintf('%02d', $string);
+        }
+
+        return sprintf('<em>%s</>', $string);
+    }
+
+    /**
+     * @param MediaMetadataModel $media
+     *
+     * @return string
+     */
+    private function getMediaSubtitleTableRowMarkup(MediaMetadataModel $media): string
+    {
+        if (!$media->hasActiveSubtitle()) {
+            return 'none';
+        }
+
+        $subtitle = $media->getActiveSubtitle();
+        $markup = sprintf('<fg=default>%s</>', $subtitle->getFile()->getFilename());
+
+        if ($subtitle->hasLanguage()) {
+            $markup .= sprintf(' <fg=default>[lang:%s]</>', $subtitle->getLanguage());
+        }
+
+        $markup .= sprintf(' <fg=%s>(%s)</>', $subtitle->isEnabled() ? 'green' : 'red', $subtitle->isEnabled() ? 'enabled' : 'disabled');
+
+        if (count($media->getSubtitles()) > 1) {
+            $markup .= sprintf(' %d/%d', $media->getActiveSubtitleIndex()+1, count($media->getSubtitles()));
+        }
+
+        return $markup;
     }
 }
 
-/* EOF */

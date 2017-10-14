@@ -54,4 +54,3 @@ class MovieResolver extends AbstractResolver
     }
 }
 
-/* EOF */

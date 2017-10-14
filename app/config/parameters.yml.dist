@@ -1,8 +1,10 @@
 parameters:
-    tmdb_api_metadata_key:
-    tmdb_api_metadata_log:    /tmp/serferals.log
-    extensions_search:        ['mov', 'mkv', 'mp4', 'avi']
-    extensions_remove_first:  ['nfo', 'txt']
-    extensions_remove_after:  ['srt', 'nfo', 'txt', 'jpg', 'png']
-    default_destination_path: /pool/media/video
-    container_configurations: app/config/containers.yml
+    metadata_lookup_api_key:
+    metadata_lookup_api_log:            /tmp/serferals.log
+    default_search_media_extensions:    [ 'mov', 'mkv', 'mp4', 'mpg', 'm4v', 'avi' ]
+    default_search_subtitle_extensions: [ 'srt', 'sfv' ]
+    default_clean_first_extensions:     [ 'nfo', 'txt' ]
+    default_clean_after_extensions:     [ 'srt', 'nfo', 'txt', 'jpg', 'png' ]
+    env(DEFAULT_OUTPUT_PATH):           /pool/media/video
+    data_file_path_media:               app/config/media.json
+    data_file_path_language:            app/config/language.json

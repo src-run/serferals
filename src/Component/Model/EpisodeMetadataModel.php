@@ -173,4 +173,3 @@ class EpisodeMetadataModel extends MediaMetadataModel
     }
 }
 
-/* EOF */

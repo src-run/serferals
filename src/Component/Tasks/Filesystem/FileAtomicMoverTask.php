@@ -11,28 +11,16 @@
 
 namespace SR\Serferals\Component\Tasks\Filesystem;
 
-use SR\Console\Style\StyleAwareTrait;
+use SR\Console\Output\Style\StyleAwareTrait;
+use SR\Console\Output\Style\StyleInterface;
 use SR\Exception\Logic\InvalidArgumentException;
 use SR\Exception\Runtime\RuntimeException;
 use SR\Serferals\Component\Model\FileMoveInstruction;
 use SR\Spl\File\SplFileInfo as FileInfo;
-use SR\Serferals\Component\Model\MediaMetadataModel;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
-class FileAtomicMoverTask
+class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
 {
     use StyleAwareTrait;
-
-    /**
-     * @var string
-     */
-    const MODE_MV = 'mv';
-
-    /**
-     * @var string
-     */
-    const MODE_CP = 'cp';
 
     /**
      * @var string
@@ -53,16 +41,6 @@ class FileAtomicMoverTask
      * @var FileMoveInstruction[]
      */
     private $instructions;
-
-    /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     */
-    public function __construct(InputInterface $input, OutputInterface $output)
-    {
-        $this->input = $input;
-        $this->output = $output;
-    }
 
     /**
      * @param string $mode
@@ -121,23 +99,20 @@ class FileAtomicMoverTask
      */
     public function execute()
     {
-        $this->io()->subSection('Writing Output Files');
+        $this->io->subSection('Writing Output Files');
 
         if (0 === count($this->instructions)) {
             throw new RuntimeException('No file move instructions.');
         }
 
-        foreach ($this->instructions as $inst) {
-            $this->ioVerbose(function () use (&$iteration) {
-                static $iteration = 0;
-
-                $this->io()->section(sprintf('%03d of %03d', $iteration++, count($this->instructions)));
-            });
-
+        foreach ($this->instructions as $i => $inst) {
+            $this->io
+                ->environment(StyleInterface::VERBOSITY_VERBOSE)
+                ->enumeratedSection('PLACING FILE', $i, count($this->instructions), $inst->getOutput());
             $this->move($inst);
         }
 
-        $this->io()->newLine();
+        $this->io->newline();
     }
 
     /**
@@ -152,9 +127,9 @@ class FileAtomicMoverTask
         $outputSize = $this->sanitizeFileSize($output);
 
         $tableRows[] = ['Origin File', sprintf('[...]%s', $origin->getFilename()), $originSize];
-        $tableRows[] = ['Output File', sprintf('[...]%s', $output->getPathname()), $outputSize,];
+        $tableRows[] = ['Output File', sprintf('[...]%s', $output->getPathname()), $outputSize];
 
-        $this->io()->table($tableRows, [null, 'Path', 'Size']);
+        $this->io->table(['', 'File', 'Size'], ...$tableRows);
 
         if (file_exists($output->getPathname()) &&
             false === $this->blindOverwrite &&
@@ -164,16 +139,15 @@ class FileAtomicMoverTask
         }
 
         if (!is_dir($output->getPath()) && false === @mkdir($output->getPath(), 0777, true)) {
-            $this->io()->error(sprintf('Could not create directory "%s"', $output->getPath()));
+            $this->io->error(sprintf('Could not create directory "%s"', $output->getPath()));
             return;
         }
 
-        if (!$this->io()->isVeryVerbose()) {
-            $this->io()->comment(sprintf('Writing "%s"', $output->getPathname()));
-        }
+        $this->io->environment(StyleInterface::VERBOSITY_VERY_VERBOSE)
+            ->comment(sprintf('Writing "%s"', $output->getPathname()));
 
         if (false === @copy($origin->getPathname(), $output->getPathname())) {
-            $this->io()->error(sprintf('Could not write file "%s"', $output->getPathname()));
+            $this->io->error(sprintf('Could not write file "%s"', $output->getPathname()));
         } elseif ($this->mode === self::MODE_MV) {
             unlink($origin->getPathname());
         }
@@ -203,43 +177,45 @@ class FileAtomicMoverTask
     {
         try {
             if ($this->smartOverwrite === true && $input->getSize() > $output->getSize()) {
-                $this->io()->info('Automatically overwriting smaller output filepath with larger input.');
+                $this->io->info('Automatically overwriting smaller output filepath with larger input.');
                 return true;
             }
 
             if ($this->smartOverwrite === true && $input->getSize() <= $output->getSize()) {
                 unlink($input->getPathname());
-                $this->io()->info('Automatically removing input file path of less than or equal size to existing output filepath.');
+                $this->io->info('Automatically removing input file path of less than or equal size to existing output filepath.');
                 return false;
             }
         } catch (\RuntimeException $e) {
-            $this->io()->error('Could not use smart output mode! An error occurred while processing file sizes.');
+            $this->io->error('Could not use smart output mode! An error occurred while processing file sizes.');
         }
 
         while (true) {
-            $this->io()->comment('File already exists in output path');
+            $this->io->comment('File already exists in output path');
 
-            $this->io()->writeln(' [ <em>o</em> ] Overwrite <info>(default)</info>', false);
-            $this->io()->writeln(' [ <em>s</em> ] Skip', false);
-            $this->io()->writeln(' [ <em>R</em> ] Delete Input', false);
+            $this->io->writeln([
+                ' [ <em>o</em> ] Overwrite <info>(default)</info>',
+                ' [ <em>s</em> ] Skip',
+                ' [ <em>R</em> ] Delete Input',
+            ]);
 
-            $action = $this->io()->ask('Enter action command shortcut name', 'o');
+            $action = $this->io->ask('Enter action command shortcut name', 'o');
 
             switch ($action) {
                 case 'o':
-                    $this->io()->info('Overwriting smaller output filepath with larger input.');
+                    $this->io->info('Overwriting smaller output filepath with larger input.');
                     return true;
 
                 case 's':
                     return false;
 
                 case 'R':
-                    $this->io()->info(sprintf('Removing input file: %s', $input->getPathname()));
+                    $this->io->info(sprintf('Removing input file: %s', $input->getPathname()));
                     unlink($input->getPathname());
                     return false;
 
                 default:
-                    $this->io()->error(sprintf('Invalid command shortcut "%s"', $action));
+                    $this->io->error(sprintf('Invalid command shortcut "%s"', $action));
                     sleep(3);
             }
         }

@@ -15,6 +15,7 @@ use SR\Exception\Logic\InvalidArgumentException;
 use SR\Exception\Runtime\RuntimeException;
 use SR\Serferals\Component\Model\EngineEnvironment;
 use SR\Serferals\Component\Model\FileMoveInstruction;
+use SR\Serferals\Component\Model\SubtitleMetadataModel;
 use SR\Spl\File\SplFileInfo as FileInfo;
 use SR\Serferals\Component\Model\MediaMetadataModel;
 use SR\Serferals\Component\Model\EpisodeMetadataModel;
@@ -94,20 +95,24 @@ class FileInstructionTask
     }
 
     /**
-     * @param MediaMetadataModel $metadata
+     * @param MediaMetadataModel $media
+     *
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      *
      * @return FileMoveInstruction
      */
-    private function generateInstruction(MediaMetadataModel $metadata)
+    private function generateInstruction(MediaMetadataModel $media)
     {
-        $metadata->setName($this->sanitizeName($metadata->getName()));
+        $media->setName($this->sanitizeName($media->getName()));
 
-        if ($metadata instanceof MovieMetadataModel) {
-            $environment = $this->setupTemplateEngineMovie($metadata);
+        if ($media instanceof MovieMetadataModel) {
+            $environment = $this->setupTemplateEngineMovie($media);
         }
 
-        if ($metadata instanceof EpisodeMetadataModel) {
-            $environment = $this->setupTemplateEngineEpisode($metadata);
+        if ($media instanceof EpisodeMetadataModel) {
+            $environment = $this->setupTemplateEngineEpisode($media);
         }
 
         if (!isset($environment)) {
@@ -118,7 +123,47 @@ class FileInstructionTask
         $file = $environment->getEngine()->render($environment->getFileName(), $environment->getParameters());
 
         $output = new FileInfo(preg_replace('{[/]+}', '/', $this->outputPath.DIRECTORY_SEPARATOR.$path.DIRECTORY_SEPARATOR.$file));
-        $origin = new FileInfo($metadata->getFile()->getRealPath());
+        $origin = new FileInfo($media->getFile()->getRealPath());
+
+        return new FileMoveInstruction($origin, $output, $this->generateSubtitleInstruction($media));
+    }
+
+    /**
+     * @param MediaMetadataModel $media
+     *
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
+     *
+     * @return null|FileMoveInstruction
+     */
+    private function generateSubtitleInstruction(MediaMetadataModel $media): ?FileMoveInstruction
+    {
+        if (!$media->hasActiveSubtitle()) {
+            return null;
+        }
+
+        $media->setName($this->sanitizeName($media->getName()));
+
+        if ($media instanceof MovieMetadataModel) {
+            $environment = $this->setupTemplateEngineMovie($media);
+        }
+
+        if ($media instanceof EpisodeMetadataModel) {
+            $environment = $this->setupTemplateEngineEpisode($media);
+        }
+
+        if (!isset($environment)) {
+            throw new InvalidArgumentException('Could not create template environment for invalid fixture type.');
+        }
+
+        $environment->setParameter('ext', $this->sanitizeExtension($media->getActiveSubtitle()->getFile()));
+
+        $path = $environment->getEngine()->render($environment->getPathName(), $environment->getParameters());
+        $file = $environment->getEngine()->render($environment->getFileName(), $environment->getParameters());
+
+        $output = new FileInfo(preg_replace('{[/]+}', '/', $this->outputPath.DIRECTORY_SEPARATOR.$path.DIRECTORY_SEPARATOR.$file));
+        $origin = new FileInfo($media->getActiveSubtitle()->getFile()->getRealPath());
 
         return new FileMoveInstruction($origin, $output);
     }

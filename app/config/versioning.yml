@@ -1,0 +1,22 @@
+
+##
+# This file is part of the `src-run/serferals` project.
+#
+# (c) Rob Frawley 2nd <rmf@src.run>
+#
+# For the full copyright and license information, view the LICENSE.md
+# file distributed with this source code.
+##
+
+
+#
+# parameter variables
+#
+parameters:
+
+    app.name         : src-run/serferals
+    app.version      : 3.0.0
+    app.author_name  : Rob Frawley 2nd
+    app.author_email : rmf@src.run
+    app.license_name : MIT License
+    app.license_link : https://src-run.mit-license.org/

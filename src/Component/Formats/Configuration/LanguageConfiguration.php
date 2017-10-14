@@ -9,8 +9,8 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Model\Formats;
+namespace SR\Serferals\Component\Formats\Configuration;
 
-class SubtitleFormat extends AbstractFormat
+class LanguageConfiguration extends AbstractConfiguration
 {
 }

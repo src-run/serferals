@@ -69,4 +69,3 @@ trait PropertiesResettableObjectTrait
     abstract protected function inspector();
 }
 
-/* EOF */

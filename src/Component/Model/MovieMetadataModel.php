@@ -62,4 +62,3 @@ class MovieMetadataModel extends MediaMetadataModel
     }
 }
 
-/* EOF */

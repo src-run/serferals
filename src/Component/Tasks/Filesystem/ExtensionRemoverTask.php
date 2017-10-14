@@ -11,10 +11,8 @@
 
 namespace SR\Serferals\Component\Tasks\Filesystem;
 
-use SR\Console\Style\StyleAwareTrait;
-use SR\Console\Style\StyleInterface;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use SR\Console\Output\Style\StyleAwareTrait;
+use SR\Console\Output\Style\StyleInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -23,46 +21,41 @@ class ExtensionRemoverTask
     use StyleAwareTrait;
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @param string[] $paths
+     * @param string[] $extensions
      */
-    public function __construct(InputInterface $input, OutputInterface $output)
+    public function run(array $paths, array $extensions)
     {
-        $this->input = $input;
-        $this->output = $output;
-    }
+        $this->io->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->subSection('Cleanup Operations');
 
-    /**
-     * @param string[] $ins
-     * @param string[] ...$extensions
-     */
-    public function run(array $ins, ...$extensions)
-    {
-        $finder = Finder::create();
+        if (0 === count($extensions)) {
+            $this->io
+                ->environment(StyleInterface::VERBOSITY_VERBOSE)
+                ->info(sprintf('Removed "0" files (no extension patterns defined).', implode('|', $extensions)));
 
-        foreach ($ins as $in) {
-            $finder->in($in);
+            return;
         }
 
-        $finder->files();
+        $finder = Finder::create();
+
+        foreach ($paths as $in) {
+            $finder->in($in);
+        }
 
         foreach ($extensions as $e) {
             $finder->name('*.'.$e);
         }
 
-        $this->ioVerbose(function (StyleInterface $io) {
-            $io->subSection('Cleanup Operations');
-        });
-
+        $finder->files();
         $count = $finder->count();
 
         foreach ($finder as $file) {
             $this->delete($file);
         }
 
-        $this->ioVerbose(function (StyleInterface $io) use ($count, $extensions) {
-            $io->info(sprintf('Removed "%d" files matching "*.(%s)" pattern.', $count, implode('|', $extensions)));
-        });
+        $this->io->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->info(sprintf('Removed "%d" files matching "*.(%s)" pattern.', $count, implode('|', $extensions)));
     }
 
     /**
@@ -71,7 +64,7 @@ class ExtensionRemoverTask
     private function delete(SplFileInfo $file)
     {
         if (!unlink($file->getPathname())) {
-            $this->io()->error('Could not remove '.$file->getPathname());
+            $this->io->error('Could not remove '.$file->getPathname());
         }
     }
 }

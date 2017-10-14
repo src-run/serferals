@@ -11,19 +11,22 @@
 
 namespace SR\Serferals\Component\Tasks\Metadata;
 
-use SR\Console\Style\StyleAwareTrait;
+use SR\Console\Output\Style\StyleAwareTrait;
 use SR\Serferals\Component\Model\MediaMetadataModel;
 use SR\Serferals\Component\Model\EpisodeMetadataModel;
 use SR\Serferals\Component\Model\MovieMetadataModel;
 use SR\Spl\File\SplFileInfo as FileInfo;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 class FileMetadataTask
 {
     use StyleAwareTrait;
+
+    /**
+     * @var string
+     */
+    const TYPE_DEFAULT = 'none';
 
     /**
      * @var string
@@ -88,16 +91,6 @@ class FileMetadataTask
         $this->forcedEpisode = $forcedEpisode;
 
         return $this;
-    }
-
-    /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     */
-    public function __construct(InputInterface $input, OutputInterface $output)
-    {
-        $this->input = $input;
-        $this->output = $output;
     }
 
     /**
@@ -346,4 +339,3 @@ class FileMetadataTask
     }
 }
 
-/* EOF */

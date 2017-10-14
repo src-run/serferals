@@ -1,0 +1,27 @@
+
+##
+# This file is part of the `src-run/serferals` project.
+#
+# (c) Rob Frawley 2nd <rmf@src.run>
+#
+# For the full copyright and license information, view the LICENSE.md
+# file distributed with this source code.
+##
+
+
+#
+# parameter variables
+#
+parameters:
+
+    # organized movie file PATH template
+    app.tpl_path_movie:   "movie/{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
+
+    # organized movie file NAME template
+    app.tpl_file_movie:   "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if id is defined %%} [{{ id }}]{%% endif %%}.{{ ext }}"
+
+    # organized episode file PATH template
+    app.tpl_path_episode: "tv/{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
+
+    # organized episode file NAME template
+    app.tpl_file_episode: "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"

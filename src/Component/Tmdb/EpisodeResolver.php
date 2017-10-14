@@ -78,4 +78,3 @@ class EpisodeResolver extends AbstractResolver
     }
 }
 
-/* EOF */

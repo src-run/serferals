@@ -11,7 +11,7 @@
 
 namespace SR\Serferals\Component\Tmdb;
 
-use SR\Console\Style\StyleAwareTrait;
+use SR\Console\Output\Style\StyleAwareTrait;
 use SR\Serferals\Component\Model\MediaMetadataModel;
 use Tmdb\ApiToken;
 use Tmdb\Client;
@@ -153,4 +153,3 @@ abstract class AbstractResolver
     }
 }
 
-/* EOF */

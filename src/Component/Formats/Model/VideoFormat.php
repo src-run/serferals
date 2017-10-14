@@ -9,9 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Model\Formats;
+namespace SR\Serferals\Component\Formats\Model;
 
-class VideoFormat extends AbstractFormat
+use SR\Serferals\Component\Formats\Configuration\VideoConfiguration;
+
+class VideoFormat extends MediaFormat
 {
     /**
      * @var string|null
@@ -20,13 +22,14 @@ class VideoFormat extends AbstractFormat
 
     /**
      * @param array       $extensions
+     * @param bool        $featured
      * @param string      $name
      * @param bool        $supported
      * @param string|null $transcode
      */
-    public function __construct(array $extensions, string $name, bool $supported, string $transcode = null)
+    public function __construct(array $extensions, bool $featured, string $name, bool $supported, string $transcode = null)
     {
-        parent::__construct($extensions, $name, $supported);
+        parent::__construct($extensions, $featured, $name, $supported);
 
         $this->transcode = $transcode;
     }
@@ -54,6 +57,6 @@ class VideoFormat extends AbstractFormat
      */
     public function getTranscodeFormat(VideoConfiguration $configuration): ?VideoFormat
     {
-        return $configuration->findExtension($this->transcode);
+        return $configuration->findOneByExtension($this->transcode);
     }
 }

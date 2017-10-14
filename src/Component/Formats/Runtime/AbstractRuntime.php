@@ -9,15 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Model\Formats;
+namespace SR\Serferals\Component\Formats\Runtime;
 
-class SubtitleConfiguration extends AbstractConfiguration
+abstract class AbstractRuntime
 {
     /**
-     * @return string
+     * @param array $data
      */
-    protected function getFormatType(): string
-    {
-        return __NAMESPACE__.'\\SubtitleFormat';
-    }
+    abstract public function __construct(array $data);
 }

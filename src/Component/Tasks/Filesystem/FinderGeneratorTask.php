@@ -11,10 +11,9 @@
 
 namespace SR\Serferals\Component\Tasks\Filesystem;
 
-use SR\Console\Style\StyleAwareTrait;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use SR\Console\Output\Style\StyleAwareTrait;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\VarDumper\VarDumper;
 
 class FinderGeneratorTask
 {
@@ -31,13 +30,42 @@ class FinderGeneratorTask
     protected $extensions = [];
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
+     * @var string[]
      */
-    public function __construct(InputInterface $input, OutputInterface $output)
+    protected $notPaths = [];
+
+    /**
+     * @var string[]
+     */
+    protected $notNames = [];
+
+    /**
+     * @var string[]
+     */
+    protected $notExtensions = [];
+
+    /**
+     * @return $this
+     */
+    public function reset(): self
     {
-        $this->input = $input;
-        $this->output = $output;
+        $this->paths = [];
+        $this->extensions = [];
+        $this->notPaths = [];
+        $this->notNames = [];
+        $this->notExtensions = [];
+
+        return $this;
+    }
+
+    /**
+     * @param string[] ...$paths
+     *
+     * @return self
+     */
+    public function in(string ...$paths): self
+    {
+        return $this->paths(...$paths);
     }
 
     /**
@@ -45,7 +73,7 @@ class FinderGeneratorTask
      *
      * @return $this
      */
-    public function paths(...$paths)
+    public function paths(string ...$paths): self
     {
         $this->paths = $paths;
 
@@ -57,7 +85,7 @@ class FinderGeneratorTask
      *
      * @return $this
      */
-    public function extensions(...$extensions)
+    public function extensions(string ...$extensions): self
     {
         $this->extensions = $extensions;
 
@@ -65,18 +93,72 @@ class FinderGeneratorTask
     }
 
     /**
+     * @param string[] ...$notPaths
+     *
+     * @return $this
+     */
+    public function notPaths(string ...$notPaths): self
+    {
+        $this->notPaths = $notPaths;
+
+        return $this;
+    }
+
+    /**
+     * @param string[] ...$notName
+     *
+     * @return $this
+     */
+    public function notNames(string ...$notName): self
+    {
+        $this->notNames = $notName;
+
+        return $this;
+    }
+
+    /**
+     * @param string[] ...$notExtensions
+     *
+     * @return $this
+     */
+    public function notExts(string ...$notExtensions): self
+    {
+        $this->notExtensions = $notExtensions;
+
+        return $this;
+    }
+
+    /**
      * @return Finder
      */
-    public function find()
+    public function find(): Finder
     {
-        $finder = Finder::create()
-            ->in($this->paths)
-            ->files();
+        $finder = Finder::create();
+        $finder
+            ->ignoreUnreadableDirs(true)
+            ->ignoreDotFiles(true)
+            ->ignoreVCS(true);
+
+        foreach ($this->paths as $path) {
+            $finder->in($path);
+        }
 
         foreach ($this->extensions as $extension) {
             $finder->name('*.'.$extension);
         }
 
-        return $finder;
+        foreach ($this->notPaths as $notPath) {
+            $finder->notPath($notPath);
+        }
+
+        foreach ($this->notNames as $notName) {
+            $finder->notName($notName);
+        }
+
+        foreach ($this->notExtensions as $notExtension) {
+            $finder->notName(sprintf('*.%s', $notExtension));
+        }
+
+        return $finder->files();
     }
 }

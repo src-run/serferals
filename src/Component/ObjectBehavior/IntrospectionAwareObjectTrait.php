@@ -49,4 +49,3 @@ trait IntrospectionAwareObjectTrait
     }
 }
 
-/* EOF */

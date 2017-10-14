@@ -11,15 +11,17 @@
 
 namespace SR\Serferals\Command;
 
-use SR\Console\Style\StyleInterface;
-use SR\Serferals\Component\Console\InputOutput;
-use SR\Serferals\Component\Format\ContainersManager;
+use SR\Console\Output\Style\Style;
+use SR\Console\Output\Style\StyleAwareTrait;
+use SR\Serferals\Component\Console\Options\Runtime\FileOrganizerOptionsRuntime;
+use SR\Serferals\Component\Formats\Manager\MediaManager;
 use SR\Serferals\Component\Tasks\Filesystem\DirectoryRemoverTask;
 use SR\Serferals\Component\Tasks\Filesystem\ExtensionRemoverTask;
 use SR\Serferals\Component\Tasks\Filesystem\FileAtomicMoverTask;
 use SR\Serferals\Component\Tasks\Filesystem\FileInstructionTask;
 use SR\Serferals\Component\Tasks\Filesystem\FinderGeneratorTask;
 use SR\Serferals\Component\Tasks\Metadata\FileMetadataTask;
+use SR\Serferals\Component\Tasks\Metadata\FileSubtitleAssociateTask;
 use SR\Serferals\Component\Tasks\Metadata\TmdbMetadataTask;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -28,25 +30,37 @@ use Symfony\Component\Console\Input\InputOption;
 
 class FileOrganizerCommand extends AbstractCommand
 {
-    /**
-     * @var ContainersManager
-     */
-    private $containersManager;
+    use StyleAwareTrait;
 
     /**
-     * @var string[]
+     * @var MediaManager
      */
-    private $extensionsRemoveFirst;
-
-    /**
-     * @var string[]
-     */
-    private $extensionsRemoveAfter;
+    private $formatsManager;
 
     /**
      * @var string
      */
-    private $defaultDestinationPath;
+    private $defaultOutputPath;
+
+    /**
+     * @var string[]
+     */
+    private $defaultMediaExtensions;
+
+    /**
+     * @var string[]
+     */
+    private $defaultSubtitleExtensions;
+
+    /**
+     * @var string[]
+     */
+    private $defaultCleanFirstExtensions;
+
+    /**
+     * @var string[]
+     */
+    private $defaultCleanAfterExtensions;
 
     /**
      * @var FinderGeneratorTask
@@ -57,6 +71,11 @@ class FileOrganizerCommand extends AbstractCommand
      * @var FileMetadataTask
      */
     private $fileMetadata;
+
+    /**
+     * @var FileSubtitleAssociateTask
+     */
+    private $fileSubtitleAssociate;
 
     /**
      * @var TmdbMetadataTask
@@ -84,31 +103,23 @@ class FileOrganizerCommand extends AbstractCommand
     private $fileAtomicMover;
 
     /**
-     * @param null|string $defaultDestinationPath
+     * @param MediaManager $formatsManager
+     * @param string       $defaultOutputPath
+     * @param array        $defaultMediaExtensions
+     * @param array        $defaultSubtitleExtensions
+     * @param array        $defaultCleanFirstExtensions
+     * @param array        $defaultCleanAfterExtensions
      */
-    public function __construct(string $defaultDestinationPath = null)
+    public function __construct(MediaManager $formatsManager, string $defaultOutputPath, array $defaultMediaExtensions, array $defaultSubtitleExtensions, array $defaultCleanFirstExtensions, array $defaultCleanAfterExtensions)
     {
-        $this->defaultDestinationPath = $defaultDestinationPath;
+        $this->formatsManager = $formatsManager;
+        $this->defaultOutputPath = $defaultOutputPath;
+        $this->defaultMediaExtensions = $defaultMediaExtensions;
+        $this->defaultSubtitleExtensions = $defaultSubtitleExtensions;
+        $this->defaultCleanFirstExtensions = $defaultCleanFirstExtensions;
+        $this->defaultCleanAfterExtensions = $defaultCleanAfterExtensions;
 
         parent::__construct();
-    }
-
-    /**
-     * @param ContainersManager $containersManager
-     */
-    public function setContainersManager(ContainersManager $containersManager)
-    {
-        $this->containersManager = $containersManager;
-    }
-
-    /**
-     * @param string[] $extensionsRemoveFirst
-     * @param string[] $extensionsRemoveAfter
-     */
-    public function setRemoveExtensions(array $extensionsRemoveFirst, array $extensionsRemoveAfter)
-    {
-        $this->extensionsRemoveFirst = $extensionsRemoveFirst;
-        $this->extensionsRemoveAfter = $extensionsRemoveAfter;
     }
 
     /**
@@ -125,6 +136,14 @@ class FileOrganizerCommand extends AbstractCommand
     public function setFileMetadata(FileMetadataTask $fileMetadata)
     {
         $this->fileMetadata = $fileMetadata;
+    }
+
+    /**
+     * @param FileSubtitleAssociateTask $fileSubtitleAssociate
+     */
+    public function setFileSubtitleAssociate(FileSubtitleAssociateTask $fileSubtitleAssociate)
+    {
+        $this->fileSubtitleAssociate = $fileSubtitleAssociate;
     }
 
     /**
@@ -167,52 +186,48 @@ class FileOrganizerCommand extends AbstractCommand
         $this->fileAtomicMover = $fileAtomicMover;
     }
 
-    /**
-     * configure command name, desc, usage, help, options, etc.
-     */
     protected function configure()
     {
         $this
             ->setName('scan')
             ->setDescription('Scan input directories for media files so their metadata can be retrieved and they can be moved into an organized folder structure.')
             ->setHelp('Scan input directory for media files, resolve episode/movie metadata, rename and output using proper directory structure and file names.')
-            ->setDefinition([
-                new InputOption('extension-add', [], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
-                    'Add media file extension to recognize.'),
-
-                new InputOption('extension-rm-first', [], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
-                    'Extensions to remove first organizational scan', $this->extensionsRemoveFirst),
-
-                new InputOption('extension-rm-after', [], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
-                    'Extensions to remove after organizational scan', $this->extensionsRemoveAfter),
-
-                new InputOption('force-episode', ['E'], InputOption::VALUE_NONE,
-                    'Ignore media files not recognized as <em>episodes</em>'),
-
-                new InputOption('force-movie', ['M'], InputOption::VALUE_NONE,
-                    'Ignore media files not recognized as <em>movies</em>'),
-
-                new InputOption('overwrite-blind', ['b'], InputOption::VALUE_NONE,
-                    'Overwrite existing files blindly if they already exist'),
-
-                new InputOption('overwrite-smart', ['s'], InputOption::VALUE_NONE,
-                    'Overwrite existing file if they are smaller than new one'),
-
-                new InputOption('output-path', ['o'], InputOption::VALUE_REQUIRED,
-                    'Base destination (output) path to write to', $this->defaultDestinationPath),
-
-                new InputOption('skip-failures', ['f'], InputOption::VALUE_NONE,
-                    'Ignore media files that fail metadata lookup'),
-
-                new InputOption('use-copy', ['c'], InputOption::VALUE_NONE,
-                    'Use the <em>copy</em> command to place media into output path <fg=yellow>[default: "disabled"]</>'),
-
-                new InputOption('use-move', ['m'], InputOption::VALUE_NONE,
-                    'Use the <em>move</em> command to place media into output path <fg=yellow>[default: "enabled"]</>'),
-
-                new InputArgument('search-paths', InputArgument::IS_ARRAY,
-                    'Input paths to search for media files'),
-            ]);
+            ->addArgument('search-paths', InputArgument::IS_ARRAY | InputArgument::REQUIRED,
+                'Input paths to search for media files')
+            ->addOption('output-path', ['o'], InputOption::VALUE_REQUIRED,
+                'Base destination (output) path to write to', $this->defaultOutputPath)
+            ->addOption('ext-media', ['e'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Custom media file types to search for (overwriting defaults)', $this->formatsManager->getVideoExtensions())
+            ->addOption('ext-media-append', ['E'], InputOption::VALUE_NONE,
+                'Append custom media file types instead of overwriting defaults')
+            ->addOption('ext-sub', ['t'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Custom subtitle file types to search for (overwriting defaults)', $this->formatsManager->getSubtitleExtensions())
+            ->addOption('ext-sub-append', ['T'], InputOption::VALUE_NONE,
+                'Append custom subtitle file types instead of overwriting defaults')
+            ->addOption('ext-rm-first', ['f'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Custom pre-clean media file types to search for (overwriting defaults)', $this->defaultCleanFirstExtensions)
+            ->addOption('ext-rm-first-append', ['F'], InputOption::VALUE_NONE,
+                'Append custom pre-clean media file types instead of overwriting defaults')
+            ->addOption('ext-rm-after', ['a'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Custom post-clean media file types to search for (overwriting defaults)', $this->defaultCleanAfterExtensions)
+            ->addOption('ext-rm-after-append', ['A'], InputOption::VALUE_NONE,
+                'Append custom post-clean media file types instead of overwriting defaults')
+            ->addOption('no-subs', ['N'], InputOption::VALUE_NONE,
+                'Disable automatic subtitle file association with found media files')
+            ->addOption('force-episode', [], InputOption::VALUE_NONE,
+                'Ignore media files not categorized as <em>episode</em> media types')
+            ->addOption('force-movie', [], InputOption::VALUE_NONE,
+                'Ignore media files not categorized as <em>movie</em> media types')
+            ->addOption('overwrite-blind', ['b'], InputOption::VALUE_NONE,
+                'Overwrite existing files with new files <em>blindly</em> regardless of existing ones')
+            ->addOption('overwrite-smart', ['s'], InputOption::VALUE_NONE,
+                'Overwrite existing files when new files <em>larger</em> than existing ones')
+            ->addOption('skip-failures', ['S'], InputOption::VALUE_NONE,
+                'Skip over all media files that fail automatic metadata lookup')
+            ->addOption('use-copy', [], InputOption::VALUE_NONE,
+                'Use the <em>copy</em> command to place media into output path <fg=yellow>[default: "disabled"]</>')
+            ->addOption('use-move', [], InputOption::VALUE_NONE,
+                'Use the <em>move</em> command to place media into output path <fg=yellow>[default: "enabled"]</>');
     }
 
     /**
@@ -223,200 +238,108 @@ class FileOrganizerCommand extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->io->writeTitle($this->getApplication());
+        $runtime = $this->initializeInstanceAndParseOptions($input, $output);
 
-        list($originPaths, $outputPath) = $this->parseOptions($input);
+        $this->doFirstTasks($runtime);
+        $this->runCoreTasks($runtime);
+        $this->doAfterTasks($runtime);
 
-        $this->writeRuntime($originPaths, $outputPath);
-        //$this->doFirstTasks($originPaths, $input->getOption('extension-rm-first'));
-        //$this->runCoreTasks($originPaths, $input->getOption('extension-add'), $outputPath, $input);
-        //$this->doAfterTasks($originPaths, $input->getOption('extension-rm-after'));
-
-        return $this->io->writeExit('All operations completed successfully');
+        return $this->writeCommandCompletionSuccess();
     }
 
     /**
-     * @param InputInterface $in
-     *
-     * @return array
+     * @param FileOrganizerOptionsRuntime $runtime
      */
-    private function parseOptions(InputInterface $in): array
+    private function doFirstTasks(FileOrganizerOptionsRuntime $runtime)
     {
-        if ($in->getOption('force-episode') && $in->getOption('force-movie')) {
-            $this->io
-                ->enterState(OutputInterface::VERBOSITY_VERY_VERBOSE)
-                ->writeNotice('Ignoring forced "episode" and "move" mode as enabling both cancels the other out');
-
-            $in->setOption('force-episode', false);
-            $in->setOption('force-movie', false);
-        }
-
-        $origin = $this->sanitizePaths($in->getArgument('search-paths'));
-        $output = $this->sanitizePath($in->getOption('output-path'));
-
-        if (0 === count($origin)) {
-            $this->io->writeCritical('At least one search path must be specified');
-        }
-
-        return [$origin, $output];
+        $this->extensionRemover->run($runtime->getSearchPaths(), $runtime->getCleanFirstExt());
     }
 
     /**
-     * @param int     $code
-     * @param string  $message
-     * @param mixed[] ...$replacements
-     *
-     * @return int
+     * @param FileOrganizerOptionsRuntime $runtime
      */
-    private function returnError(int $code, string $message, ...$replacements)
+    private function doAfterTasks(FileOrganizerOptionsRuntime $runtime)
     {
-        $this->io()->error(vsprintf($message, $replacements));
-
-        return $code;
+        $this->extensionRemover->run($runtime->getSearchPaths(), $runtime->getCleanAfterExt());
+        $this->directoryRemover->run($runtime->getSearchPaths());
     }
 
     /**
-     * @param string[]       $searchPaths
-     * @param string[]       $searchExtensions
-     * @param string         $destination
-     * @param InputInterface $input
+     * @param FileOrganizerOptionsRuntime $runtime
      */
-    private function runCoreTasks(array $searchPaths, array $searchExtensions, string $destination, InputInterface $input)
+    private function runCoreTasks(FileOrganizerOptionsRuntime $runtime)
     {
         $files = $this->fileMetadata
-            ->setFinder($this->finderGenerator->paths(...$searchPaths)->extensions(...$searchExtensions)->find())
-            ->setForcedEpisode($input->getOption('force-episode'))
-            ->setForcedMovie($input->getOption('force-movie'))
+            ->setFinder($this->finderGenerator->paths(...$runtime->getSearchPaths())->extensions(...$runtime->getSearchMediaExt())->find())
+            ->setForcedEpisode($runtime->isActionModeEpisodes())
+            ->setForcedMovie($runtime->isActionModeMovies())
             ->execute();
 
+        $files = $this->fileSubtitleAssociate
+            ->setDisabled($runtime->isSubtitleAssociationsDisabled())
+            ->setFinderGenerator($this->finderGenerator)
+            ->setExtensions(...$runtime->getSearchSubExt())
+            ->execute(...$files);
+
         $files = $this->tmdbMetadata
-            ->setSkipFailures($input->getOption('skip-failures'))
+            ->setSkipFailures($runtime->isFailureSkipped())
             ->resolve($files);
 
         $instructions = $this->fileInstruction
-            ->setOutputPath($destination)
+            ->setOutputPath($runtime->getOutputPath())
             ->execute($files);
 
+        \Symfony\Component\VarDumper\VarDumper::dump($instructions);
+        die();
+
         $this->fileAtomicMover
-            ->setMode($input->getOption('copy') ? FileAtomicMoverTask::MODE_CP : FileAtomicMoverTask::MODE_MV)
-            ->setBlindOverwrite($input->getOption('overwrite-blind'))
-            ->setSmartOverwrite($input->getOption('overwrite-smart'))
+            ->setMode($runtime->getPlacedModeType())
+            ->setBlindOverwrite($runtime->isOverwriteBlind())
+            ->setSmartOverwrite($runtime->isOverwriteSmart())
             ->setFileMoveInstructions(...$instructions)
             ->execute();
     }
 
     /**
-     * @param string[] $origin
-     * @param string   $output
-     */
-    private function writeRuntime(array $origin, string $output)
-    {
-        $in = $this->io->getInput();
-        $ar = [];
-
-        foreach ($origin as $i => $path) {
-            $ar[] = ['Search Directory (#'.($i + 1).')', $path];
-        }
-        $ar[] = ['Output Directory',        $output];
-        $ar[] = ['Skip Lookup Failure',     $this->markupStateToggle($in->getOption('skip-failures')) ];
-        $ar[] = ['Smart Overwrite',         $this->markupStateToggle($in->getOption('overwrite-smart'))];
-        $ar[] = ['Blind Overwrite',         $this->markupStateToggle($in->getOption('overwrite-blind'))];
-        $ar[] = ['Search Extensions',       $this->arrayToString($this->getSearchExtensions())];
-        $ar[] = ['Remove Extensions First', $this->arrayToString($this->getRmFirstExtensions())];
-        $ar[] = ['Remove Extensions After', $this->arrayToString($this->getRmAfterExtensions())];
-        if ($in->getOption('force-episode')) {
-            $ar[] = ['Forced Mode', 'Episodes'];
-        } else if ($in->getOption('force-movie')) {
-            $ar[] = ['Forced Mode', 'Movies'];
-        }
-
-        $this->io
-            ->enterState(OutputInterface::VERBOSITY_VERBOSE)
-            ->writeSectionHeader('Runtime Configuration')
-            ->writeTableRows($ar);
-
-        $this->io
-            ->enterState(OutputInterface::VERBOSITY_DEBUG)
-            ->askConfirm('Continue using this configuration?', true, function() {
-                exit($this->io->writeExitWarn('Exiting due to user requested termination'));
-            });
-    }
-
-    /**s
-     * @param bool   $state
-     * @param string $stateTrue
-     * @param string $stateFalse
+     * @param InputInterface  $input
+     * @param OutputInterface $output
      *
-     * @return string
+     * @return FileOrganizerOptionsRuntime
      */
-    private function markupStateToggle(bool $state, string $stateTrue = 'Enabled', string $stateFalse = 'Disabled'): string
+    private function initializeInstanceAndParseOptions(InputInterface $input, OutputInterface $output): FileOrganizerOptionsRuntime
     {
-        return $state ? sprintf('<fg=green>%s</>', $stateTrue) :
-            sprintf('<fg=red>%s</>', $stateFalse);
-    }
+        $this->setStyle(new Style($input, $output));
 
-    /**
-     * @param array  $array
-     * @param string $separator
-     *
-     * @return string
-     */
-    private function arrayToString(array $array, string $separator = ':'): string
-    {
-        return implode($separator, $array);
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getSearchExtensions(): array
-    {
-        return array_merge(
-            $this->io->getInput()->getOption('extension-add'),
-            $this->containersManager->getVideos()->getExtensions()
+        $runtime = new FileOrganizerOptionsRuntime(
+            $this->io,
+            $input->getArgument('search-paths'),
+            $input->getOption('output-path'),
+            $input->getOption('ext-media-append'),
+            $input->getOption('ext-media'),
+            $this->formatsManager->getVideoExtensions(),
+            $input->getOption('ext-sub-append'),
+            $input->getOption('ext-sub'),
+            $this->formatsManager->getSubtitleExtensions(),
+            $input->getOption('ext-rm-first-append'),
+            $input->getOption('ext-rm-first'),
+            $this->defaultCleanFirstExtensions,
+            $input->getOption('ext-rm-after-append'),
+            $input->getOption('ext-rm-after'),
+            $this->defaultCleanAfterExtensions,
+            $input->getOption('force-movie'),
+            $input->getOption('force-episode'),
+            $input->getOption('overwrite-blind'),
+            $input->getOption('overwrite-smart'),
+            $input->getOption('skip-failures'),
+            $input->getOption('use-move'),
+            $input->getOption('use-copy'),
+            $input->getOption('no-subs')
         );
-    }
 
-    /**
-     * @return string[]
-     */
-    private function getRmFirstExtensions(): array
-    {
-        return array_merge(
-            $this->io->getInput()->getOption('extension-rm-first'),
-            $this->extensionsRemoveFirst
-        );
-    }
+        $this->io->applicationTitle($this->getApplication());
+        $this->optionsDescriptor->describe($runtime);
 
-    /**
-     * @return string[]
-     */
-    private function getRmAfterExtensions(): array
-    {
-        return array_merge(
-            $this->io->getInput()->getOption('extension-rm-after'),
-            $this->extensionsRemoveAfter
-        );
-    }
-
-    /**
-     * @param string[] $inputPaths
-     * @param string[] $extensions
-     */
-    private function doFirstTasks(array $inputPaths, $extensions)
-    {
-        $this->extensionRemover->run($inputPaths, ...$extensions);
-    }
-
-    /**
-     * @param string[] $inputPaths
-     * @param string[] $extensions
-     */
-    private function doAfterTasks(array $inputPaths, $extensions)
-    {
-        $this->extensionRemover->run($inputPaths, ...$extensions);
-        $this->directoryRemover->run($inputPaths);
+        return $runtime;
     }
 }
 
-/* EOF */

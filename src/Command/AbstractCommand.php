@@ -11,154 +11,27 @@
 
 namespace SR\Serferals\Command;
 
-use SR\Console\Style\StyleInterface;
-use SR\Serferals\Component\Console\InputOutput;
+use SR\Console\Output\Style\StyleAwareTrait;
+use SR\Serferals\Component\Console\Options\Descriptor\OptionsDescriptor;
+use SR\Serferals\Component\Console\StdIO\StdIOTrait;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class AbstractCommand extends Command
 {
-    /**
-     * @var InputOutput
-     */
-    protected $io;
+    use StyleAwareTrait;
+    use StdIOTrait;
 
     /**
-     * @param InputOutput $inputOutput
+     * @var OptionsDescriptor
      */
-    public function setInputOutput(InputOutput $inputOutput)
-    {
-        $this->io = $inputOutput;
-    }
-
-    protected function checkRequirements()
-    {
-    }
+    protected $optionsDescriptor;
 
     /**
-     * @param string $name
-     *
-     * @return object
+     * @param OptionsDescriptor $optionsDescriptor
      */
-    protected function getService($name)
+    public function setOptionsDescriptor(OptionsDescriptor $optionsDescriptor): void
     {
-        $getContainerCallable = [$this->getApplication(), 'getContainer'];
-
-        if (!is_callable($getContainerCallable)) {
-            $this->writeErrorAndExit('Container getter method not available for application');
-        }
-
-        $container = call_user_func($getContainerCallable);
-
-        if (false === ($container instanceof ContainerInterface)) {
-            $this->writeErrorAndExit('Invalid container object returned from application.');
-        }
-
-        if (!$container->has($name)) {
-            $this->writeErrorAndExit(sprintf('Requested service "%s" does not exist', $name));
-        }
-
-        return $container->get($name);
-    }
-
-    /**
-     * @param string $name
-     *
-     * @returns mixed
-     */
-    protected function getParameter($name)
-    {
-        $getContainerCallable = [$this->getApplication(), 'getContainer'];
-
-        if (!is_callable($getContainerCallable)) {
-            $this->writeErrorAndExit('Container getter method not available for application');
-        }
-
-        $container = call_user_func($getContainerCallable);
-
-        if (false === ($container instanceof ContainerInterface)) {
-            $this->writeErrorAndExit('Invalid container object returned from application.');
-        }
-
-        if (!$container->hasParameter($name)) {
-            $this->writeErrorAndExit(sprintf('Requested parameter "%s" does not exist', $name));
-        }
-
-        return $container->getParameter($name);
-    }
-
-    /**
-     * @param bool                $returnMultiple
-     * @param string|string[],... $paths
-     *
-     * @return array[]
-     */
-    protected function validatePaths($returnMultiple = true, ...$paths)
-    {
-        $valid = [];
-        $invalid = [];
-
-        foreach ($paths as $p) {
-            if (false !== ($r = realpath($p)) && is_readable($p) && is_writable($p)) {
-                $valid[] = $r;
-            } else {
-                $invalid[] = $p;
-            }
-        }
-
-        if ($returnMultiple === false) {
-            $valid = array_pop($valid);
-            $invalid = array_pop($invalid);
-        }
-
-        return [$valid, $invalid];
-    }
-
-    /**
-     * @param array $paths
-     *
-     * @return array
-     */
-    protected function sanitizePaths(array $paths): array
-    {
-        return array_map([$this, 'sanitizePath'], $paths);
-    }
-
-    /**
-     * @param string $path
-     *
-     * @return string
-     */
-    protected function sanitizePath(string $path): string
-    {
-        if (false === ($real = realpath($path))) {
-            $this->io->writeCritical('Provided path "%s" does not exist', $path);
-        }
-
-        if (false === is_readable($real)) {
-            $this->io->writeCritical('Provided path "%s" is not readable', $real);
-        }
-
-        if (false === is_writable($real)) {
-            $this->io->writeCritical('Provided path "%s" is not writable', $real);
-        }
-
-        return $real;
-    }
-
-    /**
-     * @param int $return
-     */
-    protected function writeErrorAndExit($message = null, $return = 255)
-    {
-        if ($this->io() instanceof StyleInterface) {
-            $this->io()->error($message ?: 'Exiting script (premature)');
-        } else {
-            echo sprintf("Error: %s. Exiting with code %d\n", $message, 255);
-        }
-
-        exit($return);
+        $this->optionsDescriptor = $optionsDescriptor;
     }
 }
 
-/* EOF */

@@ -11,23 +11,12 @@
 
 namespace SR\Serferals\Component\Model;
 
+use SR\Dumper\Exception\InvalidInputException;
 use SR\Spl\File\SplFileInfo as FileInfo;
-use SR\Serferals\Component\ObjectBehavior\FactoryAwareObjectTrait;
-use SR\Serferals\Component\ObjectBehavior\IntrospectionAwareObjectTrait;
-use SR\Serferals\Component\ObjectBehavior\PropertiesResettableObjectTrait;
-use SR\Serferals\Component\ObjectBehavior\SerializableObjectTrait;
 
 class MediaMetadataModel implements \Serializable
 {
-    use FactoryAwareObjectTrait;
-    use IntrospectionAwareObjectTrait;
-    use PropertiesResettableObjectTrait;
-    use SerializableObjectTrait;
-
-    /**
-     * @var FileInfo
-     */
-    protected $file;
+    use MetadataModelTrait;
 
     /**
      * @var int|null
@@ -45,14 +34,19 @@ class MediaMetadataModel implements \Serializable
     protected $year;
 
     /**
-     * @var null|int
-     */
-    protected $fileSize;
-
-    /**
      * @var bool
      */
     protected $enabled;
+
+    /**
+     * @var
+     */
+    protected $subtitles;
+
+    /**
+     * @var int
+     */
+    protected $activeSubtitle;
 
     /**
      * @return string[]
@@ -77,14 +71,6 @@ class MediaMetadataModel implements \Serializable
     }
 
     /**
-     * @param bool $enabled
-     */
-    final public function __construct($enabled = false)
-    {
-        $this->resetState($enabled);
-    }
-
-    /**
      * @param FileInfo $file
      * @param string   $name
      * @param bool     $enabled
@@ -98,17 +84,6 @@ class MediaMetadataModel implements \Serializable
             ->setName($name);
 
         return $instance;
-    }
-
-    /**
-     * @return $this
-     */
-    public function resetState($enabled = false)
-    {
-        $this->propertiesToNull();
-        $this->enabled = $enabled;
-
-        return $this;
     }
 
     /**
@@ -137,26 +112,6 @@ class MediaMetadataModel implements \Serializable
     public function hasId()
     {
         return $this->id !== null;
-    }
-
-    /**
-     * @return FileInfo
-     */
-    public function getFile()
-    {
-        return $this->file;
-    }
-
-    /**
-     * @param FileInfo $file
-     *
-     * @return $this
-     */
-    public function setFile(FileInfo $file)
-    {
-        $this->file = clone $file;
-
-        return $this;
     }
 
     /**
@@ -208,70 +163,71 @@ class MediaMetadataModel implements \Serializable
     }
 
     /**
-     * @return int|null
+     * @return SubtitleMetadataModel[]
      */
-    public function getFileSize()
+    public function getSubtitles(): ?array
     {
-        return $this->file->getSize();
+        return $this->subtitles;
     }
 
     /**
      * @return bool
      */
-    public function getEnabled()
+    public function hasSubtitles(): bool
     {
-        return $this->isEnabled();
+        return 0 !== count($this->subtitles);
     }
 
     /**
-     * @return bool
-     */
-    public function isEnabled()
-    {
-        return $this->enabled;
-    }
-
-    /**
-     * @param bool $enabled
+     * @param SubtitleMetadataModel[] ...$subtitles
      *
-     * @return $this
+     * @return MediaMetadataModel
      */
-    public function setEnabled($enabled)
+    public function setSubtitles(SubtitleMetadataModel ...$subtitles): self
     {
-        $this->enabled = (bool) $enabled;
+        $this->subtitles = $subtitles;
 
         return $this;
     }
 
     /**
-     * @param mixed  $value
-     * @param string $name
+     * @param int $index
      *
-     * @return string
+     * @return bool
      */
-    protected function dataHibernateVisitor($value, $name)
+    public function setActiveSubtitle(int $index): bool
     {
-        if ($value instanceof FileInfo) {
-            return [$value->getPathname(), $value->getRelativePath(), $value->getRelativePathname()];
+        if (array_key_exists($index, $this->subtitles)) {
+            $this->activeSubtitle = $index;
+
+            return true;
         }
 
-        return $value;
+        return false;
     }
 
     /**
-     * @param mixed  $value
-     * @param string $name
-     *
-     * @return string
+     * @return null|SubtitleMetadataModel
      */
-    protected function dataHydrateVisitor($value, $name)
+    public function getActiveSubtitle(): ?SubtitleMetadataModel
     {
-        if ($name === 'file' && count($value) === 3) {
-            return new FileInfo(...$value);
-        }
+        return $this->hasActiveSubtitle() ? $this->subtitles[$this->activeSubtitle] : null;
+    }
 
-        return $value;
+    /**
+     * @return bool
+     */
+    public function hasActiveSubtitle(): bool
+    {
+        return null !== $this->activeSubtitle && isset($this->subtitles[$this->activeSubtitle]);
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getActiveSubtitleIndex(): ?int
+    {
+        return $this->activeSubtitle;
     }
 }
 
-/* EOF */

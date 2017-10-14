@@ -1,4 +1,3 @@
----
 
 ##
 # This file is part of the `src-run/serferals` project.
@@ -15,30 +14,8 @@
 imports:
 
     - { resource: 'parameters.yml' }
-
-
-#
-# parameter variables
-#
-parameters:
-
-    sr.serferals.name:                    src-run/serferals
-    sr.serferals.version:                 3.0.0
-    sr.serferals.author:                  Rob Frawley 2nd
-    sr.serferals.email:                   rmf@src.run
-    sr.serferals.license:                 MIT License
-
-    sr.serferals.tmdb_api_metadata_key:            %tmdb_api_metadata_key%
-    sr.serferals.tmdb_api_metadata_log:            %tmdb_api_metadata_log%
-
-    sr.serferals.extensions_search:       %extensions_search%
-    sr.serferals.extensions_remove_first: %extensions_remove_first%
-    sr.serferals.extensions_remove_after: %extensions_remove_after%
-
-    sr.serferals.tpl_path_movie:   "movie/{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}/"
-    sr.serferals.tpl_file_movie:   "{{ name }}{%% if year is defined %%} ({{ year }}){%% endif %%}{%% if id is defined %%} [{{ id }}]{%% endif %%}.{{ ext }}"
-    sr.serferals.tpl_path_episode: "tv/{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%}/Season {{ season }}/"
-    sr.serferals.tpl_file_episode: "{{ name|raw }}{%% if year is defined %%} ({{ year }}){%% endif %%} [S{{ season }}E{{ start }}{%% if end is defined %%}-{{ end }}{%% endif %%}]{%% if title is defined %%} {{ title|raw }}{%% endif %%}.{{ ext }}"
+    - { resource: 'versioning.yml' }
+    - { resource: 'templating.yml' }
 
 
 #
@@ -47,163 +24,181 @@ parameters:
 services:
 
     # main application
-    sr.serferals.application:
-        class: SR\Serferals\Application\SerferalsApplication
+    app.application:
+        class: SR\Serferals\Application\Application
         arguments:
-            - %sr.serferals.name%
-            - %sr.serferals.version%
-            - %sr.serferals.author%
-            - %sr.serferals.email%
-            - %sr.serferals.license%
+            - "%app.name%"
+            - "%app.version%"
+            - "%app.author_name%"
+            - "%app.author_email%"
+            - "%app.license_name%"
+            - "%app.license_link%"
         calls:
             - [ setContainer, [ "@service_container" ] ]
-            - [ add,          [ "@sr.serferals.command.file_organizer" ] ]
-            - [ add,          [ "@sr.serferals.command.file_deduplicator" ] ]
+            - [ add,          [ "@app.command.file_organizer" ] ]
+            - [ add,          [ "@app.command.file_deduplicator" ] ]
 
     # organizer command
-    sr.serferals.command.file_organizer:
+    app.command.file_organizer:
         class: SR\Serferals\Command\FileOrganizerCommand
         arguments:
-            - %default_destination_path%
+            - "@app.format_manager.media"
+            - "%env(DEFAULT_OUTPUT_PATH)%"
+            - "%default_search_media_extensions%"
+            - "%default_search_subtitle_extensions%"
+            - "%default_clean_first_extensions%"
+            - "%default_clean_after_extensions%"
         calls:
-            - [ setContainersManager, [ "@sr.serferals.manager.containers" ] ]
-            - [ setRemoveExtensions,  [ %extensions_remove_first%, %extensions_remove_after% ]]
-            - [ setInputOutput,       [ "@sr.serferals.console_io" ] ]
-            - [ setFinderGenerator,   [ "@sr.serferals.tasks.finder_generator" ] ]
-            - [ setFileMetadata,      [ "@sr.serferals.tasks.file_metadata" ] ]
-            - [ setTmdbMetadata,      [ "@sr.serferals.tasks.tmdb_metadata" ] ]
-            - [ setExtensionRemover,  [ "@sr.serferals.tasks.extension_remover" ] ]
-            - [ setDirectoryRemover,  [ "@sr.serferals.tasks.directory_remover" ] ]
-            - [ setFileInstruction,   [ "@sr.serferals.tasks.file_instruction" ] ]
-            - [ setFileAtomicMover,   [ "@sr.serferals.tasks.file_atomic_mover" ] ]
-
-    # file format containers manager
-    sr.serferals.manager.containers:
-        class: SR\Serferals\Component\Format\ContainersManager
-        arguments:
-            - %container_configurations%
+            - [ setStyle,                 [ "@app.console_style" ] ]
+            - [ setOptionsDescriptor,     [ "@app.command.options.descriptor.file_organizer" ] ]
+            - [ setFinderGenerator,       [ "@app.tasks.finder_generator" ] ]
+            - [ setFileMetadata,          [ "@app.tasks.file_metadata" ] ]
+            - [ setFileSubtitleAssociate, [ "@app.tasks.file_subtitle_associate" ] ]
+            - [ setTmdbMetadata,          [ "@app.tasks.tmdb_metadata" ] ]
+            - [ setExtensionRemover,      [ "@app.tasks.extension_remover" ] ]
+            - [ setDirectoryRemover,      [ "@app.tasks.directory_remover" ] ]
+            - [ setFileInstruction,       [ "@app.tasks.file_instruction" ] ]
+            - [ setFileAtomicMover,       [ "@app.tasks.file_atomic_mover" ] ]
 
     # deduplicator command
-    sr.serferals.command.file_deduplicator:
+    app.command.file_deduplicator:
         class: SR\Serferals\Command\FileDeduplicatorCommand
+        calls:
+            - [ setStyle,             [ "@app.console_style" ] ]
+            - [ setOptionsDescriptor, [ "@app.command.options.descriptor.file_deduplicator" ] ]
+            - [ setFinderGenerator,   [ "@app.tasks.finder_generator" ] ]
+
+    # file deduplicator options describer
+    app.command.options.descriptor.file_deduplicator:
+        class: SR\Serferals\Component\Console\Options\Descriptor\FileDeduplicatorOptionsDescriptor
+        calls:
+            - [ setStyle, [ "@app.console_style" ] ]
+
+    # file organizer options describer
+    app.command.options.descriptor.file_organizer:
+        class: SR\Serferals\Component\Console\Options\Descriptor\FileOrganizerOptionsDescriptor
+        calls:
+            - [ setStyle, [ "@app.console_style" ] ]
+
+    # file format containers manager
+    app.format_manager.media:
+        class: SR\Serferals\Component\Formats\Manager\MediaManager
+        arguments:
+            - "%data_file_path_media%"
+            - "@app.utilities.project"
+
+    # file format containers manager
+    app.format_manager.language:
+        class: SR\Serferals\Component\Formats\Manager\LanguageManager
+        arguments:
+            - "%data_file_path_language%"
+            - "@app.utilities.project"
 
     # filesystem instance
-    sr.serferals.filesystem:
+    app.filesystem:
         class: Symfony\Component\Filesystem\Filesystem
 
     # console logger instance
-    sr.serferals.console_logger:
+    app.console_logger:
         class: Symfony\Component\Console\Logger\ConsoleLogger
         arguments:
-            - "@sr.serferals.console_output"
+            - "@app.console_output"
 
     # console input instance
-    sr.serferals.console_input:
+    app.console_input:
         class: Symfony\Component\Console\Input\ArgvInput
 
     # console output instance
-    sr.serferals.console_output:
+    app.console_output:
         class: Symfony\Component\Console\Output\ConsoleOutput
 
     # console style instance
-    sr.serferals.console_style:
-        class: SR\Console\Style\Style
+    app.console_style:
+        class: SR\Console\Output\Style\Style
         arguments:
-            - "@sr.serferals.console_input"
-            - "@sr.serferals.console_output"
-
-    # console input/output instance
-    sr.serferals.console_io:
-        class: SR\Serferals\Component\Console\InputOutput
-        arguments:
-            - "@sr.serferals.console_input"
-            - "@sr.serferals.console_output"
-            - "@sr.serferals.console_style"
+            - "@app.console_input"
+            - "@app.console_output"
 
     # file finder generator task
-    sr.serferals.tasks.finder_generator:
+    app.tasks.finder_generator:
         class: SR\Serferals\Component\Tasks\Filesystem\FinderGeneratorTask
-        arguments:
-            - "@sr.serferals.console_input"
-            - "@sr.serferals.console_output"
         calls:
-            - [ setStyle, [ "@sr.serferals.console_style" ] ]
+            - [ setStyle, [ "@app.console_style" ] ]
 
     # file metadata task
-    sr.serferals.tasks.file_metadata:
+    app.tasks.file_metadata:
         class: SR\Serferals\Component\Tasks\Metadata\FileMetadataTask
-        arguments:
-            - "@sr.serferals.console_input"
-            - "@sr.serferals.console_output"
         calls:
-            - [ setStyle, [ "@sr.serferals.console_style" ] ]
+            - [ setStyle, [ "@app.console_style" ] ]
+
+    # file subtitle associate task
+    app.tasks.file_subtitle_associate:
+        class: SR\Serferals\Component\Tasks\Metadata\FileSubtitleAssociateTask
+        arguments:
+            - "@app.format_manager.language"
+        calls:
+            - [ setStyle, [ "@app.console_style" ] ]
 
     # tmdb metadata task
-    sr.serferals.tasks.tmdb_metadata:
+    app.tasks.tmdb_metadata:
         class: SR\Serferals\Component\Tasks\Metadata\TmdbMetadataTask
         arguments:
-            - "@sr.serferals.tasks.file_metadata"
-            - "@sr.serferals.tmdb.episode"
-            - "@sr.serferals.tmdb.movie"
+            - "@app.tasks.file_metadata"
+            - "@app.metadata.action_helper"
+            - "@app.tmdb.episode"
+            - "@app.tmdb.movie"
         calls:
-            - [ setInput,  [ "@sr.serferals.console_input" ] ]
-            - [ setOutput, [ "@sr.serferals.console_output" ] ]
-            - [ setStyle,  [ "@sr.serferals.console_style" ] ]
+            - [ setStyle,  [ "@app.console_style" ] ]
 
     # extension remover task
-    sr.serferals.tasks.extension_remover:
+    app.tasks.extension_remover:
         class: SR\Serferals\Component\Tasks\Filesystem\ExtensionRemoverTask
-        arguments:
-            - "@sr.serferals.console_input"
-            - "@sr.serferals.console_output"
         calls:
-            - [ setStyle, [ "@sr.serferals.console_style" ] ]
+            - [ setStyle, [ "@app.console_style" ] ]
 
     # directory remover task
-    sr.serferals.tasks.directory_remover:
+    app.tasks.directory_remover:
         class: SR\Serferals\Component\Tasks\Filesystem\DirectoryRemoverTask
-        arguments:
-            - "@sr.serferals.console_input"
-            - "@sr.serferals.console_output"
         calls:
-            - [ setStyle, [ "@sr.serferals.console_style" ] ]
+            - [ setStyle, [ "@app.console_style" ] ]
 
     # file organizer task
-    sr.serferals.tasks.file_instruction:
+    app.tasks.file_instruction:
         class: SR\Serferals\Component\Tasks\Filesystem\FileInstructionTask
         calls:
-            - [ setFileTemplateEpisode, [ %sr.serferals.tpl_path_episode%, %sr.serferals.tpl_file_episode% ]]
-            - [ setFileTemplateMovie,   [ %sr.serferals.tpl_path_movie%, %sr.serferals.tpl_file_movie% ]]
+            - [ setFileTemplateEpisode, [ "%app.tpl_path_episode%", "%app.tpl_file_episode%" ]]
+            - [ setFileTemplateMovie,   [ "%app.tpl_path_movie%", "%app.tpl_file_movie%" ]]
 
     # atomic file mover task
-    sr.serferals.tasks.file_atomic_mover:
+    app.tasks.file_atomic_mover:
         class: SR\Serferals\Component\Tasks\Filesystem\FileAtomicMoverTask
-        arguments:
-            - "@sr.serferals.console_input"
-            - "@sr.serferals.console_output"
         calls:
-            - [ setStyle, [ "@sr.serferals.console_style" ] ]
+            - [ setStyle, [ "@app.console_style" ] ]
 
     # episode tmdb resolver
-    sr.serferals.tmdb.episode:
+    app.tmdb.episode:
         class: SR\Serferals\Component\Tmdb\EpisodeResolver
         arguments:
-            - %sr.serferals.tmdb_api_metadata_key%
-            - %sr.serferals.tmdb_api_metadata_log%
+            - "%metadata_lookup_api_key%"
+            - "%metadata_lookup_api_log%"
         calls:
-            - [ setInput,  [ "@sr.serferals.console_input" ] ]
-            - [ setOutput, [ "@sr.serferals.console_output" ] ]
-            - [ setStyle,  [ "@sr.serferals.console_style" ] ]
+            - [ setStyle,  [ "@app.console_style" ] ]
 
     # movie tmdb resolver
-    sr.serferals.tmdb.movie:
+    app.tmdb.movie:
         class: SR\Serferals\Component\Tmdb\MovieResolver
         arguments:
-            - %sr.serferals.tmdb_api_metadata_key%
-            - %sr.serferals.tmdb_api_metadata_log%
+            - "%metadata_lookup_api_key%"
+            - "%metadata_lookup_api_log%"
         calls:
-            - [ setInput,  [ "@sr.serferals.console_input" ] ]
-            - [ setOutput, [ "@sr.serferals.console_output" ] ]
-            - [ setStyle,  [ "@sr.serferals.console_style" ] ]
+            - [ setStyle,  [ "@app.console_style" ] ]
 
-...
+    # metadata action helper
+    app.metadata.action_helper:
+        class: SR\Serferals\Component\Console\Helper\MetadataActionHelper
+        calls:
+            - [ setStyle,  [ "@app.console_style" ] ]
+
+    # metadata action helper
+    app.utilities.project:
+        class: SR\Serferals\Utilities\ProjectUtilities

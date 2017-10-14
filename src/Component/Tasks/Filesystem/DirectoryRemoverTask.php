@@ -11,44 +11,32 @@
 
 namespace SR\Serferals\Component\Tasks\Filesystem;
 
-use SR\Console\Style\StyleAwareTrait;
-use SR\Console\Style\StyleInterface;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use SR\Console\Output\Style\StyleAwareTrait;
+use SR\Console\Output\Style\StyleInterface;
 
 class DirectoryRemoverTask
 {
     use StyleAwareTrait;
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     */
-    public function __construct(InputInterface $input, OutputInterface $output)
-    {
-        $this->input = $input;
-        $this->output = $output;
-    }
-
-    /**
-     * @param string[] $ins
+     * @param string[] $paths
      * @param string[] ...$extensions
      */
-    public function run(array $ins, ...$extensions)
+    public function run(array $paths, ...$extensions)
     {
-        $this->ioVerbose(function (StyleInterface $io) {
-            $io->subSection('Post-Task Operations');
-        });
+        $this->io
+            ->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->subSection('Post-Task Operations');
 
         $deletions = 0;
 
-        foreach ($ins as $in) {
-            $this->removePath($in, $extensions, $deletions, true);
+        foreach ($paths as $p) {
+            $this->removePath($p, $extensions, $deletions, true);
         }
 
-        $this->ioVerbose(function (StyleInterface $io) use ($deletions, $extensions) {
-            $io->info(sprintf('Removed "%d" files matching "*.(%s)" pattern.', $deletions, implode('|', $extensions)));
-        });
+        $this->io
+            ->environment(StyleInterface::VERBOSITY_VERBOSE)
+            ->info(sprintf('Removed "%d" files matching "*.(%s)" pattern.', $deletions, implode('|', $extensions)));
    }
 
     /**
@@ -80,15 +68,13 @@ class DirectoryRemoverTask
             }
 
             if (false === @unlink($i)) {
-                $this->io(function (StyleInterface $io) use ($i) {
-                    $io->comment(sprintf('<em>Error removing</em> <comment>%s</comment>', $i));
-                });
+                $this->io->comment(sprintf('<em>Error removing</em> <comment>%s</comment>', $i));
             } else {
                 ++$deletions;
                 --$count;
-                $this->ioVeryVerbose(function (StyleInterface $io) use ($i) {
-                    $io->comment(sprintf('Removing <comment>%s</comment>', $i));
-                });
+                $this->io
+                    ->environment(StyleInterface::VERBOSITY_VERY_VERBOSE)
+                    ->comment(sprintf('Removing <comment>%s</comment>', $i));
             }
         }
 
@@ -97,18 +83,19 @@ class DirectoryRemoverTask
         }
 
         if (false === @rmdir($folder)) {
-            $this->ioVerbose(function (StyleInterface $io) use ($folder) {
-                $io->comment(sprintf('Error removing <comment>%s</comment>', $folder));
-            });
+            $this->io
+                ->environment(StyleInterface::VERBOSITY_VERBOSE)
+                ->comment(sprintf('Error removing <comment>%s</comment>', $folder));
 
             return false;
         }
 
         ++$deletions;
 
-        $this->ioVeryVerbose(function (StyleInterface $io) use ($folder) {
-            $io->comment(sprintf('Removing <comment>%s</comment>', $folder));
-        });
+
+        $this->io
+            ->environment(StyleInterface::VERBOSITY_VERY_VERBOSE)
+            ->comment(sprintf('Removing <comment>%s</comment>', $folder));
 
         return true;
     }

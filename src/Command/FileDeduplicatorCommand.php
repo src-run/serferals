@@ -11,33 +11,53 @@
 
 namespace SR\Serferals\Command;
 
-use SR\Console\Style\StyleInterface;
-use SR\Serferals\Component\Tasks\Filesystem\DirectoryRemoverTask;
-use SR\Serferals\Component\Tasks\Filesystem\ExtensionRemoverTask;
-use SR\Serferals\Component\Tasks\Filesystem\FileInstructionTask;
+use SR\Console\Output\Style\Style;
+use SR\Console\Output\Style\StyleAwareTrait;
+use SR\Serferals\Component\Console\Options\Runtime\FileDeduplicatorOptionsRuntime;
 use SR\Serferals\Component\Tasks\Filesystem\FinderGeneratorTask;
-use SR\Serferals\Component\Tasks\Metadata\TmdbMetadataTask;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-/**
- * Class DuplicatesCommand.
- */
 class FileDeduplicatorCommand extends AbstractCommand
 {
+    use StyleAwareTrait;
+
+    /**
+     * @var FinderGeneratorTask
+     */
+    private $finderGenerator;
+
+    /**
+     * @param FinderGeneratorTask $finderGenerator
+     */
+    public function setFinderGenerator(FinderGeneratorTask $finderGenerator)
+    {
+        $this->finderGenerator = $finderGenerator;
+    }
+
+    /**
+     * configure command name, desc, usage, help, options, etc.
+     */
     protected function configure()
     {
         $this
-            ->setName('dups')
-            ->setDescription('Search for duplicate files.')
-            ->addUsage('an/input/path/to/search')
-            ->setHelp('Scan input directory for media files and resolve duplicate items.')
-            ->setDefinition([
-                new InputOption('ext', ['x'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Input extensions to consider media.', ['mov', 'mkv', 'mp4', 'avi']),
-                new InputArgument('input-dirs', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Path to read input files from.'),
-            ]);
+            ->setName('dupe')
+            ->setDescription('Scan the input director(ies) and remove lower-rated duplicates of media')
+            ->setHelp('Scan the input director(ies) for media files and find duplicates of the same source and delete the lower-rated copies')
+            ->addOption('not-file', ['f'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+            'Files matching name pattern(s) will be ignored by the deduplicator algorithm')
+            ->addOption('not-path', ['p'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Files matching path pattern(s) will be ignored by the deduplicator algorithm')
+            ->addOption('not-ext', ['e'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Files matching extension(s) will be ignored by the deduplicator algorithm')
+            ->addOption('max-size', ['s'], InputOption::VALUE_REQUIRED,
+                'Maximum size of files to apply the deduplicator algorithm')
+            ->addOption('dry-run', ['d'], InputOption::VALUE_NONE,
+                'Disables actual deletion of results and enables report-only mode')
+            ->addArgument('search-paths', InputArgument::IS_ARRAY | InputArgument::REQUIRED,
+                'One or more paths to search for duplicate media files in');
     }
 
     /**
@@ -48,113 +68,49 @@ class FileDeduplicatorCommand extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->ioSetup($input, $output);
+        $runtime = $this->initializeInstanceAndParseOptions($input, $output);
 
-        $this->checkRequirements();
+        $this->runDedupTask($runtime);
 
-        $this->io()->applicationTitle(
-            strtoupper($this->getApplication()->getName()),
-            $this->getApplication()->getVersion(),
-            $this->getApplication()->getGitHash(), [
-                'Author' => sprintf('%s <%s>', $this->getApplication()->getAuthor(), $this->getApplication()->getAuthorEmail()),
-                'License' => $this->getApplication()->getLicense(),
-            ]
+        return $this->writeCommandCompletionSuccess();
+    }
+
+    private function runDedupTask(FileDeduplicatorOptionsRuntime $runtime): void
+    {
+        $files = $this
+            ->finderGenerator
+            ->paths(...$runtime->getSearchPaths())
+            ->notPaths(...$runtime->getIgnoredPaths())
+            ->notNames(...$runtime->getIgnoredFiles())
+            ->notExts(...$runtime->getIgnoredExtensions());
+
+        var_dump(iterator_to_array($files->find()));
+    }
+
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return FileDeduplicatorOptionsRuntime
+     */
+    private function initializeInstanceAndParseOptions(InputInterface $input, OutputInterface $output): FileDeduplicatorOptionsRuntime
+    {
+        $this->setStyle(new Style($input, $output));
+        $this->io->applicationTitle($this->getApplication());
+
+        $runtime = new FileDeduplicatorOptionsRuntime(
+            $this->io,
+            $input->getArgument('search-paths'),
+            $input->getOption('not-ext'),
+            $input->getOption('not-file'),
+            $input->getOption('not-path'),
+            $input->getOption('dry-run'),
+            $input->getOption('max-size')
         );
 
-        $inputExtensions = $input->getOption('ext');
-        list($inputPaths, $inputInvalidPaths) = $this->validatePaths(true, ...$input->getArgument('input-dirs'));
+        $this->optionsDescriptor->describe($runtime);
 
-        if (count($inputInvalidPaths) > 0 || !(count($inputPaths) > 0)) {
-            $this->io()->error('You must provide at least one valid input path.');
-
-            return 255;
-        }
-
-        $this->showRuntimeConfiguration($inputPaths, $inputExtensions);
-
-        $scanner = $this->operationPathScan();
-
-        $lookup = $this->operationApiLookup();
-        $finder = $scanner
-            ->paths(...$inputPaths)
-            ->extensions(...$inputExtensions)
-            ->find();
-
-        $parser = $lookup->getFileMetadata();
-        $itemCollection = $parser
-            ->setFinder($finder)
-            ->getItems();
-    }
-
-    /**
-     * @param string[] $inputPaths
-     * @param string[] $inputExtensions
-     */
-    private function showRuntimeConfiguration(array $inputPaths, array $inputExtensions)
-    {
-        $tableRows = [];
-
-        foreach ($inputPaths as $i => $path) {
-            $tableRows[] = ['Search Directory (#'.($i + 1).')', $path];
-        }
-
-        $tableRows[] = ['Search Extension List', implode(',', $inputExtensions)];
-
-        $this->ioVerbose(
-            function (StyleInterface $io) use ($tableRows) {
-                $io->subSection('Runtime Configuration');
-                $io->table([], $tableRows);
-            }
-        );
-
-        $this->ioDebug(
-            function () {
-                if (false === $this->io()->confirm('Continue using these values?', true)) {
-                    exit(1);
-                }
-            }
-        );
-    }
-
-    /**
-     * @return RenameOperation
-     */
-    private function getServiceRename()
-    {
-        return $this->getService('sr.serferals.tasks.file_instruction');
-    }
-
-    /**
-     * @return TmdbMetadataTask
-     */
-    private function operationApiLookup()
-    {
-        return $this->getService('sr.serferals.tasks.tmdb_metadata');
-    }
-
-    /**
-     * @return PathScanOperation
-     */
-    private function operationPathScan()
-    {
-        return $this->getService('sr.serferals.tasks.finder_generator');
-    }
-
-    /**
-     * @return RemoveExtOperation
-     */
-    private function operationRemoveExts()
-    {
-        return $this->getService('sr.serferals.tasks.extension_remover');
-    }
-
-    /**
-     * @return RemoveDirOperation
-     */
-    private function operationRemoveDirs()
-    {
-        return $this->getService('sr.serferals.tasks.directory_remover');
+        return $runtime;
     }
 }
 
-/* EOF */

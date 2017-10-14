@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Model\Formats;
+namespace SR\Serferals\Component\Formats\Model;
 
-abstract class AbstractFormat
+abstract class MediaFormat extends AbstractFormat
 {
     /**
      * @var array
@@ -19,24 +19,27 @@ abstract class AbstractFormat
     private $extensions;
 
     /**
-     * @var string
-     */
-    private $name;
-
-    /**
      * @var bool
      */
     private $supported;
 
     /**
+     * @var bool
+     */
+    private $featured;
+
+    /**
      * @param array  $extensions
+     * @param bool   $featured
      * @param string $name
      * @param bool   $supported
      */
-    public function __construct(array $extensions, string $name, bool $supported)
+    public function __construct(array $extensions, bool $featured = false, string $name = null, bool $supported = true)
     {
+        parent::__construct($name);
+
         $this->extensions = $extensions;
-        $this->name = $name;
+        $this->featured = $featured;
         $this->supported = $supported;
     }
 
@@ -59,18 +62,18 @@ abstract class AbstractFormat
     }
 
     /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
      * @return bool
      */
     public function isSupported(): bool
     {
         return $this->supported;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFeatured(): bool
+    {
+        return $this->featured;
     }
 }

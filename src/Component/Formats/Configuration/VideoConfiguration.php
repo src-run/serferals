@@ -9,15 +9,8 @@
  * file that was distributed with this source code.
  */
 
-namespace SR\Serferals\Component\Model\Formats;
+namespace SR\Serferals\Component\Formats\Configuration;
 
-class VideoConfiguration extends AbstractConfiguration
+class VideoConfiguration extends MediaConfiguration
 {
-    /**
-     * @return string
-     */
-    protected function getFormatType(): string
-    {
-        return __NAMESPACE__.'\\VideoFormat';
-    }
 }

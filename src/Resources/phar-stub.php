@@ -10,6 +10,10 @@
  * file that was distributed with this source code.
  */
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
 if (defined('HHVM_VERSION_ID')) {
     fwrite(STDERR, "HHVM not surrently supported!\n");
     exit(1);
@@ -19,29 +23,22 @@ if (defined('HHVM_VERSION_ID')) {
 }
 
 set_error_handler(function ($severity, $message, $file, $line) {
-    if ($severity & error_reporting()) {
-        throw new ErrorException($message, 0, $severity, $file, $line);
-    }
+    if ($severity & error_reporting()) { throw new ErrorException($message, 0, $severity, $file, $line); }
 });
 
 Phar::mapPhar('serferals.phar');
 
 require_once 'phar://serferals.phar/vendor/autoload.php';
 
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-
 $container = new ContainerBuilder();
 $loader = new YamlFileLoader($container, new FileLocator('phar://serferals.phar/app/config'));
 $loader->load('services.yml');
 
-$input = $container->get('sr.serferals.console_input');
-$output = $container->get('sr.serferals.console_output');
+$input = $container->get('app.console_input');
+$output = $container->get('app.console_output');
 
-$application = $container->get('sr.serferals.application');
+$application = $container->get('app.application');
 $application->run($input, $output);
 
 __HALT_COMPILER();
 
-/* EOF */
