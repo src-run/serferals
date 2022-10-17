@@ -14,7 +14,7 @@ namespace SR\Serferals\Component\Console\Helper;
 use SR\Exception\Logic\InvalidArgumentException;
 use SR\Serferals\Component\Console\Helper\Action\ActionModel;
 
-class MetadataActionHelper extends ActionHelper
+class SelectionActionHelper extends ActionHelper
 {
     /**
      * @var ActionModel[]

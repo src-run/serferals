@@ -128,7 +128,6 @@ class TmdbMetadataTask
         ++$i;
         $mode = $f::TYPE;
         $lookupSelection = 1;
-        $showFullHelp = false;
 
         while (true) {
             $this->io->section(sprintf('%03d of %03d', $i, $count));
@@ -186,7 +185,7 @@ class TmdbMetadataTask
 
                 case 'l':
                     $lookupSelection = $this->listResults($results);
-                    continue;
+                    break;
 
                 case 's':
                     $f->setEnabled(false);
@@ -220,11 +219,11 @@ class TmdbMetadataTask
                     if ($f->hasSubtitles()) {
                         $f->getSubtitles()[0]->setEnabled(!$f->getSubtitles()[0]->getEnabled());
                     }
-                    continue;
+                    continue 2;
 
                 case 'T':
                     $this->editFixtureSubtitle($f);
-                    continue;
+                    continue 2;
             }
         }
 
@@ -264,9 +263,20 @@ class TmdbMetadataTask
         $tableRows = array_values(array_map(
             function (AbstractModel $m) {
                 static $i = 0;
+                $overviewMax = 80;
+                $overview = '';
+                $country = '';
 
                 if ($m instanceof Tv) {
-                    $country = '';
+                    foreach(explode(' ', $m->getOverview()) as $overviewWord) {
+                        if (mb_strlen($overview) + mb_strlen($overviewWord) > $overviewMax) {
+                            $overview = sprintf('%s...', rtrim($overview));
+                            break;
+                        }
+
+                        $overview .= sprintf('%s ', $overviewWord);
+                    }
+
                     $countrySet = $m->getOriginCountry();
 
                     if ($countrySet->count() > 0) {
@@ -274,17 +284,33 @@ class TmdbMetadataTask
                         $country = $countrySet->get($countryKey)->getIso31661();
                     }
 
-                    return ['['.++$i.'] '.$m->getId(), $m->getName(), $m->getFirstAirDate()->format('Y\-m\-d'), $country];
+                    return ['['.++$i.'] '.$m->getId(), $m->getName(), $m->getFirstAirDate()->format('Y\-m\-d'), $country ?: '', $overview];
                 }
 
                 if ($m instanceof Movie) {
-                    return ['['.++$i.'] '.$m->getId(), $m->getTitle(), $m->getReleaseDate()->format('Y\-m\-d'), ''];
+                    foreach(explode(' ', $m->getOverview()) as $overviewWord) {
+                        if (mb_strlen($overview) + mb_strlen($overviewWord) > $overviewMax) {
+                            $overview = sprintf('%s...', rtrim($overview));
+                            break;
+                        }
+
+                        $overview .= sprintf('%s ', $overviewWord);
+                    }
+
+                    $countrySet = $m->getProductionCountries();
+
+                    if ($countrySet->count() > 0) {
+                        $countryKey = $countrySet->getKeys()[0];
+                        $country = $countrySet->get($countryKey)->getIso31661();
+                    }
+
+                    return ['['.++$i.'] '.$m->getId(), $m->getTitle(), $m->getReleaseDate()->format('Y\-m\-d'), $country ?: '', $overview];
                 }
 
                 return null;
             },
-            $resultSet->getAll())
-        );
+            $resultSet->getAll()
+        ));
 
         array_filter($tableRows, function ($row) {
             return $row !== null;
@@ -294,7 +320,7 @@ class TmdbMetadataTask
             ->environment(StyleInterface::VERBOSITY_VERBOSE)
             ->comment('Listing Tvdb lookup search results');
 
-        $this->io->table(['[#] Tvdb Id', 'Title', 'Release Year', 'Extra'], $tableRows);
+        $this->io->table(['[#] Tvdb Id', 'Title', 'Release Date', 'Country', 'Description'], ...$tableRows);
         $selection = $this->io->ask('Enter result item number', 1, null, function ($value) {
             return (int) $value;
         });
@@ -424,7 +450,13 @@ class TmdbMetadataTask
             ->comment('Listing fixture subtitles');
 
         while (true) {
-            $this->io->table(...$this->getEditFixtureSubtitleTable($f));
+            $subtitles = $this->getEditFixtureSubtitleTable($f);
+
+            if (count($subtitles) == 0) {
+                break;
+            }
+
+            $this->io->table(...$subtitles);
             $action = trim(strtolower($this->io->ask('Enter value number or no value to exit editor', 'exit')));
 
             switch ($action) {
@@ -926,4 +958,3 @@ class TmdbMetadataTask
         return $markup;
     }
 }
-

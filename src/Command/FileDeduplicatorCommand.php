@@ -113,4 +113,3 @@ class FileDeduplicatorCommand extends AbstractCommand
         return $runtime;
     }
 }
-

@@ -289,9 +289,6 @@ class FileOrganizerCommand extends AbstractCommand
             ->setOutputPath($runtime->getOutputPath())
             ->execute($files);
 
-        //\Symfony\Component\VarDumper\VarDumper::dump($instructions);
-        //die();
-
         $this->fileAtomicMover
             ->setMode($runtime->getPlacedModeType())
             ->setBlindOverwrite($runtime->isOverwriteBlind())
@@ -342,4 +339,3 @@ class FileOrganizerCommand extends AbstractCommand
         return $runtime;
     }
 }
-

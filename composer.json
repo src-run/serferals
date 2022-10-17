@@ -31,7 +31,7 @@
         "symfony/config"                        : "~3.3",
         "mhor/php-mediainfo"                    : "~1.6",
         "twig/twig"                             : "~2.0",
-        "php-tmdb/api"                          : "~2.0",
+        "php-tmdb/api"                          : "~2.1",
         "monolog/monolog"                       : "~1.18",
         "src-run/augustus-dumper-library"       : "~0.8",
         "src-run/augustus-exception-library"    : "~0.7",

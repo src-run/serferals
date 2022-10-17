@@ -7,7 +7,9 @@
     "extract": false,
     "files": [
         "LICENSE.md",
-        "app/config/containers.yml"
+        "app/config/containers.yml",
+        "app/config/media.json",
+        "app/config/language.json"
     ],
     "finder": [
        {
