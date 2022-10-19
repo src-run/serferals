@@ -141,7 +141,7 @@ class FileSubtitleAssociateTask
      */
     private function getSubtitles(MediaMetadataModel $media): array
     {
-        return $this->hydrateSubtitleModels($media, ...$this->findSubtitleFiles($media)) ?? null;
+        return $this->hydrateSubtitleModels($media, ...$this->findSubtitleFiles($media)) ?? [];
     }
 
     /**
@@ -236,4 +236,3 @@ class FileSubtitleAssociateTask
         return $similarity;
     }
 }
-

@@ -39,9 +39,9 @@ class MediaMetadataModel implements \Serializable
     protected $enabled;
 
     /**
-     * @var
+     * @var array
      */
-    protected $subtitles;
+    protected $subtitles = [];
 
     /**
      * @var int
@@ -165,7 +165,7 @@ class MediaMetadataModel implements \Serializable
     /**
      * @return SubtitleMetadataModel[]
      */
-    public function getSubtitles(): ?array
+    public function getSubtitles(): array
     {
         return $this->subtitles;
     }
@@ -179,7 +179,7 @@ class MediaMetadataModel implements \Serializable
     }
 
     /**
-     * @param SubtitleMetadataModel[] ...$subtitles
+     * @param SubtitleMetadataModel ...$subtitles
      *
      * @return MediaMetadataModel
      */
@@ -230,4 +230,3 @@ class MediaMetadataModel implements \Serializable
         return $this->activeSubtitle;
     }
 }
-

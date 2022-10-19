@@ -475,7 +475,7 @@ class TmdbMetadataTask
      *
      * @return array
      */
-    private function getEditFixtureSubtitleTable(MediaMetadataModel $f)
+    private function getEditFixtureSubtitleTable(MediaMetadataModel $f): array
     {
         $i = 0;
         $tableRows = array_map(function (SubtitleMetadataModel $subtitle) use ($f, &$i) {

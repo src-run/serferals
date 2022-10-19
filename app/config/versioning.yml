@@ -15,7 +15,7 @@
 parameters:
 
     app.name         : src-run/serferals
-    app.version      : 3.0.0
+    app.version      : 3.0.0-alpha2
     app.author_name  : Rob Frawley 2nd
     app.author_email : rmf@src.run
     app.license_name : MIT License

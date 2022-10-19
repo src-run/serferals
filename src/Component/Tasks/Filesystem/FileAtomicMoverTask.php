@@ -17,6 +17,9 @@ use SR\Exception\Logic\InvalidArgumentException;
 use SR\Exception\Runtime\RuntimeException;
 use SR\Serferals\Component\Model\FileMoveInstruction;
 use SR\Spl\File\SplFileInfo as FileInfo;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ProcessBuilder;
 
 class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
 {
@@ -143,14 +146,134 @@ class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
             return;
         }
 
-        $this->io->environment(StyleInterface::VERBOSITY_VERY_VERBOSE)
-            ->comment(sprintf('Writing "%s"', $output->getPathname()));
+        $copy = (new ProcessBuilder(['rsync', '--info=progress2', $origin->getPathname(), $output->getPathname()]))
+            ->setTimeout($origin->getSize())
+            ->getProcess();
 
+        $this->io->environment(StyleInterface::VERBOSITY_DEBUG)
+             ->comment(sprintf('Running "%s"', $copy->getCommandLine()))
+             ->comment(sprintf('Writing "%s" (mode: %s)', $output->getPathname(), $this->mode === self::MODE_MV ? 'move' : 'copy'))
+             ->newline();
+
+        $pb = new ProgressBar($this->io->getOutput());
+        $pb->setBarCharacter('<fg=cyan>=</>');
+        $pb->setEmptyBarCharacter('<fg=blue;options=bold>-</>');
+        $pb->setProgressCharacter('<fg=cyan;options=bold>></>');
+
+        if ($this->io->isVerbose()) {
+            $pb->setFormat(
+                implode(PHP_EOL, [
+                    '      Progress : [%bar%] (%percent:3s%%)',
+                    ' Time Estimate : %elapsed:6s% / %estimated:-6s%',
+                    ' %context:13s% : %message%',
+                ]).PHP_EOL
+            );
+        }
+
+        $pb->setMessage('Write Speed', 'context');
+        $pb->setMessage('Calculating...');
+
+        $pb->start(100);
+        sleep(1);
+
+        $copy->run(function (string $type, string $buff) use ($pb) {
+            if (Process::ERR === $type) {
+                $pb->setMessage('Error Text', 'context');
+                $pb->setMessage($buff);
+                $pb->display();
+                sleep(1);
+            }
+
+            if (1 !== preg_match('/(?<percent>[0-9]+)%\s+(?<speed_numb>[0-9.]+)(?<speed_unit>[A-z\/]+)/', $buff, $matches)) {
+                return;
+            }
+
+            $pb->setMessage('Write Speed', 'context');
+            $pb->setMessage(sprintf('%s %s', $matches['speed_numb'], $matches['speed_unit']));
+            $pb->setProgress($matches['percent']);
+        });
+
+        if (!$copy->isSuccessful()) {
+            $pb->setMessage('Failure Text', 'context');
+            $pb->setMessage(
+                sprintf(
+                    'Encountered unexpected exit status code: %s (%s)',
+                    $copy->getExitCode(),
+                    $copy->getExitCodeText()
+                )
+            );
+            $pb->finish();
+            $this->io->newline();
+
+            return;
+        }
+
+        $pb->setMessage('Result Text', 'context');
+        $pb->setMessage('Synchronizing cached writes to persistent disk...');
+        $pb->display();
+        sleep(1);
+
+        $sync = (new ProcessBuilder(['sync', $output->getPathname()]))
+            ->setTimeout($origin->getSize())
+            ->getProcess();
+        $sync->run();
+
+        if (!$sync->isSuccessful()) {
+            $pb->setMessage('Error Text', 'context');
+            $pb->setMessage('Failed to sync disk! Leaving original file when unable to verify output file...');
+            $pb->finish();
+            $this->io->newline();
+
+            return;
+        }
+
+        if ($origin->getSize() !== $output->getSize()) {
+            $pb->setMessage('Error Text', 'context');
+            $pb->setMessage(
+                sprintf(
+                    'Original file size (%s) does not match output file size (%s)...',
+                    $origin->getSizeReadable(),
+                    $output->getSizeReadable()
+                )
+            );
+            $pb->finish();
+            $this->io->newline();
+
+            return;
+        }
+
+        if ($this->mode == self::MODE_MV) {
+            $pb->setMessage(sprintf('Removing origin file "%s" ...', $origin->getPathname()));
+            $pb->display();
+            sleep(1);
+
+            $dels = (new ProcessBuilder(['rm', $origin->getPathname()]))
+                ->setTimeout((int) ($origin->getSize() / 10))
+                ->getProcess();
+
+            $dels->run();
+
+            if (!$dels->isSuccessful()) {
+                $pb->setMessage('Error Text', 'context');
+                $pb->setMessage(sprintf('Unable to remove origin file "%s" ...', $origin->getPathname()));
+                $pb->finish();
+                $this->io->newline();
+
+                return;
+            }
+        }
+
+        $pb->setMessage(sprintf('Successfully wrote %s to persistent disk ...', $output->getSizeReadable()));
+        $pb->finish();
+
+        $this->io->newline();
+
+        /*
         if (false === @copy($origin->getPathname(), $output->getPathname())) {
             $this->io->error(sprintf('Could not write file "%s"', $output->getPathname()));
         } elseif ($this->mode === self::MODE_MV) {
             unlink($origin->getPathname());
-        }
+        }*/
     }
 
     /**
@@ -219,7 +342,5 @@ class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
                     sleep(3);
             }
         }
-
-        return null;
     }
 }
