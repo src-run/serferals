@@ -15,9 +15,11 @@ use SR\Console\Output\Style\StyleAwareTrait;
 use SR\Console\Output\Style\StyleInterface;
 use SR\Exception\Logic\InvalidArgumentException;
 use SR\Exception\Runtime\RuntimeException;
+use SR\Serferals\Component\Filesystem\PathDefinition;
 use SR\Serferals\Component\Model\FileMoveInstruction;
 use SR\Spl\File\SplFileInfo as FileInfo;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 
@@ -86,11 +88,11 @@ class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
     }
 
     /**
-     * @param FileMoveInstruction[] ...$instructions
+     * @param FileMoveInstruction ...$instructions
      *
      * @return $this
      */
-    public function setFileMoveInstructions(FileMoveInstruction ...$instructions)
+    public function setFileMoveInstructions(FileMoveInstruction ...$instructions): FileAtomicMoverTask
     {
         $this->instructions = $instructions;
 
@@ -123,14 +125,17 @@ class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
      */
     private function move(FileMoveInstruction $inst)
     {
+        $outputGroup = $inst->getOutputPathDefinitions();
         $origin = $inst->getOrigin();
+        $staged = $inst->getStaged();
         $output = $inst->getOutput();
 
         $originSize = $this->sanitizeFileSize($origin);
         $outputSize = $this->sanitizeFileSize($output);
 
         $tableRows[] = ['Origin File', sprintf('[...]%s', $origin->getFilename()), $originSize];
-        $tableRows[] = ['Output File', sprintf('[...]%s', $output->getPathname()), $outputSize];
+        $tableRows[] = ['Staged File', sprintf('[...]%s', $staged->getPathname()), 'n/a'];
+        $tableRows[] = ['Output File', sprintf('[...]%s', $output->getPathname()), $outputSize ?: 'n/a'];
 
         $this->io->table(['', 'File', 'Size'], ...$tableRows);
 
@@ -141,16 +146,31 @@ class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
             return;
         }
 
-        if (!is_dir($output->getPath()) && false === @mkdir($output->getPath(), 0777, true)) {
-            $this->io->error(sprintf('Could not create directory "%s"', $output->getPath()));
-            return;
+        foreach ([PathDefinition::OBJECT_STAGED, PathDefinition::OBJECT_OUTPUT] as $pathDefinitionKey) {
+            if (!$outputGroup->ensureDirectoryPathExists($pathDefinitionKey)) {
+                return;
+            }
         }
 
-        $copy = (new ProcessBuilder(['rsync', '--info=progress2', $origin->getPathname(), $output->getPathname()]))
+        /*
+        $this->io->environment(StyleInterface::VERBOSITY_DEBUG)
+             ->comment(sprintf('Writing "%s" (mode: %s)', $output->getPathname(), $this->mode === self::MODE_MV ? 'move' : 'copy'))
+             ->newline();
+
+        if (false === @copy($origin->getPathname(), $output->getPathname())) {
+            $this->io->error(sprintf('Could not write file "%s"', $output->getPathname()));
+        } elseif ($this->mode === self::MODE_MV) {
+            unlink($origin->getPathname());
+        }
+
+        return;
+        */
+
+        $copy = (new ProcessBuilder(['rsync', '-a', '--info=progress2', $origin->getPathname(), $staged->getPathname()]))
             ->setTimeout($origin->getSize())
             ->getProcess();
 
-        $this->io->environment(StyleInterface::VERBOSITY_DEBUG)
+        $this->io->environment(OutputInterface::VERBOSITY_DEBUG)
              ->comment(sprintf('Running "%s"', $copy->getCommandLine()))
              ->comment(sprintf('Writing "%s" (mode: %s)', $output->getPathname(), $this->mode === self::MODE_MV ? 'move' : 'copy'))
              ->newline();
@@ -209,9 +229,61 @@ class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
         }
 
         $pb->setMessage('Result Text', 'context');
-        $pb->setMessage('Synchronizing cached writes to persistent disk...');
+        $pb->setMessage('Moving staged to output location and synchronizing cached writes to persistent disk...');
         $pb->display();
         sleep(1);
+
+        $sync = (new ProcessBuilder(['sync', $staged->getPathname()]))
+            ->setTimeout($origin->getSize())
+            ->getProcess();
+        $sync->run();
+
+        if (!$sync->isSuccessful()) {
+            $pb->setMessage('Error Text', 'context');
+            $pb->setMessage('Failed to sync disk! Leaving original file when unable to verify staged file...');
+            $pb->finish();
+            $this->io->newline();
+
+            return;
+        }
+
+        if ($origin->getSize() !== $staged->getSize()) {
+            $pb->setMessage('Error Text', 'context');
+            $pb->setMessage(
+                sprintf(
+                    'Original file size (%s) does not match staged file size (%s)...',
+                    $origin->getSizeReadable(),
+                    $staged->getSizeReadable()
+                )
+            );
+            $pb->finish();
+            $this->io->newline();
+
+            return;
+        }
+
+        if (!$outputGroup->ensureFileOwnership(PathDefinition::OBJECT_STAGED)) {
+            $pb->setMessage('Error Text', 'context');
+            $pb->setMessage('Failed assign configured permissions to staged file...');
+            $pb->finish();
+            $this->io->newline();
+
+            return;
+        }
+
+        $move = (new ProcessBuilder(['mv', '-f', '-v', $staged->getPathname(), $output->getPathname()]))
+            ->setTimeout($origin->getSize())
+            ->getProcess();
+        $move->run();
+
+        if (!$move->isSuccessful()) {
+            $pb->setMessage('Error Text', 'context');
+            $pb->setMessage('Failed to move staged file to output location...');
+            $pb->finish();
+            $this->io->newline();
+
+            return;
+        }
 
         $sync = (new ProcessBuilder(['sync', $output->getPathname()]))
             ->setTimeout($origin->getSize())
@@ -267,13 +339,6 @@ class FileAtomicMoverTask implements FileAtomicMoverTaskInterface
         $pb->finish();
 
         $this->io->newline();
-
-        /*
-        if (false === @copy($origin->getPathname(), $output->getPathname())) {
-            $this->io->error(sprintf('Could not write file "%s"', $output->getPathname()));
-        } elseif ($this->mode === self::MODE_MV) {
-            unlink($origin->getPathname());
-        }*/
     }
 
     /**

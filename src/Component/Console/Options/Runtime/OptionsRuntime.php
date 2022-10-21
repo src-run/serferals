@@ -38,7 +38,7 @@ abstract class OptionsRuntime
      *
      * @return array
      */
-    protected function sanitizeIndexedArray(array $collection)
+    protected function sanitizeIndexedArray(array $collection): array
     {
         return array_values($collection);
     }
@@ -67,7 +67,7 @@ abstract class OptionsRuntime
     protected function sanitizePath(string $path, bool $ensureWriteable = true, bool $ensureReadable = true): string
     {
         if (false === ($real = realpath($path))) {
-            $this->writeHaltingError(sprintf('Provided path "%s" does not exist', $path));
+            $this->writeHaltingError('Provided path "%s" does not exist', $path);
         }
 
         if ($ensureReadable && false === is_readable($real)) {

@@ -38,12 +38,41 @@ services:
             - [ add,          [ "@app.command.file_organizer" ] ]
             - [ add,          [ "@app.command.file_deduplicator" ] ]
 
+    # defines the output path permissions
+    app.filesystem.permissions.output:
+        class: SR\Serferals\Component\Filesystem\PathDefinition
+        arguments:
+            - "output"
+            - "%default_output_write_path%"
+            - "%output_write_perm%"
+            - "%output_write_user%"
+            - "%output_write_group%"
+
+    # defines the staged path permissions
+    app.filesystem.permissions.staged:
+        class: SR\Serferals\Component\Filesystem\PathDefinition
+        arguments:
+            - "staged"
+            - "%default_output_stage_path%"
+            - "%output_stage_perm%"
+            - "%output_stage_user%"
+            - "%output_stage_group%"
+
+    # defines all configured path permissions
+    app.filesystem.permissions:
+        class: SR\Serferals\Component\Filesystem\PathDefinitionGroup
+        arguments:
+            - "@app.filesystem.permissions.output"
+            - "@app.filesystem.permissions.staged"
+        calls:
+            - [ setStyle, [ "@app.console_style" ] ]
+
     # organizer command
     app.command.file_organizer:
         class: SR\Serferals\Command\FileOrganizerCommand
         arguments:
             - "@app.format_manager.media"
-            - "%env(DEFAULT_OUTPUT_PATH)%"
+            - "@app.filesystem.permissions"
             - "%default_search_media_extensions%"
             - "%default_search_subtitle_extensions%"
             - "%default_clean_first_extensions%"

@@ -12,7 +12,9 @@
 namespace SR\Serferals\Component\Console\Options\Runtime;
 
 use SR\Console\Output\Style\StyleInterface;
+use SR\Serferals\Component\Filesystem\PathDefinitionGroup;
 use SR\Serferals\Component\Tasks\Filesystem\FileAtomicMoverTask;
+use SR\Serferals\Component\Tasks\Filesystem\FileAtomicMoverTaskInterface;
 use SR\Serferals\Component\Tasks\Metadata\FileMetadataTask;
 
 class FileOrganizerOptionsRuntime extends OptionsRuntime
@@ -23,9 +25,9 @@ class FileOrganizerOptionsRuntime extends OptionsRuntime
     private $searchPaths;
 
     /**
-     * @var string
+     * @var PathDefinitionGroup
      */
-    private $outputPath;
+    private $pathDefinitions;
 
     /**
      * @var string[]
@@ -88,36 +90,36 @@ class FileOrganizerOptionsRuntime extends OptionsRuntime
     private $subtitleAssociationsDisabled;
 
     /**
-     * @param StyleInterface $style
-     * @param string[]       $searchPaths
-     * @param string         $outputPath
-     * @param bool     $searchMediaAdd
-     * @param string[] $searchMediaExt
-     * @param string[] $searchMediaDef
-     * @param bool     $searchSubAdd
-     * @param string[] $searchSubExt
-     * @param string[] $searchSubDef
-     * @param bool     $cleanFirstAdd
-     * @param string[] $cleanFirstExt
-     * @param string[] $cleanFirstDef
-     * @param bool     $cleanAfterAdd
-     * @param string[] $cleanAfterExt
-     * @param string[] $cleanAfterDef
-     * @param bool     $actionModeMovies
-     * @param bool     $actionModeEpisodes
-     * @param bool     $blindOverwrite
-     * @param bool     $smartOverwrite
-     * @param bool     $failureSkipped
-     * @param bool     $placedModeMove
-     * @param bool     $placedModeCopy
-     * @param bool     $subtitleAssociationsDisabled
+     * @param StyleInterface      $style
+     * @param PathDefinitionGroup $pathDefinitions
+     * @param string[]            $searchPaths
+     * @param bool                $searchMediaAdd
+     * @param string[]            $searchMediaExt
+     * @param string[]            $searchMediaDef
+     * @param bool                $searchSubAdd
+     * @param string[]            $searchSubExt
+     * @param string[]            $searchSubDef
+     * @param bool                $cleanFirstAdd
+     * @param string[]            $cleanFirstExt
+     * @param string[]            $cleanFirstDef
+     * @param bool                 $cleanAfterAdd
+     * @param string[]             $cleanAfterExt
+     * @param string[]             $cleanAfterDef
+     * @param bool                 $actionModeMovies
+     * @param bool                 $actionModeEpisodes
+     * @param bool                 $blindOverwrite
+     * @param bool                 $smartOverwrite
+     * @param bool                 $failureSkipped
+     * @param bool                 $placedModeMove
+     * @param bool                 $placedModeCopy
+     * @param bool                 $subtitleAssociationsDisabled
      */
-    public function __construct(StyleInterface $style, array $searchPaths, string $outputPath, bool $searchMediaAdd, array $searchMediaExt, array $searchMediaDef, bool $searchSubAdd, array $searchSubExt, array $searchSubDef, bool $cleanFirstAdd, array $cleanFirstExt, array $cleanFirstDef, bool $cleanAfterAdd, array $cleanAfterExt, array $cleanAfterDef, bool $actionModeMovies, bool $actionModeEpisodes, bool $blindOverwrite, bool $smartOverwrite, bool $failureSkipped, bool $placedModeMove, bool $placedModeCopy, bool $subtitleAssociationsDisabled)
+    public function __construct(StyleInterface $style, PathDefinitionGroup $pathDefinitions, array $searchPaths, bool $searchMediaAdd, array $searchMediaExt, array $searchMediaDef, bool $searchSubAdd, array $searchSubExt, array $searchSubDef, bool $cleanFirstAdd, array $cleanFirstExt, array $cleanFirstDef, bool $cleanAfterAdd, array $cleanAfterExt, array $cleanAfterDef, bool $actionModeMovies, bool $actionModeEpisodes, bool $blindOverwrite, bool $smartOverwrite, bool $failureSkipped, bool $placedModeMove, bool $placedModeCopy, bool $subtitleAssociationsDisabled)
     {
         parent::__construct($style);
 
+        $this->pathDefinitions = $pathDefinitions->sanitizeDefinitionPaths();
         $this->searchPaths = $this->sanitizePaths($searchPaths, false);
-        $this->outputPath = $this->sanitizePath($outputPath);
 
         if ($searchMediaAdd) {
             $searchMediaExt = array_merge($searchMediaExt, $searchMediaDef);
@@ -168,11 +170,11 @@ class FileOrganizerOptionsRuntime extends OptionsRuntime
     }
 
     /**
-     * @return string
+     * @return PathDefinitionGroup
      */
-    public function getOutputPath(): string
+    public function getPathDefinitions(): PathDefinitionGroup
     {
-        return $this->outputPath;
+        return $this->pathDefinitions;
     }
 
     /**
@@ -285,14 +287,14 @@ class FileOrganizerOptionsRuntime extends OptionsRuntime
     public function getPlacedModeType(): string
     {
         if ($this->isPlacedModeCopy()) {
-            return FileAtomicMoverTask::MODE_CP;
+            return FileAtomicMoverTaskInterface::MODE_CP;
         }
 
         if ($this->isPlacedModeMove()) {
-            return FileAtomicMoverTask::MODE_MV;
+            return FileAtomicMoverTaskInterface::MODE_MV;
         }
 
-        return FileAtomicMoverTask::MODE_DEFAULT;
+        return FileAtomicMoverTaskInterface::MODE_DEFAULT;
     }
 
     /**

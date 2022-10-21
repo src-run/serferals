@@ -13,6 +13,8 @@ namespace SR\Serferals\Component\Tasks\Filesystem;
 
 use SR\Exception\Logic\InvalidArgumentException;
 use SR\Exception\Runtime\RuntimeException;
+use SR\Serferals\Component\Filesystem\PathDefinition;
+use SR\Serferals\Component\Filesystem\PathDefinitionGroup;
 use SR\Serferals\Component\Model\EngineEnvironment;
 use SR\Serferals\Component\Model\FileMoveInstruction;
 use SR\Serferals\Component\Model\SubtitleMetadataModel;
@@ -24,9 +26,9 @@ use SR\Serferals\Component\Model\MovieMetadataModel;
 class FileInstructionTask
 {
     /**
-     * @var string
+     * @var PathDefinitionGroup
      */
-    protected $outputPath;
+    protected $pathDefinitions;
 
     /**
      * @var string
@@ -52,7 +54,7 @@ class FileInstructionTask
      * @param string $tplPath
      * @param string $tplFile
      */
-    public function setFileTemplateEpisode($tplPath, $tplFile)
+    public function setFileTemplateEpisode(string $tplPath, string $tplFile)
     {
         $this->tplPathEpisode = $tplPath;
         $this->tplFileEpisode = $tplFile;
@@ -62,20 +64,20 @@ class FileInstructionTask
      * @param string $tplPath
      * @param string $tplFile
      */
-    public function setFileTemplateMovie($tplPath, $tplFile)
+    public function setFileTemplateMovie(string $tplPath, string $tplFile)
     {
         $this->tplPathMovie = $tplPath;
         $this->tplFileMovie = $tplFile;
     }
 
     /**
-     * @param string $outputPath
+     * @param PathDefinitionGroup $pathDefinition
      *
      * @return $this
      */
-    public function setOutputPath(string $outputPath)
+    public function setPathDefinitions(PathDefinitionGroup $pathDefinition): self
     {
-        $this->outputPath = $outputPath;
+        $this->pathDefinitions = $pathDefinition;
 
         return $this;
     }
@@ -85,7 +87,7 @@ class FileInstructionTask
      *
      * @return FileMoveInstruction[]
      */
-    public function execute(array $files)
+    public function execute(array $files): array
     {
         if (0 === count($files)) {
             throw new RuntimeException('No input files provided.');
@@ -103,7 +105,7 @@ class FileInstructionTask
      *
      * @return FileMoveInstruction
      */
-    private function generateInstruction(MediaMetadataModel $media)
+    private function generateInstruction(MediaMetadataModel $media): FileMoveInstruction
     {
         $media->setName($this->sanitizeName($media->getName()));
 
@@ -122,10 +124,13 @@ class FileInstructionTask
         $path = $environment->getEngine()->render($environment->getPathName(), $environment->getParameters());
         $file = $environment->getEngine()->render($environment->getFileName(), $environment->getParameters());
 
-        $output = new FileInfo(preg_replace('{[/]+}', '/', $this->outputPath.DIRECTORY_SEPARATOR.$path.DIRECTORY_SEPARATOR.$file));
-        $origin = new FileInfo($media->getFile()->getRealPath());
+        $this->pathDefinitions->output()->compilePathCompiled($path, $file);
+        $this->pathDefinitions->staged()->compilePathCompiled($path, $file);
+        $this->pathDefinitions->addFilePermissionDefinitions(
+            new PathDefinition('origin', $media->getFile()->getRealPath(), 0775, 'nobody', 'nobody')
+        );
 
-        return new FileMoveInstruction($origin, $output, $this->generateSubtitleInstruction($media));
+        return new FileMoveInstruction($this->pathDefinitions, $this->generateSubtitleInstruction($media));
     }
 
     /**

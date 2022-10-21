@@ -11,19 +11,16 @@
 
 namespace SR\Serferals\Component\Model;
 
+use SR\Serferals\Component\Filesystem\PathDefinition;
+use SR\Serferals\Component\Filesystem\PathDefinitionGroup;
 use SR\Spl\File\SplFileInfo;
 
 class FileMoveInstruction
 {
     /**
-     * @var SplFileInfo
+     * @var PathDefinitionGroup
      */
-    private $origin;
-
-    /**
-     * @var SplFileInfo
-     */
-    private $output;
+    private $outputPathDefinitions;
 
     /**
      * @var FileMoveInstruction|null
@@ -31,30 +28,69 @@ class FileMoveInstruction
     private $subtitle;
 
     /**
-     * @param SplFileInfo        $origin
-     * @param SplFileInfo        $output
+     * @param PathDefinitionGroup      $outputPathDefinitions
+     * @param FileMoveInstruction|null $subtitle
      */
-    public function __construct(SplFileInfo $origin, SplFileInfo $output, FileMoveInstruction $subtitle = null)
+    public function __construct(PathDefinitionGroup $outputPathDefinitions, FileMoveInstruction $subtitle = null)
     {
-        $this->origin = $origin;
-        $this->output = $output;
+        $this->outputPathDefinitions = $outputPathDefinitions;
         $this->subtitle = $subtitle;
     }
 
     /**
-     * @return SplFileInfo
+     * @return PathDefinitionGroup
      */
-    public function getOrigin()
+    public function getOutputPathDefinitions(): PathDefinitionGroup
     {
-        return $this->origin;
+        return $this->outputPathDefinitions;
+    }
+
+    /**
+     * @return PathDefinition
+     */
+    public function getOriginDefinition(): PathDefinition
+    {
+        return $this->outputPathDefinitions->origin();
     }
 
     /**
      * @return SplFileInfo
      */
-    public function getOutput()
+    public function getOrigin(): SplFileInfo
     {
-        return $this->output;
+        return $this->getOriginDefinition()->getPathCompiled();
+    }
+
+    /**
+     * @return PathDefinition
+     */
+    public function getOutputDefinition(): PathDefinition
+    {
+        return $this->outputPathDefinitions->output();
+    }
+
+    /**
+     * @return SplFileInfo
+     */
+    public function getOutput(): SplFileInfo
+    {
+        return $this->getOutputDefinition()->getPathCompiled();
+    }
+
+    /**
+     * @return PathDefinition
+     */
+    public function getStagedDefinition(): PathDefinition
+    {
+        return $this->outputPathDefinitions->staged();
+    }
+
+    /**
+     * @return SplFileInfo
+     */
+    public function getStaged(): SplFileInfo
+    {
+        return $this->getStagedDefinition()->getPathCompiled();
     }
 
     /**

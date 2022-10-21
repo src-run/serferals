@@ -47,6 +47,7 @@ class Application extends BaseApplication
      * @param string $authorName
      * @param string $authorMail
      * @param string $licenseName
+     * @param string $licenseLink
      */
     public function __construct(string $name, string $version, string $authorName, string $authorMail, string $licenseName, string $licenseLink)
     {
@@ -134,4 +135,3 @@ class Application extends BaseApplication
         return sprintf('%s [%s \<%s>]', $v, $this->getLicenseName(), $this->getLicenseLink());
     }
 }
-

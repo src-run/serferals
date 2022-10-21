@@ -14,6 +14,8 @@ namespace SR\Serferals\Command;
 use SR\Console\Output\Style\Style;
 use SR\Console\Output\Style\StyleAwareTrait;
 use SR\Serferals\Component\Console\Options\Runtime\FileOrganizerOptionsRuntime;
+use SR\Serferals\Component\Filesystem\PathDefinition;
+use SR\Serferals\Component\Filesystem\PathDefinitionGroup;
 use SR\Serferals\Component\Formats\Manager\MediaManager;
 use SR\Serferals\Component\Tasks\Filesystem\DirectoryRemoverTask;
 use SR\Serferals\Component\Tasks\Filesystem\ExtensionRemoverTask;
@@ -38,9 +40,9 @@ class FileOrganizerCommand extends AbstractCommand
     private $formatsManager;
 
     /**
-     * @var string
+     * @var PathDefinitionGroup
      */
-    private $defaultOutputPath;
+    private $pathDefinitions;
 
     /**
      * @var string[]
@@ -103,17 +105,17 @@ class FileOrganizerCommand extends AbstractCommand
     private $fileAtomicMover;
 
     /**
-     * @param MediaManager $formatsManager
-     * @param string       $defaultOutputPath
-     * @param array        $defaultMediaExtensions
-     * @param array        $defaultSubtitleExtensions
-     * @param array        $defaultCleanFirstExtensions
-     * @param array        $defaultCleanAfterExtensions
+     * @param MediaManager        $formatsManager
+     * @param PathDefinitionGroup $pathDefinitionGroup
+     * @param array               $defaultMediaExtensions
+     * @param array               $defaultSubtitleExtensions
+     * @param array               $defaultCleanFirstExtensions
+     * @param array               $defaultCleanAfterExtensions
      */
-    public function __construct(MediaManager $formatsManager, string $defaultOutputPath, array $defaultMediaExtensions, array $defaultSubtitleExtensions, array $defaultCleanFirstExtensions, array $defaultCleanAfterExtensions)
+    public function __construct(MediaManager $formatsManager, PathDefinitionGroup $pathDefinitionGroup, array $defaultMediaExtensions, array $defaultSubtitleExtensions, array $defaultCleanFirstExtensions, array $defaultCleanAfterExtensions)
     {
         $this->formatsManager = $formatsManager;
-        $this->defaultOutputPath = $defaultOutputPath;
+        $this->pathDefinitions = $pathDefinitionGroup;
         $this->defaultMediaExtensions = $defaultMediaExtensions;
         $this->defaultSubtitleExtensions = $defaultSubtitleExtensions;
         $this->defaultCleanFirstExtensions = $defaultCleanFirstExtensions;
@@ -195,7 +197,9 @@ class FileOrganizerCommand extends AbstractCommand
             ->addArgument('search-paths', InputArgument::IS_ARRAY | InputArgument::REQUIRED,
                 'Input paths to search for media files')
             ->addOption('output-path', ['o'], InputOption::VALUE_REQUIRED,
-                'Base destination (output) path to write to', $this->defaultOutputPath)
+                'Base destination (output) path to write to', $this->pathDefinitions->get(PathDefinition::OBJECT_OUTPUT)->getPath())
+            ->addOption('output-temp', ['g'], InputOption::VALUE_REQUIRED,
+                'Base destination (staged) path to write to prior to moving files into place', $this->pathDefinitions->get(PathDefinition::OBJECT_STAGED)->getPath())
             ->addOption('ext-media', ['e'], InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
                 'Custom media file types to search for (overwriting defaults)', $this->formatsManager->getVideoExtensions())
             ->addOption('ext-media-append', ['E'], InputOption::VALUE_NONE,
@@ -286,7 +290,7 @@ class FileOrganizerCommand extends AbstractCommand
             ->resolve($files);
 
         $instructions = $this->fileInstruction
-            ->setOutputPath($runtime->getOutputPath())
+            ->setPathDefinitions($this->pathDefinitions)
             ->execute($files);
 
         $this->fileAtomicMover
@@ -307,10 +311,13 @@ class FileOrganizerCommand extends AbstractCommand
     {
         $this->setStyle(new Style($input, $output));
 
+        $this->pathDefinitions->get(PathDefinition::OBJECT_OUTPUT)->setPath($input->getOption('output-path'));
+        $this->pathDefinitions->get(PathDefinition::OBJECT_STAGED)->setPath($input->getOption('output-temp'));
+
         $runtime = new FileOrganizerOptionsRuntime(
             $this->io,
+            $this->pathDefinitions,
             $input->getArgument('search-paths'),
-            $input->getOption('output-path'),
             $input->getOption('ext-media-append'),
             $input->getOption('ext-media'),
             $this->formatsManager->getVideoExtensions(),

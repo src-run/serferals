@@ -81,6 +81,17 @@ trait StdIOTrait
 
     /**
      * @param string $message
+     * @param string ...$replacements
+     *
+     * @return void
+     */
+    protected function writeWarning(string $message, string ...$replacements): void
+    {
+        $this->writeMessageType(sprintf($message, ...$replacements), static::$stdIOWriteTypeWarning);
+    }
+
+    /**
+     * @param string $message
      */
     protected function writeError(string $message = null)
     {

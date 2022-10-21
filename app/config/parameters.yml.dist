@@ -5,6 +5,13 @@ parameters:
     default_search_subtitle_extensions: [ 'srt', 'sfv' ]
     default_clean_first_extensions:     [ 'nfo', 'txt' ]
     default_clean_after_extensions:     [ 'srt', 'nfo', 'txt', 'jpg', 'png' ]
-    env(DEFAULT_OUTPUT_PATH):           /pool/media/video
+    default_output_write_path:          /pool/media/video
+    default_output_stage_path:          /pool/media/stage
+    output_write_perm:                  0775
+    output_write_user:                  rmf
+    output_write_group:                 plex
+    output_stage_perm:                  0775
+    output_stage_user:                  rmf
+    output_stage_group:                 plex
     data_file_path_media:               app/config/media.json
     data_file_path_language:            app/config/language.json

@@ -24,7 +24,8 @@ class FileOrganizerOptionsDescriptor extends OptionsDescriptor
     protected function getDescribeTable(OptionsRuntime $runtime): array
     {
         $h = [
-            'Output Directory',
+            'Output Write Directory',
+            'Output Stage Directory',
             'Skip Lookup Failures',
             'Smart Overwrite',
             'Blind Overwrite',
@@ -37,7 +38,8 @@ class FileOrganizerOptionsDescriptor extends OptionsDescriptor
             'Associate Subtitles',
         ];
         $r = [
-            $runtime->getOutputPath(),
+            $runtime->getPathDefinitions()->output()->getPath(),
+            $runtime->getPathDefinitions()->staged()->getPath(),
             $this->getBooleanStateMarkup($runtime->isFailureSkipped()),
             $this->getBooleanStateMarkup($runtime->isOverwriteSmart()),
             $this->getBooleanStateMarkup($runtime->isOverwriteBlind()),

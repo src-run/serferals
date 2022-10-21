@@ -338,7 +338,7 @@ class TmdbMetadataTask
             ->comment('Listing fixture property values');
 
         while (true) {
-            list($tableHeads, $tableRows, $control) = $this->getEditFixtureTable($f);
+            [$tableHeads, $tableRows, $control] = $this->getEditFixtureTable($f);
             $this->io->table($tableHeads, ...$tableRows);
             $action = strtolower($this->io->ask('Enter value number or no value to exit editor', 'exit'));
 
@@ -685,7 +685,7 @@ class TmdbMetadataTask
      *
      * @return Tv|Movie
      */
-    private function getResultSelection(ResultCollection $resultSet, $selection = 1)
+    private function getResultSelection(ResultCollection $resultSet, int $selection = 1)
     {
         $keys = $resultSet->getKeys();
 
